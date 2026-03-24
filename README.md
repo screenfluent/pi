@@ -53,8 +53,8 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 ### Install
 
 ```bash
-git clone git@github.com:screenfluent/pi.git ~/pi-home
-ln -s ~/pi-home ~/.pi/agent
+git clone git@github.com:screenfluent/pi.git ~/90-99.system/91.pi-home
+ln -s ~/90-99.system/91.pi-home ~/.pi/agent
 ```
 
 ### VPS Directory Structure (Johnny Decimal)
