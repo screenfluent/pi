@@ -18,7 +18,7 @@
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { setBasePath } from "./files.ts";
+import { setGlobalBasePath, setProjectBasePath } from "./files.ts";
 import { registerMemoryTools } from "./tools.ts";
 import { registerMemoryContext } from "./context.ts";
 import { resolveSettings } from "./settings.ts";
@@ -35,15 +35,14 @@ export default function (pi: ExtensionAPI) {
 	pi.on("session_start", async (_event, ctx) => {
 		const settings = resolveSettings(ctx.cwd);
 		const basePath = settings.path ?? ctx.cwd;
-		setBasePath(basePath);
-		log("init", { basePath });
+		setGlobalBasePath(basePath);
+		setProjectBasePath(null);
+		log("init", { globalBasePath: basePath });
 	});
 
-	// Follow pi-workon project switches — use project dir as memory base
+	// On workon:switch — set project layer, keep global layer intact
 	pi.events.on("workon:switch", (data: { path: string; name: string }) => {
-		const settings = resolveSettings(data.path);
-		const basePath = settings.path ?? data.path;
-		setBasePath(basePath);
-		log("workon:switch", { basePath, project: data.name });
+		setProjectBasePath(data.path);
+		log("workon:switch", { projectBasePath: data.path, project: data.name });
 	});
 }

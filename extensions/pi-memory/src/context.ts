@@ -31,21 +31,41 @@ export function registerMemoryContext(pi: ExtensionAPI): void {
 	pi.on("before_agent_start", async (event) => {
 		const parts: string[] = [];
 
-		const ltm = files.readFileOr(files.longTermPath());
-		if (ltm.trim()) {
-			parts.push("## Long-Term Memory (MEMORY.md)\n\n" + ltm.trim());
+		// ── Global memory (always loaded) ────────────────
+		const gltm = files.readFileOr(files.globalLongTermPath());
+		if (gltm.trim()) {
+			parts.push("## Global Memory (MEMORY.md)\n\n" + gltm.trim());
 		}
 
 		const yd = files.yesterdayStr();
-		const yesterday = files.readFileOr(files.dailyPath(yd));
-		if (yesterday.trim()) {
-			parts.push(`## Yesterday (${yd})\n\n` + yesterday.trim());
+		const gYesterday = files.readFileOr(files.globalDailyPath(yd));
+		if (gYesterday.trim()) {
+			parts.push(`## Global Yesterday (${yd})\n\n` + gYesterday.trim());
 		}
 
 		const td = files.todayStr();
-		const today = files.readFileOr(files.dailyPath(td));
-		if (today.trim()) {
-			parts.push(`## Today (${td})\n\n` + today.trim());
+		const gToday = files.readFileOr(files.globalDailyPath(td));
+		if (gToday.trim()) {
+			parts.push(`## Global Today (${td})\n\n` + gToday.trim());
+		}
+
+		// ── Project memory (loaded when workon is active) ─
+		const pltmPath = files.projectLongTermPath();
+		if (pltmPath) {
+			const pltm = files.readFileOr(pltmPath);
+			if (pltm.trim()) {
+				parts.push("## Project Memory (MEMORY.md)\n\n" + pltm.trim());
+			}
+
+			const pYesterday = files.readFileOr(files.projectDailyPath(yd) ?? "");
+			if (pYesterday.trim()) {
+				parts.push(`## Project Yesterday (${yd})\n\n` + pYesterday.trim());
+			}
+
+			const pToday = files.readFileOr(files.projectDailyPath(td) ?? "");
+			if (pToday.trim()) {
+				parts.push(`## Project Today (${td})\n\n` + pToday.trim());
+			}
 		}
 
 		const memoryBlock = parts.length > 0

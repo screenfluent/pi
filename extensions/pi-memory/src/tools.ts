@@ -79,14 +79,22 @@ export function registerMemoryTools(pi: ExtensionAPI): void {
 						"If omitted, content is appended to end of MEMORY.md.",
 				}),
 			),
+			scope: Type.Optional(
+				StringEnum(["global", "project"] as const, {
+					description: "Write to global memory or project memory. Defaults to project if a project is active, otherwise global.",
+				}),
+			),
 		}),
 
 		async execute(_toolCallId, params) {
+			const useProject = params.scope === "project" || (params.scope !== "global" && files.getProjectBasePath() !== null);
+			const scopeLabel = useProject ? "project" : "global";
+
 			if (params.target === "daily") {
 				const now = new Date();
 				const time = now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" });
 				const entry = `### ${time}\n\n${params.content}`;
-				const fp = files.dailyPath();
+				const fp = useProject ? (files.projectDailyPath() ?? files.globalDailyPath()) : files.globalDailyPath();
 
 				if (!files.readFileOr(fp)) {
 					files.writeFile(fp, `# Daily Memory — ${files.todayStr()}\n\n${entry}\n`);
@@ -94,11 +102,11 @@ export function registerMemoryTools(pi: ExtensionAPI): void {
 					files.appendToFile(fp, "\n" + entry);
 				}
 
-				return text(`✓ Appended to daily memory (${files.todayStr()} ${time})`);
+				return text(`✓ Appended to ${scopeLabel} daily memory (${files.todayStr()} ${time})`);
 			}
 
 			// Long-term
-			const fp = files.longTermPath();
+			const fp = useProject ? (files.projectLongTermPath() ?? files.globalLongTermPath()) : files.globalLongTermPath();
 			const existing = files.readFileOr(fp);
 
 			if (params.section) {
@@ -111,15 +119,15 @@ export function registerMemoryTools(pi: ExtensionAPI): void {
 				if (match) {
 					const updated = existing.replace(pattern, (_, header) => `${header}\n${params.content}\n`);
 					files.writeFile(fp, updated);
-					return text(`✓ Updated section "${params.section}" in MEMORY.md`);
+					return text(`✓ Updated section "${params.section}" in ${scopeLabel} MEMORY.md`);
 				} else {
 					files.appendToFile(fp, `\n## ${params.section}\n\n${params.content}`);
-					return text(`✓ Added new section "${params.section}" to MEMORY.md`);
+					return text(`✓ Added new section "${params.section}" to ${scopeLabel} MEMORY.md`);
 				}
 			}
 
 			files.appendToFile(fp, "\n" + params.content);
-			return text("✓ Appended to MEMORY.md");
+			return text(`✓ Appended to ${scopeLabel} MEMORY.md`);
 		},
 	});
 

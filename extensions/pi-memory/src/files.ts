@@ -14,14 +14,32 @@ import * as path from "node:path";
 
 // ── State ───────────────────────────────────────────────────────
 
-let basePath: string = process.cwd();
+let globalBasePath: string = process.cwd();
+let projectBasePath: string | null = null;
 
+export function setGlobalBasePath(p: string): void {
+	globalBasePath = p;
+}
+
+export function setProjectBasePath(p: string | null): void {
+	projectBasePath = p;
+}
+
+/** @deprecated Use setGlobalBasePath instead */
 export function setBasePath(p: string): void {
-	basePath = p;
+	globalBasePath = p;
+}
+
+export function getGlobalBasePath(): string {
+	return globalBasePath;
+}
+
+export function getProjectBasePath(): string | null {
+	return projectBasePath;
 }
 
 export function getBasePath(): string {
-	return basePath;
+	return projectBasePath ?? globalBasePath;
 }
 
 // ── Paths ───────────────────────────────────────────────────────
@@ -91,14 +109,65 @@ export function listDailyFiles(): string[] {
 		.reverse();
 }
 
+// ── Global-scoped paths ─────────────────────────────────────────
+
+export function globalLongTermPath(): string {
+	return path.join(globalBasePath, "MEMORY.md");
+}
+
+export function globalMemoryDir(): string {
+	return path.join(globalBasePath, "memory");
+}
+
+export function globalDailyPath(date?: string): string {
+	return path.join(globalMemoryDir(), `${date ?? todayStr()}.md`);
+}
+
+// ── Project-scoped paths ────────────────────────────────────────
+
+export function projectLongTermPath(): string | null {
+	if (!projectBasePath) return null;
+	return path.join(projectBasePath, "MEMORY.md");
+}
+
+export function projectMemoryDir(): string | null {
+	if (!projectBasePath) return null;
+	return path.join(projectBasePath, "memory");
+}
+
+export function projectDailyPath(date?: string): string | null {
+	const dir = projectMemoryDir();
+	if (!dir) return null;
+	return path.join(dir, `${date ?? todayStr()}.md`);
+}
+
 // ── All memory files (for search) ───────────────────────────────
 
 export function allMemoryFiles(): Array<{ label: string; path: string }> {
-	const files: Array<{ label: string; path: string }> = [];
-	const ltm = longTermPath();
-	if (fs.existsSync(ltm)) files.push({ label: "MEMORY.md", path: ltm });
-	for (const f of listDailyFiles()) {
-		files.push({ label: `memory/${f}`, path: path.join(memoryDir(), f) });
+	const result: Array<{ label: string; path: string }> = [];
+	const seen = new Set<string>();
+
+	// Global first
+	const gltm = globalLongTermPath();
+	if (fs.existsSync(gltm)) { result.push({ label: "global/MEMORY.md", path: gltm }); seen.add(gltm); }
+	const gdir = globalMemoryDir();
+	if (fs.existsSync(gdir)) {
+		for (const f of fs.readdirSync(gdir).filter(f => f.endsWith(".md")).sort().reverse()) {
+			const fp = path.join(gdir, f);
+			if (!seen.has(fp)) { result.push({ label: `global/memory/${f}`, path: fp }); seen.add(fp); }
+		}
 	}
-	return files;
+
+	// Project
+	const pltm = projectLongTermPath();
+	if (pltm && fs.existsSync(pltm) && !seen.has(pltm)) { result.push({ label: "project/MEMORY.md", path: pltm }); seen.add(pltm); }
+	const pdir = projectMemoryDir();
+	if (pdir && fs.existsSync(pdir)) {
+		for (const f of fs.readdirSync(pdir).filter(f => f.endsWith(".md")).sort().reverse()) {
+			const fp = path.join(pdir, f);
+			if (!seen.has(fp)) { result.push({ label: `project/memory/${f}`, path: fp }); seen.add(fp); }
+		}
+	}
+
+	return result;
 }
