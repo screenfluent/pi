@@ -53,9 +53,19 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 ### Install
 
 ```bash
+# Clone repo
 git clone git@github.com:screenfluent/pi.git ~/90-99.system/91.pi-home
-ln -s ~/90-99.system/91.pi-home ~/.pi/agent
+
+# Symlink repo contents into ~/.pi/agent/ (preserves auth, sessions, bin)
+mkdir -p ~/.pi/agent
+for item in extensions skills themes AGENTS.md settings.json LICENSE; do
+    src="$HOME/90-99.system/91.pi-home/$item"
+    dst="$HOME/.pi/agent/$item"
+    [ -e "$src" ] && rm -rf "$dst" && ln -s "$src" "$dst"
+done
 ```
+
+This approach keeps `~/.pi/agent/` as a real directory with Pi runtime files (`auth.json`, `sessions/`, `bin/`) while symlinking managed content from the repo.
 
 ### VPS Directory Structure (Johnny Decimal)
 
