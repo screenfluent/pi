@@ -13,7 +13,7 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 ## Directory Layout
 
 ```
-├── extensions/          # Pi extensions (each has own package.json)
+├── extensions/          # Pi extensions (each has own README.md)
 │   └── pi-focus/        # Tool visibility profiles per session
 ├── skills/              # Custom skills
 ├── themes/              # TUI themes
@@ -26,7 +26,7 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 
 | Extension | Origin | Description |
 |-----------|--------|-------------|
-| **pi-focus** | Custom | Toggle tool visibility per session using named profiles (`/focus coding`, `/focus life`, `/focus show`) |
+| [**pi-focus**](extensions/pi-focus/) | Generated from scratch by Claude Opus 4.6 High | Toggle tool visibility per session using named profiles |
 
 ### Planned (from espennilsen/pi)
 
@@ -53,14 +53,8 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 ### Install
 
 ```bash
-# Clone to wherever you keep repos
 git clone git@github.com:screenfluent/pi.git ~/pi-home
-
-# Symlink as Pi agent home
 ln -s ~/pi-home ~/.pi/agent
-
-# Install extension dependencies
-cd ~/pi-home/extensions/pi-focus && npm install 2>/dev/null; cd ~/pi-home
 ```
 
 ### VPS Directory Structure (Johnny Decimal)
@@ -78,54 +72,6 @@ cd ~/pi-home/extensions/pi-focus && npm install 2>/dev/null; cd ~/pi-home
 └── 90-99.system/
     └── 91.pi-home/ → ~/.pi/agent   # This repo
 ```
-
-## pi-focus
-
-Toggle tool visibility per session using named profiles. Integrates with `pi-workon` for automatic profile switching when changing projects.
-
-### Commands
-
-| Command | Description |
-|---------|-------------|
-| `/focus` | TUI select dialog — pick a profile |
-| `/focus <name>` | Switch directly to a profile |
-| `/focus show` | Show active/disabled tools |
-
-### Configuration
-
-In `settings.json`:
-
-```json
-{
-  "pi-focus": {
-    "profiles": {
-      "coding": {
-        "description": "Dev tools only",
-        "exclude": ["calendar_*", "crm_*", "finance_*"]
-      },
-      "life": {
-        "description": "Life management",
-        "include": ["calendar_*", "crm_*", "finance_*", "read", "bash", "write", "edit"]
-      },
-      "all": {
-        "description": "Everything enabled"
-      }
-    },
-    "projects": {
-      "31.tailwindgallery": "coding",
-      "11.command-center": "all"
-    }
-  }
-}
-```
-
-Profile rules:
-- `include` — whitelist (only these tools active)
-- `exclude` — blacklist (all except these)
-- neither — all tools active
-- Patterns support trailing `*` wildcard (e.g., `calendar_*`)
-
-`projects` maps project names (from `pi-workon`) to profiles for automatic switching.
 
 ## License
 
