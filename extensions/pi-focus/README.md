@@ -54,6 +54,34 @@ In `~/.pi/agent/settings.json` or `.pi/settings.json`:
 
 Manual `/focus` always overrides automatic switching.
 
+## Event: `focus:changed`
+
+When a profile switches, pi-focus emits:
+
+```typescript
+pi.events.emit("focus:changed", {
+  profile: "coding",              // active profile name
+  active: ["read", "bash", ...],  // tool names that are ON
+  disabled: ["Agent", ...],       // tool names that are OFF
+});
+```
+
+**Convention:** Any extension with hooks (event handlers that block or modify behavior) MUST listen to `focus:changed` and disable itself when appropriate. Example:
+
+```typescript
+let focusDisabled = false;
+
+pi.events.on("focus:changed", (data) => {
+  // Disable this extension when not in "all" or "life" profile
+  focusDisabled = !["all", "life"].includes(data.profile);
+});
+
+pi.on("tool_call", (event) => {
+  if (focusDisabled) return; // respect focus profile
+  // ... normal hook logic
+});
+```
+
 ## How it works
 
 Uses `pi.setActiveTools()` which:

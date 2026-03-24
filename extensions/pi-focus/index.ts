@@ -192,11 +192,10 @@ export default function (pi: ExtensionAPI) {
 			const profile = settings.profiles[profileName];
 			const allTools = pi.getAllTools();
 			const allNames = allTools.map((t) => t.name);
+
+			switchProfile(profileName, allNames, profile);
+
 			const activeNames = applyProfile(allNames, profile);
-
-			pi.setActiveTools(activeNames);
-			currentProfile = profileName;
-
 			const disabled = allNames.length - activeNames.length;
 			const msg = disabled > 0
 				? `🎯 Focus: ${profileName} (${activeNames.length} active, ${disabled} disabled)`
@@ -219,8 +218,16 @@ export default function (pi: ExtensionAPI) {
 	// ── Helper: apply a profile by name ─────────────────────────
 	function switchProfile(profileName: string, allToolNames: string[], profile: FocusProfile): void {
 		const activeNames = applyProfile(allToolNames, profile);
+		const disabledNames = allToolNames.filter((n) => !activeNames.includes(n));
 		pi.setActiveTools(activeNames);
 		currentProfile = profileName;
+
+		// Notify other extensions — they MUST respect this
+		pi.events.emit("focus:changed", {
+			profile: profileName,
+			active: activeNames,
+			disabled: disabledNames,
+		});
 	}
 
 	// Cache cwd on session start
