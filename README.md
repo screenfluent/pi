@@ -28,6 +28,7 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 |-----------|--------|-------------|
 | [**pi-focus**](extensions/pi-focus/) | Generated from scratch by Claude Opus 4.6 High | Toggle tool visibility per session using named profiles |
 | [**pi-workon**](extensions/pi-workon/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Project context switching — load AGENTS.md, git status, detect tech stacks |
+| [**pi-memory**](extensions/pi-memory/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Persistent memory — long-term facts, daily logs, full-text search |
 
 ### Planned (from espennilsen/pi)
 
