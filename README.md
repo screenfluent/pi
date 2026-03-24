@@ -27,12 +27,12 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 | Extension | Origin | Description |
 |-----------|--------|-------------|
 | [**pi-focus**](extensions/pi-focus/) | Generated from scratch by Claude Opus 4.6 High | Toggle tool visibility per session using named profiles |
+| [**pi-workon**](extensions/pi-workon/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Project context switching — load AGENTS.md, git status, detect tech stacks |
 
 ### Planned (from espennilsen/pi)
 
 | Extension | Description |
 |-----------|-------------|
-| **pi-workon** | Project context switching — load AGENTS.md, git status, detect tech stacks |
 | **pi-projects** | Project tracking dashboard with git status |
 | **pi-kysely** | Shared database registry with table-level RBAC |
 | **pi-webserver** | Shared HTTP server with auth for web extensions |
