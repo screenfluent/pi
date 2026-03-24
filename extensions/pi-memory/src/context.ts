@@ -39,6 +39,7 @@ Deep context for the current project. Records HOW and WHY.
 - Use \`memory_search\` when you need to recall something from past sessions.
 - Keep global entries to ONE LINE per session. Keep project entries as detailed as needed.
 - For long-term MEMORY.md in either scope, organize into ## sections and keep them current.
+- ALWAYS write memory entries in English.
 `.trim();
 
 export function registerMemoryContext(pi: ExtensionAPI): void {
