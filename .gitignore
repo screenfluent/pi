@@ -1,0 +1,17 @@
+# Runtime (Pi creates these)
+db/
+cache/
+sessions/
+telemetry/
+node_modules/
+package-lock.json
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Extension build artifacts
+*.js
+*.js.map
+*.d.ts
+!extensions/*/src/**

@@ -1,0 +1,33 @@
+{
+  "lastChangelogVersion": "0.62.0",
+  "defaultProvider": "anthropic",
+  "defaultModel": "claude-opus-4-6",
+  "defaultThinkingLevel": "high",
+  "theme": "nightowl",
+  "packages": [
+    "npm:pi-pirs",
+    "npm:pi-context",
+    "npm:@tintinweb/pi-subagents",
+    "npm:@tintinweb/pi-tasks"
+  ],
+  "doubleEscapeAction": "tree",
+  "pi-focus": {
+    "profiles": {
+      "coding": {
+        "description": "Dev tools — no session management, no agents",
+        "exclude": ["Agent", "get_subagent_result", "steer_subagent", "subagent", "TaskCreate", "TaskList", "TaskGet", "TaskUpdate", "TaskOutput", "TaskStop", "TaskExecute", "send_to_session", "list_sessions", "team_inspect"]
+      },
+      "minimal": {
+        "description": "Only read, write, edit, bash",
+        "include": ["read", "bash", "edit", "write"]
+      },
+      "all": {
+        "description": "Everything enabled"
+      }
+    },
+    "projects": {
+      "tailwindgallery": "coding",
+      "tailwindgallery.com": "coding"
+    }
+  }
+}
