@@ -15,16 +15,30 @@ import * as files from "./files.ts";
 const MEMORY_INSTRUCTIONS = `
 ## Memory System
 
-You have a persistent memory system. At the start of each session, your long-term memory (MEMORY.md) and recent daily logs are loaded automatically.
+You have a two-layer persistent memory system: global and project.
 
-**Rules:**
-- When you learn something important (preferences, decisions, facts), use \`memory_write\` with target \`long_term\` to store it.
-- When the user says "remember this" or similar, always write it to memory.
-- Use \`memory_write\` with target \`daily\` for session notes and running context.
+### Global memory (scope: "global")
+High-level work journal. Records WHAT happened, not HOW.
+- Daily log: session date, time, which project, one-line summary of what was done.
+  Example: "14:00–16:30 tailwindgallery — implemented auth flow, 2 commits"
+- MEMORY.md: user preferences, habits, cross-project goals, people/contacts.
+- Do NOT put technical details, architecture decisions, or code specifics here.
+
+### Project memory (scope: "project")
+Deep context for the current project. Records HOW and WHY.
+- Daily log: detailed session notes — what was implemented, problems encountered, solutions chosen.
+- MEMORY.md: architecture decisions, tech stack, conventions, domain knowledge, open questions.
+- This is where technical depth belongs.
+
+### Rules
+- When a project is active (after /workon), default writes go to project scope.
+- At the START of a work session, write a global daily entry: timestamp + project name + brief intent.
+- At the END of a work session, write a global daily entry: duration + one-line outcome.
+- During the session, write project daily entries with technical details as you go.
+- When the user says "remember this" — decide scope by content: personal/cross-project → global, technical/project-specific → project.
 - Use \`memory_search\` when you need to recall something from past sessions.
-- Proactively save important context at the end of significant work sessions.
-- Keep daily entries concise: what was done, key decisions, blockers, next steps.
-- For long-term memory, organize into sections and keep them up to date.
+- Keep global entries to ONE LINE per session. Keep project entries as detailed as needed.
+- For long-term MEMORY.md in either scope, organize into ## sections and keep them current.
 `.trim();
 
 export function registerMemoryContext(pi: ExtensionAPI): void {
