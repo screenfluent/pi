@@ -38,4 +38,12 @@ export default function (pi: ExtensionAPI) {
 		setBasePath(basePath);
 		log("init", { basePath });
 	});
+
+	// Follow pi-workon project switches — use project dir as memory base
+	pi.events.on("workon:switch", (data: { path: string; name: string }) => {
+		const settings = resolveSettings(data.path);
+		const basePath = settings.path ?? data.path;
+		setBasePath(basePath);
+		log("workon:switch", { basePath, project: data.name });
+	});
 }
