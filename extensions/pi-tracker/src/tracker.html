@@ -40,7 +40,7 @@ async function load() {
       reposEl.innerHTML = config.repos.map(r => `
         <div class="repo">
           <div class="repo-name">📦 ${r.name}</div>
-          <div class="repo-meta">Last checked: ${r.lastCheckedAt ? new Date(r.lastCheckedAt).toLocaleString() : r.lastCheckedCommit ? r.lastCheckedCommit.slice(0, 7) : 'never'}${r.lastCheckedCommit && r.lastCheckedAt ? ` <span style="color:#484f58" title="${r.lastCheckedCommit}">(${r.lastCheckedCommit.slice(0,7)})</span>` : ''}</div>
+          <div class="repo-meta">Last checked: ${r.lastCheckedAt ? new Date(r.lastCheckedAt).toLocaleString(undefined, {hour12: false}) : r.lastCheckedCommit ? r.lastCheckedCommit.slice(0, 7) : 'never'}${r.lastCheckedCommit && r.lastCheckedAt ? ` <span style="color:#484f58" title="${r.lastCheckedCommit}">(${r.lastCheckedCommit.slice(0,7)})</span>` : ''}</div>
           <div class="repo-interests">Interests: ${r.interests.join(', ')}</div>
         </div>
       `).join('');
