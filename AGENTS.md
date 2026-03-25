@@ -13,7 +13,8 @@ Symlinked to `~/.pi/agent/` — Pi loads this as global context.
 │   ├── pi-cron/         # Cron scheduler for recurring prompts
 │   ├── pi-channels/     # Telegram/Slack/webhook bridge
 │   ├── pi-webserver/    # Shared HTTP server for dashboards (port 4100)
-│   └── pi-tracker/      # External repo monitor with web dashboard
+│   ├── pi-tracker/      # External repo monitor with web dashboard
+│   └── pi-honcho-memory/ # Persistent memory via Honcho (search, chat, remember)
 ├── skills/
 ├── themes/
 ├── settings.json        # Global settings (repo version — no secrets)
