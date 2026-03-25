@@ -36,6 +36,8 @@ const setStatus = (
 
 export default function honcho(pi: ExtensionAPI): void {
   let initializing: Promise<void> | null = null;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let lastCtx: { ui: any; cwd: string } | null = null;
 
   // --- Register tools & commands (always, so they can show helpful errors if not connected) ---
   registerTools(pi);
@@ -71,6 +73,7 @@ export default function honcho(pi: ExtensionAPI): void {
   // --- Lifecycle events ---
 
   pi.on("session_start", (_event, ctx) => {
+    lastCtx = ctx;
     clearHandles();
     clearCachedMemory();
     backgroundInit(ctx);
@@ -88,6 +91,16 @@ export default function honcho(pi: ExtensionAPI): void {
     clearHandles();
     clearCachedMemory();
     backgroundInit(ctx);
+  });
+
+  // Re-bootstrap when pi-workon switches project (new cwd = new session key)
+  pi.events.on("workon:switch", (data: { path: string; name: string }) => {
+    if (!lastCtx) return;
+    flushPending().then(() => {
+      clearHandles();
+      clearCachedMemory();
+      backgroundInit({ ui: lastCtx!.ui, cwd: data.path });
+    }).catch(() => {});
   });
 
   // --- Prompt path: inject cached memory (0ms network) ---
