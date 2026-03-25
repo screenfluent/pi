@@ -62,14 +62,17 @@ git clone git@github.com:screenfluent/pi.git ~/90-99.system/91.pi-home
 
 # Symlink repo contents into ~/.pi/agent/ (preserves auth, sessions, bin)
 mkdir -p ~/.pi/agent
-for item in extensions skills themes AGENTS.md settings.json LICENSE; do
+for item in extensions skills themes AGENTS.md LICENSE; do
     src="$HOME/90-99.system/91.pi-home/$item"
     dst="$HOME/.pi/agent/$item"
     [ -e "$src" ] && rm -rf "$dst" && ln -s "$src" "$dst"
 done
+
+# Settings: LOCAL COPY (not symlink) — add secrets like pi-channels config here
+cp ~/90-99.system/91.pi-home/settings.json ~/.pi/agent/settings.json
 ```
 
-This approach keeps `~/.pi/agent/` as a real directory with Pi runtime files (`auth.json`, `sessions/`, `bin/`) while symlinking managed content from the repo.
+This approach keeps `~/.pi/agent/` as a real directory with Pi runtime files (`auth.json`, `sessions/`, `bin/`) while symlinking managed content from the repo. `settings.json` is a local copy because it contains secrets (e.g. Telegram `allowedChatIds`) that shouldn't be in the public repo. When repo settings change, manually sync non-secret parts to the local copy.
 
 ### VPS Directory Structure (Johnny Decimal)
 
