@@ -15,79 +15,60 @@ fi
 
 REPOS_DIR="$(dirname "$TRACKER_JSON")"
 
-# Read repo list from tracker.json
-REPOS=$(node -e "
+# Use node to iterate repos — avoids tab/delimiter parsing bugs
+node -e "
 const fs = require('fs');
+const path = require('path');
+const { execSync } = require('child_process');
+
 const cfg = JSON.parse(fs.readFileSync('$TRACKER_JSON', 'utf-8'));
-for (const r of cfg.repos) {
-    console.log([r.name, r.lastCheckedCommit || '', r.interests.join('|')].join('\t'));
+const reposDir = '$REPOS_DIR';
+const results = [];
+
+for (const repo of cfg.repos) {
+    const repoDir = path.join(reposDir, repo.name);
+    if (!fs.existsSync(path.join(repoDir, '.git'))) continue;
+
+    // Fetch
+    try { execSync('git fetch --quiet origin', { cwd: repoDir, timeout: 30000 }); } catch {}
+
+    // Get current HEAD of default branch
+    let currentCommit = '';
+    try {
+        const ref = execSync('git symbolic-ref refs/remotes/origin/HEAD', { cwd: repoDir, encoding: 'utf-8' }).trim();
+        const branch = ref.replace('refs/remotes/origin/', '');
+        currentCommit = execSync('git rev-parse origin/' + branch, { cwd: repoDir, encoding: 'utf-8' }).trim();
+    } catch {
+        try { currentCommit = execSync('git rev-parse origin/main', { cwd: repoDir, encoding: 'utf-8' }).trim(); } catch {}
+    }
+
+    if (!currentCommit) continue;
+
+    const lastCommit = repo.lastCheckedCommit || '';
+    const result = {
+        name: repo.name,
+        interests: repo.interests || [],
+        lastCommit,
+        currentCommit,
+        hasChanges: false,
+        diffStat: '',
+        log: '',
+        filesChanged: []
+    };
+
+    if (lastCommit && lastCommit !== currentCommit) {
+        result.hasChanges = true;
+        const range = lastCommit + '..' + currentCommit;
+        try { result.diffStat = execSync('git diff --stat ' + range, { cwd: repoDir, encoding: 'utf-8', timeout: 10000 }).trim().split('\\n').pop() || ''; } catch {}
+        try { result.log = execSync('git log --oneline --no-merges ' + range, { cwd: repoDir, encoding: 'utf-8', timeout: 10000 }).trim(); } catch {}
+        try { result.filesChanged = execSync('git diff --name-only ' + range, { cwd: repoDir, encoding: 'utf-8', timeout: 10000 }).trim().split('\\n').filter(Boolean); } catch {}
+    } else if (!lastCommit) {
+        // First run — no baseline yet
+        result.hasChanges = false;
+    }
+
+    results.push(result);
 }
-")
 
-echo "["
-FIRST=true
-
-while IFS=$'\t' read -r NAME LAST_COMMIT INTERESTS; do
-    REPO_DIR="$REPOS_DIR/$NAME"
-
-    if [ ! -d "$REPO_DIR/.git" ]; then
-        continue
-    fi
-
-    cd "$REPO_DIR"
-
-    # Fetch latest
-    git fetch --quiet origin 2>/dev/null || true
-
-    # Get current HEAD of default branch
-    DEFAULT_BRANCH=$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null | sed 's@^refs/remotes/origin/@@' || echo "main")
-    CURRENT_COMMIT=$(git rev-parse "origin/$DEFAULT_BRANCH" 2>/dev/null || git rev-parse origin/main 2>/dev/null || echo "")
-
-    if [ -z "$CURRENT_COMMIT" ]; then
-        continue
-    fi
-
-    # If no previous commit, just record current
-    if [ -z "$LAST_COMMIT" ]; then
-        DIFF_STAT=""
-        LOG=""
-        FILES_CHANGED=""
-        HAS_CHANGES="false"
-    elif [ "$LAST_COMMIT" = "$CURRENT_COMMIT" ]; then
-        DIFF_STAT=""
-        LOG=""
-        FILES_CHANGED=""
-        HAS_CHANGES="false"
-    else
-        DIFF_STAT=$(git diff --stat "$LAST_COMMIT".."$CURRENT_COMMIT" 2>/dev/null | tail -1 || echo "")
-        LOG=$(git log --oneline --no-merges "$LAST_COMMIT".."$CURRENT_COMMIT" 2>/dev/null | head -30 || echo "")
-        FILES_CHANGED=$(git diff --name-only "$LAST_COMMIT".."$CURRENT_COMMIT" 2>/dev/null | head -50 || echo "")
-        HAS_CHANGES="true"
-    fi
-
-    # Output as JSON
-    if [ "$FIRST" = "true" ]; then
-        FIRST=false
-    else
-        echo ","
-    fi
-
-    node -e "
-const obj = {
-    name: '$NAME',
-    hasChanges: $HAS_CHANGES,
-    lastCommit: '$LAST_COMMIT',
-    currentCommit: '$CURRENT_COMMIT',
-    interests: $(node -e "console.log(JSON.stringify('$INTERESTS'.split('|')))"),
-    diffStat: $(node -e "console.log(JSON.stringify(\`$DIFF_STAT\`))"),
-    log: $(node -e "console.log(JSON.stringify(\`$LOG\`))"),
-    filesChanged: $(node -e "console.log(JSON.stringify(\`$FILES_CHANGED\`.split('\n').filter(Boolean)))")
-};
-process.stdout.write(JSON.stringify(obj, null, 2));
+console.log(JSON.stringify(results, null, 2));
 "
-
-    cd "$REPOS_DIR"
-done <<< "$REPOS"
-
-echo ""
-echo "]"
