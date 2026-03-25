@@ -27,7 +27,6 @@ import { registerWorkonTool, registerProjectInitTool, buildProjectContext } from
 import { resolveSettings } from "./settings.ts";
 import { resolveProject, listProjectDirs } from "./resolver.ts";
 import { createLogger } from "./logger.ts";
-import { expandHome } from "./settings.ts";
 
 export { getActiveProject } from "./tool.ts";
 export { detectStack, type ProjectProfile } from "./detector.ts";
@@ -35,66 +34,55 @@ export { resolveProject, type ResolvedProject } from "./resolver.ts";
 
 export default function (pi: ExtensionAPI) {
 	const log = createLogger(pi);
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	let lastCtx: any = null;
 
-	const shortPath = (p: string) => p.replace(/^\/home\/[^/]+/, "~");
+	// Cache latest ctx for use in event listeners (set on session_start, updated on slash commands)
+	let ctx: { ui: { setStatus: Function; notify: Function; theme: any }; cwd: string } | null = null;
 
-	// Update status bar on project switch — registered once, outside session_start
+	// Status bar: show current location, update on project switch
 	pi.events.on("workon:switch", (data: { path: string; name: string }) => {
-		if (lastCtx) {
-			lastCtx.ui.setStatus("workon", lastCtx.ui.theme.fg("accent", `📂 ${data.name}`));
-		}
+		ctx?.ui.setStatus("workon", ctx.ui.theme.fg("accent", `📂 ${data.name}`));
 	});
 
-	pi.on("session_start", async (_event, ctx) => {
-		lastCtx = ctx;
-		const settings = resolveSettings(ctx.cwd);
+	pi.on("session_start", async (_event, sessionCtx) => {
+		ctx = sessionCtx;
+		const settings = resolveSettings(sessionCtx.cwd);
 
-		// Register tools
 		registerWorkonTool(pi, settings);
 		registerProjectInitTool(pi, settings);
 
-		// Register /workon slash command for quick switching
 		pi.registerCommand("workon", {
 			description: "Switch to a project: /workon <name|alias|path>",
+
 			getArgumentCompletions: (prefix: string) => {
-				const entries = listProjectDirs(settings.devDirs);
-				const names = entries.map((e) => e.name);
-
-				// Include aliases
-				const aliasNames = Object.keys(settings.aliases);
-				const all = [...new Set([...names, ...aliasNames])];
-
-				return all
+				const dirs = listProjectDirs(settings.devDirs).map((e) => e.name);
+				const aliases = Object.keys(settings.aliases);
+				return [...new Set([...dirs, ...aliases])]
 					.filter((n) => n.toLowerCase().startsWith(prefix.toLowerCase()))
 					.map((n) => ({ value: n, label: n }));
 			},
-			handler: async (args, ctx) => {
+
+			handler: async (args, cmdCtx) => {
 				const project = args?.trim();
 				if (!project) {
-					ctx.ui.notify("Usage: /workon <project-name>", "info");
+					cmdCtx.ui.notify("Usage: /workon <project-name>", "info");
 					return;
 				}
 
-				const settings = resolveSettings(ctx.cwd);
 				const resolution = resolveProject(project, settings.devDirs, settings.aliases);
 				if ("error" in resolution) {
-					ctx.ui.notify(resolution.error, "error");
+					cmdCtx.ui.notify(resolution.error, "error");
 					return;
 				}
 
-				const projectPath = resolution.resolved.path;
-				ctx.ui.notify(`Switching to ${resolution.resolved.name}…`, "info");
-
-				// Build context and inject as system message
-				const context = await buildProjectContext(projectPath, pi, settings);
+				cmdCtx.ui.notify(`Switching to ${resolution.resolved.name}…`, "info");
+				const context = await buildProjectContext(resolution.resolved.path, pi, settings);
 				pi.sendUserMessage(context, { deliverAs: "followUp" });
 			},
 		});
 
-		// Show current directory in status bar on start
-		ctx.ui.setStatus("workon", ctx.ui.theme.fg("accent", `📂 ${shortPath(ctx.cwd)}`));
+		// Show cwd on startup (shortened: /home/user → ~)
+		const cwd = sessionCtx.cwd.replace(/^\/home\/[^/]+/, "~");
+		sessionCtx.ui.setStatus("workon", sessionCtx.ui.theme.fg("accent", `📂 ${cwd}`));
 
 		log("init", { devDirs: settings.devDirs, aliasCount: Object.keys(settings.aliases).length });
 	});
