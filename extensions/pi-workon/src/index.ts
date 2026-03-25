@@ -71,7 +71,11 @@ export default function (pi: ExtensionAPI) {
 			},
 		});
 
-		// Show project name in status bar on switch
+		// Show current directory in status bar
+		const shortPath = (p: string) => p.replace(/^\/home\/[^/]+/, "~");
+		ctx.ui.setStatus("workon", ctx.ui.theme.fg("accent", `📂 ${shortPath(ctx.cwd)}`));
+
+		// Update on project switch
 		pi.events.on("workon:switch", (data: { path: string; name: string }) => {
 			ctx.ui.setStatus("workon", ctx.ui.theme.fg("accent", `📂 ${data.name}`));
 		});
