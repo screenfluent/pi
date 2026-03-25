@@ -71,6 +71,11 @@ export default function (pi: ExtensionAPI) {
 			},
 		});
 
+		// Show project name in status bar on switch
+		pi.events.on("workon:switch", (data: { path: string; name: string }) => {
+			ctx.ui.setStatus("workon", ctx.ui.theme.fg("accent", `📂 ${data.name}`));
+		});
+
 		log("init", { devDirs: settings.devDirs, aliasCount: Object.keys(settings.aliases).length });
 	});
 }
