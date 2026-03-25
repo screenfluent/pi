@@ -28,23 +28,28 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 |-----------|--------|-------------|
 | [**pi-focus**](extensions/pi-focus/) | Generated from scratch by Claude Opus 4.6 High | Toggle tool visibility per session using named profiles |
 | [**pi-workon**](extensions/pi-workon/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Project context switching — load AGENTS.md, git status, detect tech stacks |
-| [**pi-memory**](extensions/pi-memory/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Persistent memory — long-term facts, daily logs, full-text search |
+| [**pi-memory**](extensions/pi-memory/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Persistent memory — long-term facts, daily logs, full-text search (modified: two-layer global+project) |
 | [**pi-cron**](extensions/pi-cron/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Cron scheduler — recurring prompts as isolated pi -p subprocesses |
 | [**pi-channels**](extensions/pi-channels/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Two-way messaging — Telegram, Slack, webhooks |
-
-### Planned (from espennilsen/pi)
-
-| Extension | Description |
-|-----------|-------------|
-| **pi-projects** | Project tracking dashboard with git status |
-| **pi-kysely** | Shared database registry with table-level RBAC |
-| **pi-webserver** | Shared HTTP server with auth for web extensions |
-| **pi-logger** | Centralized structured JSONL logging |
-| **pi-memory** | Persistent long-term memory, daily logs, search |
-| **pi-td** | Task management with web dashboard |
-| **pi-calendar** | Calendar with reminders and web dashboard |
-| **pi-personal-crm** | Contacts, companies, interactions |
-| **pi-myfinance** | Personal finance tracking |
+| [**pi-kysely**](extensions/pi-kysely/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Shared database registry with table-level RBAC |
+| [**pi-webserver**](extensions/pi-webserver/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Shared HTTP server with auth for web extensions |
+| [**pi-logger**](extensions/pi-logger/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Centralized structured JSONL logging |
+| [**pi-projects**](extensions/pi-projects/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Project tracking dashboard with git status |
+| [**pi-td**](extensions/pi-td/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Task management with web dashboard |
+| [**pi-calendar**](extensions/pi-calendar/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Calendar with reminders and web dashboard |
+| [**pi-personal-crm**](extensions/pi-personal-crm/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Contacts, companies, interactions |
+| [**pi-myfinance**](extensions/pi-myfinance/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Personal finance tracking |
+| [**pi-heartbeat**](extensions/pi-heartbeat/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Periodic health checks with alerts |
+| [**pi-jobs**](extensions/pi-jobs/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Agent run telemetry and cost tracking |
+| [**pi-github**](extensions/pi-github/) | [espennilsen/pi](https://github.com/espennilsen/pi) | GitHub PR management, issues, CI |
+| [**pi-subagent**](extensions/pi-subagent/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Parallel task delegation via isolated subprocesses |
+| [**pi-telemetry**](extensions/pi-telemetry/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Local-only privacy-safe event telemetry |
+| [**pi-web-dashboard**](extensions/pi-web-dashboard/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Web dashboard landing page |
+| [**pi-webnav**](extensions/pi-webnav/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Web navigation and scraping |
+| [**pi-npm**](extensions/pi-npm/) | [espennilsen/pi](https://github.com/espennilsen/pi) | NPM workflow tool |
+| [**pi-vault**](extensions/pi-vault/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Obsidian vault integration |
+| [**pi-model-router**](extensions/pi-model-router/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Automatic model routing based on task |
+| [**pi-brave-search**](extensions/pi-brave-search/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Web search via Brave API |
 
 ## Setup
 
