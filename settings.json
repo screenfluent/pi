@@ -15,6 +15,13 @@
     "autostart": true,
     "port": 4100
   },
+  "pi-workon": {
+    "devDirs": ["~/30-39.projects"],
+    "aliases": {
+      "blog": "31.szymonraczka.com",
+      "pi": "~/90-99.system/91.pi-home"
+    }
+  },
   "pi-focus": {
     "profiles": {
       "all": {
