@@ -342,7 +342,7 @@ async function getAgentsMdStaleness(dir: string): Promise<string | null> {
 
 // ── Context builder ─────────────────────────────────────────────
 
-async function buildProjectContext(
+export async function buildProjectContext(
 	projectPath: string,
 	pi: ExtensionAPI,
 	settings: WorkonSettings,

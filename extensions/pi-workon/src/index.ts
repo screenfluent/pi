@@ -23,10 +23,11 @@
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
-import { registerWorkonTool, registerProjectInitTool } from "./tool.ts";
+import { registerWorkonTool, registerProjectInitTool, buildProjectContext } from "./tool.ts";
 import { resolveSettings } from "./settings.ts";
 import { resolveProject, listProjectDirs } from "./resolver.ts";
 import { createLogger } from "./logger.ts";
+import { expandHome } from "./settings.ts";
 
 export { getActiveProject } from "./tool.ts";
 export { detectStack, type ProjectProfile } from "./detector.ts";
@@ -42,7 +43,11 @@ export default function (pi: ExtensionAPI) {
 	// Update status bar on project switch — registered once, outside session_start
 	pi.events.on("workon:switch", (data: { path: string; name: string }) => {
 		if (lastCtx) {
+			lastCtx.ui.notify(`workon:switch → ${data.name} (${data.path})`, "info");
 			lastCtx.ui.setStatus("workon", lastCtx.ui.theme.fg("accent", `📂 ${data.name}`));
+		} else {
+			// Debug: no ctx
+			pi.events.emit("log", { msg: "workon:switch but no lastCtx" });
 		}
 	});
 
@@ -76,10 +81,19 @@ export default function (pi: ExtensionAPI) {
 					return;
 				}
 
-				ctx.ui.notify(`Switching to ${project}…`, "info");
+				const settings = resolveSettings(ctx.cwd);
+				const resolution = resolveProject(project, settings.devDirs, settings.aliases);
+				if ("error" in resolution) {
+					ctx.ui.notify(resolution.error, "error");
+					return;
+				}
 
-				// Use sendUserMessage to trigger the workon tool via the agent
-				pi.sendUserMessage(`/workon ${project}`, { deliverAs: "followUp" });
+				const projectPath = resolution.resolved.path;
+				ctx.ui.notify(`Switching to ${resolution.resolved.name}…`, "info");
+
+				// Build context and inject as system message
+				const context = await buildProjectContext(projectPath, pi, settings);
+				pi.sendUserMessage(context, { deliverAs: "followUp" });
 			},
 		});
 
