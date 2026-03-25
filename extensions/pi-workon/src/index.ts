@@ -34,8 +34,20 @@ export { resolveProject, type ResolvedProject } from "./resolver.ts";
 
 export default function (pi: ExtensionAPI) {
 	const log = createLogger(pi);
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	let lastCtx: any = null;
+
+	const shortPath = (p: string) => p.replace(/^\/home\/[^/]+/, "~");
+
+	// Update status bar on project switch — registered once, outside session_start
+	pi.events.on("workon:switch", (data: { path: string; name: string }) => {
+		if (lastCtx) {
+			lastCtx.ui.setStatus("workon", lastCtx.ui.theme.fg("accent", `📂 ${data.name}`));
+		}
+	});
 
 	pi.on("session_start", async (_event, ctx) => {
+		lastCtx = ctx;
 		const settings = resolveSettings(ctx.cwd);
 
 		// Register tools
@@ -71,14 +83,8 @@ export default function (pi: ExtensionAPI) {
 			},
 		});
 
-		// Show current directory in status bar
-		const shortPath = (p: string) => p.replace(/^\/home\/[^/]+/, "~");
+		// Show current directory in status bar on start
 		ctx.ui.setStatus("workon", ctx.ui.theme.fg("accent", `📂 ${shortPath(ctx.cwd)}`));
-
-		// Update on project switch
-		pi.events.on("workon:switch", (data: { path: string; name: string }) => {
-			ctx.ui.setStatus("workon", ctx.ui.theme.fg("accent", `📂 ${data.name}`));
-		});
 
 		log("init", { devDirs: settings.devDirs, aliasCount: Object.keys(settings.aliases).length });
 	});
