@@ -43,11 +43,7 @@ export default function (pi: ExtensionAPI) {
 	// Update status bar on project switch — registered once, outside session_start
 	pi.events.on("workon:switch", (data: { path: string; name: string }) => {
 		if (lastCtx) {
-			lastCtx.ui.notify(`workon:switch → ${data.name} (${data.path})`, "info");
 			lastCtx.ui.setStatus("workon", lastCtx.ui.theme.fg("accent", `📂 ${data.name}`));
-		} else {
-			// Debug: no ctx
-			pi.events.emit("log", { msg: "workon:switch but no lastCtx" });
 		}
 	});
 
