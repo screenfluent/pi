@@ -111,13 +111,13 @@ export function registerMemoryTools(pi: ExtensionAPI): void {
 
 			if (params.section) {
 				const pattern = new RegExp(
-					`(## ${escapeRegex(params.section)}\\n)([\\s\\S]*?)(?=\\n## |$)`,
+					`## ${escapeRegex(params.section)}\\n(?:(?!\\n## )[\\s\\S])*`,
 					"m",
 				);
 				const match = existing.match(pattern);
 
 				if (match) {
-					const updated = existing.replace(pattern, (_, header) => `${header}\n${params.content}\n`);
+					const updated = existing.replace(pattern, `## ${params.section}\n${params.content}\n`);
 					files.writeFile(fp, updated);
 					return text(`✓ Updated section "${params.section}" in ${scopeLabel} MEMORY.md`);
 				} else {
