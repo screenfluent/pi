@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Extension Tracker</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; padding: 2rem; }
+h1 { color: #58a6ff; margin-bottom: 1.5rem; }
+.repos { display: grid; gap: 1rem; margin-bottom: 2rem; }
+.repo { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1rem; }
+.repo-name { color: #58a6ff; font-weight: 600; font-size: 1.1rem; }
+.repo-meta { color: #8b949e; font-size: 0.85rem; margin-top: 0.25rem; }
+.repo-interests { color: #8b949e; font-size: 0.8rem; margin-top: 0.5rem; font-style: italic; }
+h2 { color: #58a6ff; margin: 1.5rem 0 1rem; }
+.report { background: #161b22; border: 1px solid #30363d; border-radius: 8px; padding: 1.5rem; margin-bottom: 1rem; white-space: pre-wrap; font-size: 0.9rem; line-height: 1.5; }
+.report-date { color: #58a6ff; font-weight: 600; margin-bottom: 0.5rem; }
+.empty { color: #8b949e; font-style: italic; }
+</style>
+</head>
+<body>
+<h1>🔍 Extension Tracker</h1>
+<div id="repos" class="repos"></div>
+<h2>Reports</h2>
+<div id="reports"></div>
+
+<script>
+async function load() {
+  try {
+    const [configRes, reportsRes] = await Promise.all([
+      fetch('/api/tracker'),
+      fetch('/api/tracker/reports')
+    ]);
+    const config = await configRes.json();
+    const reports = await reportsRes.json();
+
+    const reposEl = document.getElementById('repos');
+    if (config.repos && config.repos.length > 0) {
+      reposEl.innerHTML = config.repos.map(r => `
+        <div class="repo">
+          <div class="repo-name">📦 ${r.name}</div>
+          <div class="repo-meta">Last checked: ${r.lastCheckedCommit ? r.lastCheckedCommit.slice(0, 7) : 'never'}</div>
+          <div class="repo-interests">Interests: ${r.interests.join(', ')}</div>
+        </div>
+      `).join('');
+    } else {
+      reposEl.innerHTML = '<div class="empty">No repos tracked yet</div>';
+    }
+
+    const reportsEl = document.getElementById('reports');
+    if (reports.length > 0) {
+      reportsEl.innerHTML = reports.map(r => `
+        <div class="report">
+          <div class="report-date">${r.date}</div>
+          ${r.content}
+        </div>
+      `).join('');
+    } else {
+      reportsEl.innerHTML = '<div class="empty">No reports yet. Run /tracker run to generate one.</div>';
+    }
+  } catch (e) {
+    document.getElementById('repos').innerHTML = '<div class="empty">Failed to load: ' + e.message + '</div>';
+  }
+}
+load();
+</script>
+</body>
+</html>
