@@ -5,6 +5,16 @@
   "defaultThinkingLevel": "high",
   "theme": "nightowl",
   "doubleEscapeAction": "tree",
+  "pi-memory": {
+    "path": "~/10-19.life/11.command-center"
+  },
+  "pi-cron": {
+    "autostart": true
+  },
+  "pi-webserver": {
+    "autostart": true,
+    "port": 4100
+  },
   "pi-focus": {
     "profiles": {
       "all": {
