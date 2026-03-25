@@ -15,8 +15,13 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 ```
 ├── extensions/          # Pi extensions (each has own README.md)
 │   ├── pi-focus/        # Tool visibility profiles per session
+│   ├── pi-memory/       # Two-layer persistent memory (global + project)
+│   ├── pi-workon/       # Project context switching
+│   ├── pi-cron/         # Cron scheduler for recurring prompts
+│   ├── pi-channels/     # Telegram/Slack/webhook bridge
+│   ├── pi-webserver/    # Shared HTTP server for dashboards
 │   ├── pi-tracker/      # Extension repository monitor
-│   └── ...
+│   └── pi-honcho-memory/ # Persistent memory via Honcho
 ├── skills/              # Custom skills
 ├── themes/              # TUI themes
 ├── settings.json        # Global Pi settings
@@ -34,6 +39,7 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 | [**pi-cron**](extensions/pi-cron/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Cron scheduler — recurring prompts as isolated pi -p subprocesses |
 | [**pi-channels**](extensions/pi-channels/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Two-way messaging — Telegram, Slack, webhooks |
 | [**pi-webserver**](extensions/pi-webserver/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Shared HTTP server with auth for web extensions |
+| [**pi-honcho-memory**](extensions/pi-honcho-memory/) | [agneym/pi-honcho-memory](https://github.com/agneym/pi-honcho-memory) | Persistent memory via Honcho — auto-learns from conversations, search, chat, remember |
 
 ### Planned (from espennilsen/pi)
 
@@ -83,8 +89,7 @@ This approach keeps `~/.pi/agent/` as a real directory with Pi runtime files (`a
 │   └── 12.finances/
 │
 ├── 30-39.projects/
-│   ├── 31.tailwindgallery/
-│   └── 32.bookmark-hq/
+│   └── 31.szymonraczka.com/
 │
 ├── 90-99.system/
 │   ├── 91.pi-home/ → ~/.pi/agent   # This repo
@@ -93,7 +98,8 @@ This approach keeps `~/.pi/agent/` as a real directory with Pi runtime files (`a
 │       ├── reports/
 │       ├── espennilsen-pi/
 │       ├── pi-guardrails/
-│       └── agent-stuff/
+│       ├── agent-stuff/
+│       └── pi-honcho-memory/
 ```
 
 ## License
