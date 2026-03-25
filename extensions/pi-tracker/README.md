@@ -31,7 +31,8 @@ Generated from scratch by Claude Opus 4.6 High.
       "name": "espennilsen-pi",
       "url": "https://github.com/espennilsen/pi.git",
       "interests": ["extensions I use: pi-workon, pi-memory"],
-      "lastCheckedCommit": ""
+      "lastCheckedCommit": "",
+      "lastCheckedAt": ""
     }
   ]
 }
