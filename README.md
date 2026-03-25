@@ -85,8 +85,7 @@ This approach keeps `~/.pi/agent/` as a real directory with Pi runtime files (`a
 ```
 ~/
 ├── 10-19.life/
-│   ├── 11.command-center/       # High-level planning, life management
-│   └── 12.finances/
+│   └── 11.command-center/       # Global memory (MEMORY.md + daily logs)
 │
 ├── 30-39.projects/
 │   └── 31.szymonraczka.com/
