@@ -14,11 +14,12 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 
 ```
 ├── extensions/          # Pi extensions (each has own README.md)
-│   └── pi-focus/        # Tool visibility profiles per session
+│   ├── pi-focus/        # Tool visibility profiles per session
+│   ├── pi-tracker/      # Extension repository monitor
+│   └── ...
 ├── skills/              # Custom skills
 ├── themes/              # TUI themes
 ├── settings.json        # Global Pi settings
-├── models.json          # Custom model config
 └── AGENTS.md            # Global agent instructions
 ```
 
@@ -27,20 +28,20 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 | Extension | Origin | Description |
 |-----------|--------|-------------|
 | [**pi-focus**](extensions/pi-focus/) | Generated from scratch by Claude Opus 4.6 High | Toggle tool visibility per session using named profiles |
+| [**pi-tracker**](extensions/pi-tracker/) | Generated from scratch by Claude Opus 4.6 High | Extension repo monitor — daily fetch, AI analysis, web dashboard |
 | [**pi-workon**](extensions/pi-workon/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Project context switching — load AGENTS.md, git status, detect tech stacks |
-| [**pi-memory**](extensions/pi-memory/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Persistent memory — long-term facts, daily logs, full-text search |
+| [**pi-memory**](extensions/pi-memory/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Persistent memory — two-layer (global + project), daily logs, search |
 | [**pi-cron**](extensions/pi-cron/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Cron scheduler — recurring prompts as isolated pi -p subprocesses |
 | [**pi-channels**](extensions/pi-channels/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Two-way messaging — Telegram, Slack, webhooks |
+| [**pi-webserver**](extensions/pi-webserver/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Shared HTTP server with auth for web extensions |
 
 ### Planned (from espennilsen/pi)
 
 | Extension | Description |
 |-----------|-------------|
-| **pi-projects** | Project tracking dashboard with git status |
 | **pi-kysely** | Shared database registry with table-level RBAC |
-| **pi-webserver** | Shared HTTP server with auth for web extensions |
 | **pi-logger** | Centralized structured JSONL logging |
-| **pi-memory** | Persistent long-term memory, daily logs, search |
+| **pi-projects** | Project tracking dashboard with git status |
 | **pi-td** | Task management with web dashboard |
 | **pi-calendar** | Calendar with reminders and web dashboard |
 | **pi-personal-crm** | Contacts, companies, interactions |
@@ -82,8 +83,14 @@ This approach keeps `~/.pi/agent/` as a real directory with Pi runtime files (`a
 │   ├── 31.tailwindgallery/
 │   └── 32.bookmark-hq/
 │
-└── 90-99.system/
-    └── 91.pi-home/ → ~/.pi/agent   # This repo
+├── 90-99.system/
+│   ├── 91.pi-home/ → ~/.pi/agent   # This repo
+│   └── 92.tracked-repos/            # Cloned repos monitored by pi-tracker
+│       ├── tracker.json
+│       ├── reports/
+│       ├── espennilsen-pi/
+│       ├── pi-guardrails/
+│       └── agent-stuff/
 ```
 
 ## License
