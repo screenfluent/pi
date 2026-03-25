@@ -104,7 +104,7 @@ export default function (pi: ExtensionAPI) {
 
 		pi.events.emit("web:mount-api", {
 			name: "tracker-api",
-			prefix: "/api/tracker",
+			prefix: "/tracker",
 			handler: (req: any, res: any) => {
 				res.writeHead(200, { "Content-Type": "application/json" });
 

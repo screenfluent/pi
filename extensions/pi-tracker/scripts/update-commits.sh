@@ -21,6 +21,7 @@ for (const repo of cfg.repos) {
     try {
         const commit = execSync('git rev-parse HEAD', { cwd: repoDir, encoding: 'utf-8' }).trim();
         repo.lastCheckedCommit = commit;
+        repo.lastCheckedAt = new Date().toISOString();
     } catch {}
 }
 
