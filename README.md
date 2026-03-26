@@ -89,6 +89,9 @@ This approach keeps `~/.pi/agent/` as a real directory with Pi runtime files (`a
 ├── 10-19.life/
 │   └── 11.command-center/       # Global memory (MEMORY.md + daily logs)
 │
+├── 20-29.knowledge/
+│   └── 21.vault/                # Obsidian vault (PARA, managed by pi-vault)
+│
 ├── 30-39.projects/
 │   └── 31.szymonraczka.com/
 │

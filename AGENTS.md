@@ -39,6 +39,7 @@ Symlinked to `~/.pi/agent/` — Pi loads this as global context.
 
 ```
 ~/10-19.life/11.command-center/    # Global memory (MEMORY.md + daily logs)
+~/20-29.knowledge/21.vault/        # Obsidian vault (PARA structure, managed by pi-vault)
 ~/30-39.projects/                  # Project workspaces
 ~/90-99.system/91.pi-home/         # This repo
 ~/90-99.system/92.tracked-repos/   # Repos monitored by pi-tracker
@@ -47,6 +48,7 @@ Symlinked to `~/.pi/agent/` — Pi loads this as global context.
 ## Key Data Paths
 
 - Global memory: `~/10-19.life/11.command-center/`
+- Obsidian vault: `~/20-29.knowledge/21.vault/`
 - Tracker config: `~/90-99.system/92.tracked-repos/tracker.json`
 - Tracker reports: `~/90-99.system/92.tracked-repos/reports/`
 - Web dashboard: `http://localhost:4100` (/cron, /tracker, /vault)
