@@ -9,10 +9,9 @@
  * Config in settings.json under "pi-vault":
  * {
  *   "pi-vault": {
- *     "vaultPath": "~/Library/CloudStorage/.../Obsidian/e9n",
- *     "vaultName": "e9n",
- *     "apiUrl": "http://127.0.0.1:27123",
- *     "apiKey": "your-obsidian-api-key"
+ *     "vaultPath": "~/path/to/vault",
+ *     "vaultName": "vault",
+ *     "apiUrl": "http://127.0.0.1:27123"
  *   }
  * }
  *

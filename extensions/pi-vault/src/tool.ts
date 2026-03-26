@@ -22,7 +22,7 @@
  *   - commands           — List or execute Obsidian commands (API-only)
  *   - document_map       — Get headings/blocks/frontmatter fields for PATCH targeting (API → fs fallback)
  *
- * Config via settings.json under "pi-vault" (vaultPath, apiUrl, apiKey)
+ * Config via settings.json under "pi-vault" (vaultPath, vaultName, apiUrl)
  */
 
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
@@ -117,7 +117,7 @@ export function registerObsidianTool(pi: ExtensionAPI, config: VaultConfig): voi
 		parameters: Type.Object({
 			action: StringEnum(ALL_ACTIONS, { description: "Operation to perform" }),
 			path: Type.Optional(Type.String({
-				description: "Path relative to vault root (e.g. '1. Projects/AI Projects/Pi (Hannah).md')",
+				description: "Path relative to vault root (e.g. '1. Projects/My Project.md')",
 			})),
 			content: Type.Optional(Type.String({
 				description: "Content for write/append/patch/daily, DQL query for dataview, JsonLogic JSON for search_jsonlogic",
@@ -797,34 +797,19 @@ tags:
 
 # 📅 ${formatDailyDate(date)}
 
-## 🎯 Habits Tracker
-- [ ] Morning meditation
-- [ ] Exercise 
-- [ ] Language study (Thai/Spanish/Russian)
-- [ ] Reading (30 min)
-- [ ] No phone first 30 min
-- [ ] Evening reflection
-- [ ] Gratitude practice
-
-## 📍 Top 3 Priorities
+## 🎯 Top 3 Priorities
 1. ${params.content ? params.content.split("\n")[0] || "" : ""}
 2. 
 3. 
 
-## 📚 Learning
-**Thai:** ___ minutes
-**Spanish:** ___ minutes  
-**Course Progress:**
+## 📝 Notes
 
 ## 💭 End of Day
 **Best Thing Today:** 
 **Tomorrow's #1 Priority:** 
-**Grateful For:** 
 
 ---
-## 🔄 Links
 ← [[${yesterday}|Yesterday]] | [[${tomorrow}|Tomorrow]] →
-[[Weekly Review|Week Review]]
 `;
 					ensureDir(path.dirname(notePath));
 					fs.writeFileSync(notePath, dailyContent, "utf-8");
