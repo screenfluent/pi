@@ -1,13 +1,15 @@
-# @e9n/pi-vault
+# pi-vault
 
 Obsidian vault integration for [pi](https://github.com/badlogic/pi-mono) — read, write, search, and manage notes with a 16-action tool and a web health dashboard.
+
+Based on [@e9n/pi-vault](https://github.com/espennilsen/pi) by Espen Nilsen. Modified for filesystem-only usage on a headless VPS (no Obsidian desktop, no REST API).
 
 ## Features
 
 - **`obsidian` tool** — read, write, append, patch, search, daily notes, templates, frontmatter, and more
-- **API-first with filesystem fallback** — uses the Obsidian Local REST API when running, falls back to the filesystem otherwise
+- **Filesystem-first** — works directly on Markdown files, no Obsidian app required
+- **REST API support** — optional, for environments with Obsidian Local REST API running
 - **Web dashboard** at `/vault` — daily note streak, project health, task breakdown, tag usage, recent activity
-- **Deep links** — click notes and tags to open directly in Obsidian
 
 ## Settings
 
@@ -16,14 +18,21 @@ Add to `~/.pi/agent/settings.json` or `.pi/settings.json`:
 ```json
 {
   "pi-vault": {
-    "vaultPath": "~/Library/CloudStorage/.../Obsidian/MyVault",
-    "vaultName": "MyVault",
-    "apiUrl": "http://127.0.0.1:27123"
+    "vaultPath": "~/20-29.knowledge/21.vault",
+    "vaultName": "vault"
   }
 }
 ```
 
-Set the API key as an environment variable:
+Optional (only if Obsidian REST API is available):
+
+```json
+{
+  "pi-vault": {
+    "apiUrl": "http://127.0.0.1:27123"
+  }
+}
+```
 
 ```bash
 export OBSIDIAN_API_KEY="your-api-key-here"
@@ -32,9 +41,9 @@ export OBSIDIAN_API_KEY="your-api-key-here"
 | Setting | Required | Default | Description |
 |---------|----------|---------|-------------|
 | `vaultPath` | Yes | — | Path to vault root (`~` expansion supported) |
-| `vaultName` | No | basename of `vaultPath` | Vault name for `obsidian://` deep links |
+| `vaultName` | No | basename of `vaultPath` | Vault name for deep links |
 | `apiUrl` | No | `http://127.0.0.1:27123` | Obsidian Local REST API URL |
-| `OBSIDIAN_API_KEY` (env) | Yes (for API) | — | API key for Obsidian Local REST API plugin |
+| `OBSIDIAN_API_KEY` (env) | No | — | API key (only needed with REST API) |
 
 ## Tool: `obsidian`
 
@@ -59,13 +68,7 @@ export OBSIDIAN_API_KEY="your-api-key-here"
 
 ## Web UI
 
-Start the web server with `/web`, then open `http://localhost:4100/vault`. Requires [pi-webserver](../pi-webserver).
-
-## Install
-
-```bash
-pi install npm:@e9n/pi-vault
-```
+Dashboard at `http://localhost:4100/vault`. Requires [pi-webserver](../pi-webserver).
 
 ## License
 
