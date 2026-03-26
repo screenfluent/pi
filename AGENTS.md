@@ -18,7 +18,8 @@ Symlinked to `~/.pi/agent/` — Pi loads this as global context.
 │   ├── pi-vault/        # Obsidian vault integration (read, write, search, dashboard)
 │   ├── pi-telemetry/    # Session event logging (JSONL)
 │   ├── pi-jobs/         # Agent run tracking — tokens, costs, duration, web dashboard
-│   └── pi-subagent/     # Isolated subagent subprocesses (single, parallel, chain, pool)
+│   ├── pi-subagent/     # Isolated subagent subprocesses (single, parallel, chain, pool)
+│   └── btw.ts           # Side conversation overlay (multi-slot, tool execution, inject/summarize)
 ├── skills/
 │   ├── obsidian-vault/  # Vault management instructions (PARA, conventions, safety)
 │   ├── pi-memory/       # Memory system usage (two-layer, when to write, hygiene)
