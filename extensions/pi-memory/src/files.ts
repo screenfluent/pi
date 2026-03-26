@@ -45,11 +45,11 @@ export function getBasePath(): string {
 // ── Paths ───────────────────────────────────────────────────────
 
 export function longTermPath(): string {
-	return path.join(basePath, "MEMORY.md");
+	return path.join(getBasePath(), "MEMORY.md");
 }
 
 export function memoryDir(): string {
-	return path.join(basePath, "memory");
+	return path.join(getBasePath(), "memory");
 }
 
 export function dailyPath(date?: string): string {
