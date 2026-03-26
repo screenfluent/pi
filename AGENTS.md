@@ -54,6 +54,74 @@ See `/skill:pi-memory` for detailed rules on what goes where.
 - Tools return structured text for LLM consumption
 - Secrets (tokens, chat IDs) go in local settings or env vars, never in repo
 
+## Subagent Orchestration
+
+You can delegate tasks to specialized subagents via the `subagent` tool.
+Each subagent runs as an isolated pi subprocess with its own context window.
+
+### Available Agents
+
+**planner** (user) — Creates implementation plans from context and requirements
+  model: openai-codex/gpt-5.4
+  tools: read, grep, find, ls
+**reviewer** (user) — Code review specialist for quality and security analysis
+  model: claude-opus-4-6
+  tools: read, grep, find, ls, bash
+**scout** (user) — Fast codebase recon that returns compressed context for handoff to other agents
+  model: claude-haiku-4-5
+  tools: read, grep, find, ls, bash
+**worker** (user) — General-purpose subagent with full capabilities, isolated context
+  model: openai-codex/gpt-5.4
+
+### Usage Patterns
+
+**Single task (fast recon):**
+```json
+{ "agent": "scout", "task": "Map the auth module — list files, key types, entry points" }
+```
+
+**Parallel tasks (independent work):**
+```json
+{ "tasks": [
+    { "agent": "scout", "task": "Map the API routes", "model": "claude-haiku-4-5" },
+    { "agent": "scout", "task": "Map the database schema", "model": "claude-haiku-4-5" }
+  ] }
+```
+
+**Chain (pipeline — each step gets prior output via {previous}):**
+```json
+{ "chain": [
+    { "agent": "scout", "task": "Map the auth module" },
+    { "agent": "planner", "task": "Plan refactoring based on: {previous}" },
+    { "agent": "worker", "task": "Implement the plan: {previous}" }
+  ] }
+```
+
+**Per-task overrides:** model, thinking (off/minimal/low/medium/high/xhigh), extensions, skills, noTools, noSkills
+
+**Orchestrator (hierarchical agent tree — agents spawn and message each other):**
+```json
+{ "orchestrator": { "agent": "planner", "task": "Build the auth system. Spawn specialists as needed." } }
+```
+The root agent gets spawn_agent, send_message, kill_agent, list_agents tools.
+Sub-agents also get these tools and can spawn their own children (max depth: 4).
+
+**Pool (manual long-lived agents — persistent context across messages):**
+```json
+{ "action": "spawn", "id": "worker-1", "agent": "worker", "task": "Start on auth" }
+{ "action": "send", "id": "worker-1", "message": "Now refactor the middleware" }
+{ "action": "list" }
+{ "action": "kill", "id": "worker-1" }
+```
+
+**Tips:**
+- Use scout (haiku) for fast recon, planner/reviewer (sonnet) for analysis, worker for implementation
+- Parallel is ideal for independent tasks — results stream back as they complete
+- Chain is ideal for multi-step workflows where each step builds on the previous
+- Orchestrator is ideal when the task benefits from autonomous delegation and coordination
+- Pool is ideal when you want to manually manage long-lived agents with persistent context
+- Extensions: subagents run with -ne (no extensions). Whitelist only what's needed.
+
 ## VPS Structure (Johnny Decimal)
 
 ```
