@@ -30,6 +30,19 @@ Symlinked to `~/.pi/agent/` — Pi loads this as global context.
 - Repo `settings.json` has non-secret defaults only
 - When repo settings change, manually sync non-secret parts to local copy
 
+## Memory — Dual System (A/B Test)
+
+Two memory systems run in parallel for comparison. **Write to both** when saving anything:
+
+- **pi-memory** (`memory_write`) — file-based, two-layer (global + project), auto-injected into system prompt
+- **honcho** (`honcho_remember`) — semantic, self-hosted, auto-injected into system prompt
+
+Personal facts, preferences, habits → `honcho_remember` + `memory_write` (global scope)
+Technical, project-specific → `memory_write` (project scope) + `honcho_remember`
+Session tracking → `memory_write` daily log (both scopes as appropriate)
+
+See `/skill:pi-memory` for detailed rules on what goes where.
+
 ## Conventions
 
 - Extensions communicate via `pi.events` (event bus), never direct imports

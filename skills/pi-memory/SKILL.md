@@ -132,6 +132,28 @@ At each agent turn, the extension automatically injects into the system prompt:
 
 This means the agent always has recent context without needing to call `memory_read`.
 
+## Dual Memory System (A/B Test)
+
+Two memory systems run in parallel to compare quality over time:
+
+- **pi-memory** — file-based (MEMORY.md + daily logs), structured, grep-searchable
+- **honcho** — semantic memory via self-hosted Honcho, learns from conversations, semantic search
+
+### Rules for dual writes
+
+When saving anything to memory, **write to both systems**:
+
+1. `memory_write` — to the appropriate scope/target (global or project, daily or long_term)
+2. `honcho_remember` — a concise fact/preference/decision
+
+This ensures both systems have the same data for fair comparison. After extended use, we'll evaluate which system provides better recall, context, and usefulness — then pick a winner or define complementary roles.
+
+### When to use honcho_search vs memory_search
+
+- `memory_search` — keyword/grep lookup, good for exact terms
+- `honcho_search` — semantic lookup, good for "what did we decide about X" type questions
+- When in doubt, use both
+
 ## Language
 
 Always write memory entries in English, regardless of conversation language.
