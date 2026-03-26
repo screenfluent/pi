@@ -465,13 +465,15 @@ export default function (pi: ExtensionAPI) {
 	async function removeSlot(slotId: string): Promise<void> {
 		const slot = store.slots.get(slotId);
 		if (!slot) return;
-		await disposeSlotRuntime(slot);
+		// Remove from store BEFORE awaiting abort to prevent late commits
 		store.slots.delete(slotId);
 		store.order = store.order.filter((id) => id !== slotId);
 		// Remove queued items for this slot
 		for (let i = queue.length - 1; i >= 0; i--) {
 			if (queue[i].slotId === slotId) queue.splice(i, 1);
 		}
+		// Now safely dispose runtime
+		await disposeSlotRuntime(slot);
 		// Pick new active: most recently updated surviving slot
 		if (store.activeSlotId === slotId) {
 			store.activeSlotId = null;
@@ -512,6 +514,7 @@ export default function (pi: ExtensionAPI) {
 
 	/** Track a dispose generation to detect late commits after abort. */
 	let disposeGeneration = 0;
+	let disposing = false;
 
 	async function disposeSlotRuntime(slot: BtwSlotState): Promise<void> {
 		const rt = slot.runtime;
@@ -535,16 +538,18 @@ export default function (pi: ExtensionAPI) {
 	}
 
 	async function disposeAllRuntimes(): Promise<void> {
+		disposing = true;
 		disposeGeneration++;
-		const promises: Promise<void>[] = [];
-		for (const slot of store.slots.values()) {
-			promises.push(disposeSlotRuntime(slot));
-			slot.busy = false;
-			slot.pending = createEmptyPending();
-		}
-		await Promise.all(promises);
 		queue.length = 0;
 		executing = false;
+		const promises: Promise<void>[] = [];
+		for (const slot of store.slots.values()) {
+			slot.busy = false;
+			slot.pending = createEmptyPending();
+			promises.push(disposeSlotRuntime(slot));
+		}
+		await Promise.all(promises);
+		disposing = false;
 	}
 
 	// ── Rendering ────────────────────────────────────────────────────
@@ -834,6 +839,7 @@ export default function (pi: ExtensionAPI) {
 	// ── Serialized queue execution ───────────────────────────────────
 
 	function enqueuePrompt(ctx: ExtensionContext, slotId: string, question: string): void {
+		if (disposing) return;
 		const slot = store.slots.get(slotId);
 		if (!slot) return;
 
@@ -862,7 +868,7 @@ export default function (pi: ExtensionAPI) {
 	}
 
 	function drainQueue(): void {
-		if (executing || queue.length === 0) return;
+		if (disposing || executing || queue.length === 0) return;
 		const item = queue.shift()!;
 		const slot = store.slots.get(item.slotId);
 		if (!slot) {
