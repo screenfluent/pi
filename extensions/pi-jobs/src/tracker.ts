@@ -150,7 +150,7 @@ export function registerTracker(pi: ExtensionAPI): void {
 			});
 			await store.markJobRunning(jobId);
 
-			if (data.status === "done") {
+			if (data.status === "done" || data.status === "completed") {
 				await store.completeJob(jobId, {
 					response: (data.response ?? "").slice(0, 50_000),
 					totalTokens: data.tokens ?? 0,
@@ -254,7 +254,7 @@ function extractUsage(event: any): {
 		outputTokens: u.output ?? u.outputTokens ?? 0,
 		cacheReadTokens: u.cacheRead ?? u.cacheReadTokens ?? 0,
 		cacheWriteTokens: u.cacheWrite ?? u.cacheWriteTokens ?? 0,
-		totalTokens: (u.input ?? u.inputTokens ?? 0) + (u.output ?? u.outputTokens ?? 0),
+		totalTokens: (u.input ?? u.inputTokens ?? 0) + (u.output ?? u.outputTokens ?? 0) + (u.cacheRead ?? u.cacheReadTokens ?? 0) + (u.cacheWrite ?? u.cacheWriteTokens ?? 0),
 		costInput: cost.input ?? 0,
 		costOutput: cost.output ?? 0,
 		costCacheRead: cost.cacheRead ?? 0,

@@ -303,11 +303,14 @@ async function runAgent(
 
 	eventBus.emit("subagent:complete", {
 		agent: agentName,
+		task,
 		trackingId,
 		status: oneShotStatus,
 		tokens: isolated.totalTokens,
 		cost: isolated.costTotal,
 		durationMs: isolated.durationMs,
+		model: isolated.model ?? model,
+		response: (getFinalOutput(isolated.messages) || isolated.response || "").slice(0, 50_000),
 	});
 	log("complete", { agent: agentName, trackingId, status: oneShotStatus, durationMs: isolated.durationMs },
 		oneShotStatus === "completed" ? "INFO" : "ERROR");
