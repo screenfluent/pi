@@ -797,7 +797,12 @@ tags:
 
 # 📅 ${formatDailyDate(date)}
 
-## 🎯 Top 3 Priorities
+## 🎯 Habits
+- [ ] No phone first 30 min
+- [ ] 50 squats + 20 incline push-ups
+- [ ] Evening reflection
+
+## 📍 Top 3 Priorities
 1. ${params.content ? params.content.split("\n")[0] || "" : ""}
 2. 
 3. 
