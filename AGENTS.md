@@ -17,6 +17,7 @@ Symlinked to `~/.pi/agent/` — Pi loads this as global context.
 │   ├── pi-honcho-memory/ # Persistent memory via Honcho (search, chat, remember)
 │   └── pi-vault/        # Obsidian vault integration (read, write, search, dashboard)
 ├── skills/
+│   └── obsidian-vault/  # Vault management instructions (PARA, conventions, safety)
 ├── themes/
 ├── settings.json        # Global settings (repo version — no secrets)
 └── AGENTS.md            # This file
