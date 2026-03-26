@@ -24,7 +24,8 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 │   ├── pi-honcho-memory/ # Persistent memory via Honcho
 │   ├── pi-vault/        # Obsidian vault integration
 │   ├── pi-telemetry/    # Session event logging (JSONL)
-│   └── pi-jobs/         # Agent run tracking (tokens, costs, dashboard)
+│   ├── pi-jobs/         # Agent run tracking (tokens, costs, dashboard)
+│   └── pi-subagent/     # Isolated subagent subprocesses
 ├── skills/
 │   ├── obsidian-vault/  # Vault management (PARA, conventions, safety)
 │   ├── pi-memory/       # Memory system usage (two-layer, hygiene)
@@ -49,6 +50,7 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 | [**pi-vault**](extensions/pi-vault/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Obsidian vault integration — read, write, search, daily notes, templates, web dashboard |
 | [**pi-telemetry**](extensions/pi-telemetry/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Session event logging — JSONL files, no database |
 | [**pi-jobs**](extensions/pi-jobs/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Agent run tracking — tokens, costs, duration, tool stats, web dashboard |
+| [**pi-subagent**](extensions/pi-subagent/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Isolated subagent subprocesses — single, parallel, chain, orchestrator, pool |
 
 ## Skills
 

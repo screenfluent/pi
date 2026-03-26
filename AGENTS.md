@@ -17,7 +17,8 @@ Symlinked to `~/.pi/agent/` — Pi loads this as global context.
 │   ├── pi-honcho-memory/ # Persistent memory via Honcho (search, chat, remember)
 │   ├── pi-vault/        # Obsidian vault integration (read, write, search, dashboard)
 │   ├── pi-telemetry/    # Session event logging (JSONL)
-│   └── pi-jobs/         # Agent run tracking — tokens, costs, duration, web dashboard
+│   ├── pi-jobs/         # Agent run tracking — tokens, costs, duration, web dashboard
+│   └── pi-subagent/     # Isolated subagent subprocesses (single, parallel, chain, pool)
 ├── skills/
 │   ├── obsidian-vault/  # Vault management instructions (PARA, conventions, safety)
 │   ├── pi-memory/       # Memory system usage (two-layer, when to write, hygiene)
