@@ -462,10 +462,10 @@ export default function (pi: ExtensionAPI) {
 		loadActiveDraft();
 	}
 
-	function removeSlot(slotId: string): void {
+	async function removeSlot(slotId: string): Promise<void> {
 		const slot = store.slots.get(slotId);
 		if (!slot) return;
-		disposeSlotRuntime(slot);
+		await disposeSlotRuntime(slot);
 		store.slots.delete(slotId);
 		store.order = store.order.filter((id) => id !== slotId);
 		// Remove queued items for this slot
@@ -484,8 +484,8 @@ export default function (pi: ExtensionAPI) {
 		}
 	}
 
-	function doArchiveSlot(slotId: string): void {
-		removeSlot(slotId);
+	async function doArchiveSlot(slotId: string): Promise<void> {
+		await removeSlot(slotId);
 		pi.appendEntry(BTW_SLOT_ARCHIVE, {
 			slotId,
 			timestamp: Date.now(),
@@ -510,7 +510,10 @@ export default function (pi: ExtensionAPI) {
 
 	// ── Runtime management ───────────────────────────────────────────
 
-	function disposeSlotRuntime(slot: BtwSlotState): void {
+	/** Track a dispose generation to detect late commits after abort. */
+	let disposeGeneration = 0;
+
+	async function disposeSlotRuntime(slot: BtwSlotState): Promise<void> {
 		const rt = slot.runtime;
 		if (!rt) return;
 		slot.runtime = null;
@@ -520,19 +523,26 @@ export default function (pi: ExtensionAPI) {
 			/* ignore */
 		}
 		try {
-			rt.session.abort();
+			await rt.session.abort();
 		} catch {
 			/* ignore */
 		}
-		rt.session.dispose();
+		try {
+			rt.session.dispose();
+		} catch {
+			/* ignore */
+		}
 	}
 
 	async function disposeAllRuntimes(): Promise<void> {
+		disposeGeneration++;
+		const promises: Promise<void>[] = [];
 		for (const slot of store.slots.values()) {
-			disposeSlotRuntime(slot);
+			promises.push(disposeSlotRuntime(slot));
 			slot.busy = false;
 			slot.pending = createEmptyPending();
 		}
+		await Promise.all(promises);
 		queue.length = 0;
 		executing = false;
 	}
@@ -994,6 +1004,9 @@ export default function (pi: ExtensionAPI) {
 				thinkingLevel: pi.getThinkingLevel() as SessionThinkingLevel,
 				usage: resp.usage,
 			};
+
+			// Late-commit guard: if the slot was disposed/archived during execution, don't persist
+			if (!store.slots.has(slot.id)) return;
 
 			// Add to slot thread
 			slot.thread.push(details);
