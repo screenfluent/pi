@@ -15,7 +15,9 @@ Symlinked to `~/.pi/agent/` — Pi loads this as global context.
 │   ├── pi-webserver/    # Shared HTTP server for dashboards (port 4100)
 │   ├── pi-tracker/      # External repo monitor with web dashboard
 │   ├── pi-honcho-memory/ # Persistent memory via Honcho (search, chat, remember)
-│   └── pi-vault/        # Obsidian vault integration (read, write, search, dashboard)
+│   ├── pi-vault/        # Obsidian vault integration (read, write, search, dashboard)
+│   ├── pi-telemetry/    # Session event logging (JSONL)
+│   └── pi-jobs/         # Agent run tracking — tokens, costs, duration, web dashboard
 ├── skills/
 │   ├── obsidian-vault/  # Vault management instructions (PARA, conventions, safety)
 │   └── pi-memory/       # Memory system usage (two-layer, when to write, hygiene)

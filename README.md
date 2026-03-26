@@ -42,6 +42,8 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 | [**pi-webserver**](extensions/pi-webserver/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Shared HTTP server with auth for web extensions |
 | [**pi-honcho-memory**](extensions/pi-honcho-memory/) | [agneym/pi-honcho-memory](https://github.com/agneym/pi-honcho-memory) | Persistent memory via Honcho — auto-learns from conversations, search, chat, remember |
 | [**pi-vault**](extensions/pi-vault/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Obsidian vault integration — read, write, search, daily notes, templates, web dashboard |
+| [**pi-telemetry**](extensions/pi-telemetry/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Session event logging — JSONL files, no database |
+| [**pi-jobs**](extensions/pi-jobs/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Agent run tracking — tokens, costs, duration, tool stats, web dashboard |
 
 ## Skills
 
