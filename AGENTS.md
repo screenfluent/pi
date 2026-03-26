@@ -20,7 +20,8 @@ Symlinked to `~/.pi/agent/` — Pi loads this as global context.
 │   └── pi-jobs/         # Agent run tracking — tokens, costs, duration, web dashboard
 ├── skills/
 │   ├── obsidian-vault/  # Vault management instructions (PARA, conventions, safety)
-│   └── pi-memory/       # Memory system usage (two-layer, when to write, hygiene)
+│   ├── pi-memory/       # Memory system usage (two-layer, when to write, hygiene)
+│   └── weekly-review/   # Structured weekly review (projects, habits, costs, planning)
 ├── themes/
 ├── settings.json        # Global settings (repo version — no secrets)
 └── AGENTS.md            # This file

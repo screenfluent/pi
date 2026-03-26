@@ -51,6 +51,7 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 |-------|-------------|
 | [**obsidian-vault**](skills/obsidian-vault/) | Vault management instructions — PARA structure, conventions, safety rules, common operations |
 | [**pi-memory**](skills/pi-memory/) | Memory system usage — two-layer (global + project), when to write, section organization, hygiene |
+| [**weekly-review**](skills/weekly-review/) | Structured weekly review — projects, habits, AI costs, planning |
 
 ### Planned (from espennilsen/pi)
 
