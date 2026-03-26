@@ -73,7 +73,7 @@ async function handleJobsApi(req: IncomingMessage, res: ServerResponse, subPath:
 
 		// GET /api/jobs/recent
 		if (method === "GET" && p === "/recent") {
-			const limit = parseInt(url.searchParams.get("limit") ?? "50");
+			const limit = Math.min(Math.max(parseInt(url.searchParams.get("limit") ?? "50") || 50, 1), 1000);
 			const channel = url.searchParams.get("channel") || undefined;
 			json(res, 200, await store.getRecentJobs(limit, channel));
 			return;
@@ -81,7 +81,7 @@ async function handleJobsApi(req: IncomingMessage, res: ServerResponse, subPath:
 
 		// GET /api/jobs/daily
 		if (method === "GET" && p === "/daily") {
-			const days = parseInt(url.searchParams.get("days") ?? "30");
+			const days = Math.min(Math.max(parseInt(url.searchParams.get("days") ?? "30") || 30, 1), 3650);
 			const channel = url.searchParams.get("channel") || undefined;
 			json(res, 200, await store.getDailyStats(days, channel));
 			return;
@@ -89,14 +89,14 @@ async function handleJobsApi(req: IncomingMessage, res: ServerResponse, subPath:
 
 		// GET /api/jobs/models
 		if (method === "GET" && p === "/models") {
-			const days = parseInt(url.searchParams.get("days") ?? "30");
+			const days = Math.min(Math.max(parseInt(url.searchParams.get("days") ?? "30") || 30, 1), 3650);
 			json(res, 200, await store.getModelBreakdown(days));
 			return;
 		}
 
 		// GET /api/jobs/tools
 		if (method === "GET" && p === "/tools") {
-			const days = parseInt(url.searchParams.get("days") ?? "30");
+			const days = Math.min(Math.max(parseInt(url.searchParams.get("days") ?? "30") || 30, 1), 3650);
 			json(res, 200, await store.getToolBreakdown(days));
 			return;
 		}

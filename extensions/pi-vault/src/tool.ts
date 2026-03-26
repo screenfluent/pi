@@ -43,7 +43,10 @@ const VALID_TASK_STATUSES = ["open", "in-progress", "blocked", "done", "someday"
 
 function vaultPath(root: string, ...segments: string[]): string {
 	const resolved = path.resolve(root, ...segments);
-	if (!resolved.startsWith(root)) {
+	// Check resolved path stays within vault root.
+	// Note: does not follow symlinks. For symlinked vaults, use realpath on both.
+	const normalizedRoot = root.endsWith("/") ? root : root + "/";
+	if (resolved !== root && !resolved.startsWith(normalizedRoot)) {
 		throw new Error(`Path escapes vault root: ${segments.join("/")}`);
 	}
 	return resolved;

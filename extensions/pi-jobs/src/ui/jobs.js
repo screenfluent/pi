@@ -43,7 +43,7 @@ async function loadJobs() {
 
 		$("jobs-table").innerHTML = jobs.map((j) =>
 			"<tr>" +
-			'<td><span class="status ' + j.status + '">' + j.status + "</span></td>" +
+			'<td><span class="status ' + esc(j.status) + '">' + esc(j.status) + "</span></td>" +
 			'<td><span class="channel">' + esc(j.channel) + "</span></td>" +
 			'<td class="prompt-preview" title="' + esc(j.prompt) + '">' + esc(j.prompt.slice(0, 80)) + "</td>" +
 			'<td class="tokens">' + fmt(j.total_tokens) + "</td>" +
