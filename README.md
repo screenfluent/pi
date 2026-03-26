@@ -21,7 +21,8 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 │   ├── pi-channels/     # Telegram/Slack/webhook bridge
 │   ├── pi-webserver/    # Shared HTTP server for dashboards
 │   ├── pi-tracker/      # Extension repository monitor
-│   └── pi-honcho-memory/ # Persistent memory via Honcho
+│   ├── pi-honcho-memory/ # Persistent memory via Honcho
+│   └── pi-vault/        # Obsidian vault integration
 ├── skills/              # Custom skills
 ├── themes/              # TUI themes
 ├── settings.json        # Global Pi settings
@@ -40,6 +41,7 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 | [**pi-channels**](extensions/pi-channels/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Two-way messaging — Telegram, Slack, webhooks |
 | [**pi-webserver**](extensions/pi-webserver/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Shared HTTP server with auth for web extensions |
 | [**pi-honcho-memory**](extensions/pi-honcho-memory/) | [agneym/pi-honcho-memory](https://github.com/agneym/pi-honcho-memory) | Persistent memory via Honcho — auto-learns from conversations, search, chat, remember |
+| [**pi-vault**](extensions/pi-vault/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Obsidian vault integration — read, write, search, daily notes, templates, web dashboard |
 
 ### Planned (from espennilsen/pi)
 

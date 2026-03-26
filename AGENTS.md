@@ -14,7 +14,8 @@ Symlinked to `~/.pi/agent/` — Pi loads this as global context.
 │   ├── pi-channels/     # Telegram/Slack/webhook bridge
 │   ├── pi-webserver/    # Shared HTTP server for dashboards (port 4100)
 │   ├── pi-tracker/      # External repo monitor with web dashboard
-│   └── pi-honcho-memory/ # Persistent memory via Honcho (search, chat, remember)
+│   ├── pi-honcho-memory/ # Persistent memory via Honcho (search, chat, remember)
+│   └── pi-vault/        # Obsidian vault integration (read, write, search, dashboard)
 ├── skills/
 ├── themes/
 ├── settings.json        # Global settings (repo version — no secrets)
@@ -48,4 +49,4 @@ Symlinked to `~/.pi/agent/` — Pi loads this as global context.
 - Global memory: `~/10-19.life/11.command-center/`
 - Tracker config: `~/90-99.system/92.tracked-repos/tracker.json`
 - Tracker reports: `~/90-99.system/92.tracked-repos/reports/`
-- Web dashboard: `http://localhost:4100` (/cron, /tracker)
+- Web dashboard: `http://localhost:4100` (/cron, /tracker, /vault)
