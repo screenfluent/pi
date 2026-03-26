@@ -69,4 +69,4 @@ See `/skill:pi-memory` for detailed rules on what goes where.
 - Obsidian vault: `~/20-29.knowledge/21.vault/`
 - Tracker config: `~/90-99.system/92.tracked-repos/tracker.json`
 - Tracker reports: `~/90-99.system/92.tracked-repos/reports/`
-- Web dashboard: `http://localhost:4100` (/cron, /tracker, /vault)
+- Web dashboard: `http://localhost:4100` (/cron, /tracker, /vault, /jobs)

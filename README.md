@@ -22,8 +22,13 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 │   ├── pi-webserver/    # Shared HTTP server for dashboards
 │   ├── pi-tracker/      # Extension repository monitor
 │   ├── pi-honcho-memory/ # Persistent memory via Honcho
-│   └── pi-vault/        # Obsidian vault integration
-├── skills/              # Custom skills
+│   ├── pi-vault/        # Obsidian vault integration
+│   ├── pi-telemetry/    # Session event logging (JSONL)
+│   └── pi-jobs/         # Agent run tracking (tokens, costs, dashboard)
+├── skills/
+│   ├── obsidian-vault/  # Vault management (PARA, conventions, safety)
+│   ├── pi-memory/       # Memory system usage (two-layer, hygiene)
+│   └── weekly-review/   # Structured weekly review
 ├── themes/              # TUI themes
 ├── settings.json        # Global Pi settings
 └── AGENTS.md            # Global agent instructions
