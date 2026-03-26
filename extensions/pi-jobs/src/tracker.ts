@@ -20,6 +20,8 @@ interface TrackerState {
 }
 
 export function registerTracker(pi: ExtensionAPI): void {
+	let pendingPrompt = "";
+
 	const state: TrackerState = {
 		currentJobId: null,
 		currentModel: "",
@@ -29,6 +31,12 @@ export function registerTracker(pi: ExtensionAPI): void {
 		startTime: 0,
 		toolStartTimes: new Map(),
 	};
+
+	// ── Prompt capture ──────────────────────────────────────
+
+	pi.on("before_agent_start", async (event) => {
+		pendingPrompt = event.prompt ?? "";
+	});
 
 	// ── Model tracking ──────────────────────────────────────
 
@@ -51,8 +59,8 @@ export function registerTracker(pi: ExtensionAPI): void {
 				state.currentProvider = ctx.model.provider;
 			}
 
-			// Extract prompt from the user message
-			const prompt = extractPrompt(event);
+			// Extract prompt from before_agent_start or fall back to event
+			const prompt = pendingPrompt || extractPrompt(event);
 			const jobId = await store.createJob({
 				channel: "tui",
 				prompt: prompt.slice(0, 50_000),
