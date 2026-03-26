@@ -1,17 +1,78 @@
-/* eslint-disable no-magic-numbers */
 import type { HonchoHandles } from "./client.ts";
 
 // --- Cached memory text ---
 const PERSISTENT_MEMORY_HEADER = "[Persistent memory]";
 const USER_PROFILE_LABEL = "User profile";
 const PROJECT_SUMMARY_LABEL = "Project summary";
+interface CachedMemoryParts {
+  userProfile: string | null;
+  projectSummary: string | null;
+}
 
-let cachedMemoryText: string | null = null;
+interface CachedHonchoContext {
+  peerRepresentation?: string | null;
+  summary?: { content?: string | null } | null;
+}
 
-export const getCachedMemory = (): string | null => cachedMemoryText;
+const EMPTY_MEMORY: CachedMemoryParts = {
+  userProfile: null,
+  projectSummary: null,
+};
+
+let cachedMemory = EMPTY_MEMORY;
+
+const buildSection = (label: string, value: string | null): string | null => {
+  if (!value) {
+    return null;
+  }
+
+  return `${PERSISTENT_MEMORY_HEADER}\n${label}:\n${value}`;
+};
+
+const normalizeMemoryText = (value?: string | null): string | null => {
+  if (!value) {
+    return null;
+  }
+
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return null;
+  }
+
+  return trimmed;
+};
+
+export const buildCachedMemoryParts = (context: CachedHonchoContext): CachedMemoryParts => ({
+  userProfile: normalizeMemoryText(context.peerRepresentation),
+  projectSummary: normalizeMemoryText(context.summary?.content),
+});
+
+export const buildUserProfileText = (userProfile: string | null): string | null =>
+  buildSection(USER_PROFILE_LABEL, userProfile);
+
+export const buildProjectSummaryText = (projectSummary: string | null): string | null =>
+  buildSection(PROJECT_SUMMARY_LABEL, projectSummary);
+
+const buildCombinedMemoryText = (parts: CachedMemoryParts): string | null => {
+  const sections = [
+    parts.userProfile ? `${USER_PROFILE_LABEL}:\n${parts.userProfile}` : null,
+    parts.projectSummary ? `${PROJECT_SUMMARY_LABEL}:\n${parts.projectSummary}` : null,
+  ].filter((section): section is string => section !== null);
+
+  if (sections.length === 0) {
+    return null;
+  }
+
+  return `${PERSISTENT_MEMORY_HEADER}\n${sections.join("\n\n")}`;
+};
+
+export const buildMemoryText = (context: CachedHonchoContext): string | null =>
+  buildCombinedMemoryText(buildCachedMemoryParts(context));
+
+export const getCachedMemory = (): string | null => buildCombinedMemoryText(cachedMemory);
 
 export const clearCachedMemory = (): void => {
-  cachedMemoryText = null;
+  cachedMemory = EMPTY_MEMORY;
 };
 
 // --- Async save queue ---
@@ -27,30 +88,9 @@ export const flushPending = (): Promise<void> => pendingSave;
 // --- Memory fetch ---
 
 /**
- * Fetch context from Honcho and cache it for injection.
- * Non-blocking from the caller's perspective when used after save.
+ * Fetch both user profile and project summary from Honcho and cache them.
+ * Called once at session start — project summary is frozen for the session.
  */
-export const buildMemoryText = (context: {
-  peerRepresentation?: string | null;
-  summary?: { content?: string | null } | null;
-}): string | null => {
-  const parts: string[] = [];
-
-  if (context.peerRepresentation) {
-    parts.push(`${USER_PROFILE_LABEL}:\n${context.peerRepresentation}`);
-  }
-
-  if (context.summary?.content) {
-    parts.push(`${PROJECT_SUMMARY_LABEL}:\n${context.summary.content}`);
-  }
-
-  if (parts.length === 0) {
-    return null;
-  }
-
-  return `${PERSISTENT_MEMORY_HEADER}\n${parts.join("\n\n")}`;
-};
-
 export const refreshMemoryCache = async (handles: HonchoHandles): Promise<void> => {
   try {
     const ctx = await handles.session.context({
@@ -60,7 +100,7 @@ export const refreshMemoryCache = async (handles: HonchoHandles): Promise<void> 
       tokens: handles.config.contextTokens,
     });
 
-    cachedMemoryText = buildMemoryText(ctx);
+    cachedMemory = buildCachedMemoryParts(ctx);
   } catch {
     // Keep stale cache on failure rather than clearing it
   }
@@ -91,7 +131,7 @@ const extractText = (content: unknown): string => {
     .trim();
 };
 
-interface AgentMessage {
+interface ConversationAgentMessage {
   role?: string;
   content?: unknown;
 }
@@ -101,7 +141,7 @@ interface AgentMessage {
  * Skips tool results, images, and oversized blobs.
  */
 export const extractConversationalPairs = (
-  messages: AgentMessage[],
+  messages: ConversationAgentMessage[],
   maxMessageLength: number,
 ): { role: "user" | "assistant"; text: string }[] => {
   const pairs: { role: "user" | "assistant"; text: string }[] = [];
@@ -125,10 +165,15 @@ export const extractConversationalPairs = (
 // --- Save + refresh pipeline ---
 
 /**
- * Save conversational messages to Honcho then refresh the cache.
- * Enqueued so saves and refreshes happen in order without racing.
+ * Save conversational messages to Honcho.
+ * Memory is only fetched at session start — mid-session context comes
+ * from the conversation history itself.
+ * Enqueued so saves happen in order without racing.
  */
-export const saveAndRefresh = (handles: HonchoHandles, messages: AgentMessage[]): Promise<void> => {
+export const saveMessages = (
+  handles: HonchoHandles,
+  messages: ConversationAgentMessage[],
+): Promise<void> => {
   const pairs = extractConversationalPairs(messages, handles.config.maxMessageLength);
   if (pairs.length === 0) {
     return Promise.resolve();
@@ -146,7 +191,5 @@ export const saveAndRefresh = (handles: HonchoHandles, messages: AgentMessage[])
     } catch {
       // Non-fatal: message save failed, will retry on next turn
     }
-
-    await refreshMemoryCache(handles);
   });
 };

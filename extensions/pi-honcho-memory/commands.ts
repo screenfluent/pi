@@ -124,7 +124,6 @@ const testConnection = async (pi: ExtensionAPI, ctx: { ui: any; cwd: string }): 
   }
 };
 
-// eslint-disable-next-line import/prefer-default-export
 export const registerCommands = (pi: ExtensionAPI): void => {
   // --- /honcho-status ---
   pi.registerCommand("honcho-status", {

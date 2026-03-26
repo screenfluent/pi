@@ -7,7 +7,7 @@ import {
   flushPending,
   getCachedMemory,
   refreshMemoryCache,
-  saveAndRefresh,
+  saveMessages,
 } from "./memory.ts";
 import { registerTools } from "./tools.ts";
 
@@ -80,6 +80,7 @@ export default function honcho(pi: ExtensionAPI): void {
   });
 
   pi.on("session_switch", async (_event, ctx) => {
+    lastCtx = ctx;
     await flushPending();
     clearHandles();
     clearCachedMemory();
@@ -87,6 +88,7 @@ export default function honcho(pi: ExtensionAPI): void {
   });
 
   pi.on("session_fork", async (_event, ctx) => {
+    lastCtx = ctx;
     await flushPending();
     clearHandles();
     clearCachedMemory();
@@ -103,9 +105,9 @@ export default function honcho(pi: ExtensionAPI): void {
     }).catch(() => {});
   });
 
-  // --- Prompt path: inject cached memory (0ms network) ---
+  // --- Prompt path: inject cached memory into system prompt (0ms network) ---
 
-  pi.on("before_agent_start", async () => {
+  pi.on("before_agent_start", async (event) => {
     // Wait for initial bootstrap if it's still running on the very first prompt
     if (initializing) {
       await initializing;
@@ -117,15 +119,11 @@ export default function honcho(pi: ExtensionAPI): void {
     }
 
     return {
-      message: {
-        customType: "honcho-memory",
-        content: memoryText,
-        display: false,
-      },
+      systemPrompt: `${event.systemPrompt}\n\n${memoryText}`,
     };
   });
 
-  // --- Post-response: save messages + refresh cache ---
+  // --- Post-response: save messages (no mid-session refresh) ---
 
   pi.on("agent_end", async (event, ctx) => {
     const handles = getHandles();
@@ -136,7 +134,7 @@ export default function honcho(pi: ExtensionAPI): void {
     setStatus(ctx, "syncing");
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-type-assertion
-    saveAndRefresh(handles, event.messages as any[])
+    saveMessages(handles, event.messages as any[])
       .then(() => setStatus(ctx, "connected"))
       .catch(() => setStatus(ctx, "offline"));
   });
