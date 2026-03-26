@@ -111,7 +111,7 @@ export function registerMemoryTools(pi: ExtensionAPI): void {
 
 			if (params.section) {
 				const pattern = new RegExp(
-					`## ${escapeRegex(params.section)}\\n(?:(?!\\n## )[\\s\\S])*`,
+					`## ${escapeRegex(params.section)}\n(?:(?!\n## )[\\s\\S])*`,
 					"m",
 				);
 				const match = existing.match(pattern);
