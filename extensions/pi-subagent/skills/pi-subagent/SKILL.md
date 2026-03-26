@@ -114,6 +114,7 @@ description: Fast codebase reconnaissance
 tools: read, grep, find, ls, bash
 extensions: extensions/pi-dotenv
 model: claude-haiku-4-5
+thinking: off
 ---
 System prompt for the agent goes here...
 ```
@@ -124,6 +125,7 @@ System prompt for the agent goes here...
 | `description` | What the agent does (required) |
 | `tools` | Comma-separated tool whitelist |
 | `model` | Default model |
+| `thinking` | Default thinking level: `off`, `minimal`, `low`, `medium`, `high`, `xhigh` |
 | `extensions` | Comma-separated extension paths to load |
 
 ## Tips

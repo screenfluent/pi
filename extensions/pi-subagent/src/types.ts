@@ -11,6 +11,8 @@ export interface AgentConfig {
 	description: string;
 	tools?: string[];
 	model?: string;
+	/** Thinking level: off, minimal, low, medium, high, xhigh */
+	thinking?: string;
 	/** Extension paths to whitelist for this agent (subagents run with -ne by default) */
 	extensions?: string[];
 	systemPrompt: string;

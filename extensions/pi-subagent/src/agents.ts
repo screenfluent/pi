@@ -11,6 +11,7 @@
  *   description: Fast codebase recon
  *   tools: read, grep, find, ls, bash
  *   model: claude-haiku-4-5
+ *   thinking: off
  *   ---
  *   System prompt content...
  */
@@ -73,6 +74,7 @@ function loadAgentsFromDir(
 			tools: tools && tools.length > 0 ? tools : undefined,
 			extensions: extensions && extensions.length > 0 ? extensions : undefined,
 			model: frontmatter.model,
+			thinking: frontmatter.thinking,
 			systemPrompt: body,
 			source,
 			filePath,

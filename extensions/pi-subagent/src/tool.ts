@@ -243,6 +243,8 @@ async function runAgent(
 
 	// Model priority: call-site > agent config > global settings
 	const model = callSite?.model ?? agent.model ?? settings.model ?? undefined;
+	// Thinking priority: call-site > agent config
+	const thinking = callSite?.thinking ?? agent.thinking;
 
 	const isolated = await runIsolatedAgent({
 		prompt: `Task: ${task}`,
@@ -253,7 +255,7 @@ async function runAgent(
 		extensions: mergedExtensions,
 		skills: callSite?.skills,
 		noSkills: callSite?.noSkills,
-		thinking: callSite?.thinking,
+		thinking,
 		systemPrompt: agent.systemPrompt.trim() || undefined,
 		signal,
 		timeoutMs: settings.timeoutMs,
