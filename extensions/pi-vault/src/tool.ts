@@ -798,7 +798,7 @@ tags:
 # 📅 ${formatDailyDate(date)}
 
 ## 🎯 Habits
-- [ ] No screens first 30 min (no phone, no laptop, no Telegram/YouTube/Twitter)
+- [ ] Work first, consume later (no Telegram/YouTube/Twitter before doing real work)
 - [ ] 50 squats + 20 incline push-ups
 - [ ] Evening reflection
 
