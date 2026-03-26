@@ -43,6 +43,12 @@ Structure and several extensions adapted from [espennilsen/pi](https://github.co
 | [**pi-honcho-memory**](extensions/pi-honcho-memory/) | [agneym/pi-honcho-memory](https://github.com/agneym/pi-honcho-memory) | Persistent memory via Honcho — auto-learns from conversations, search, chat, remember |
 | [**pi-vault**](extensions/pi-vault/) | [espennilsen/pi](https://github.com/espennilsen/pi) | Obsidian vault integration — read, write, search, daily notes, templates, web dashboard |
 
+## Skills
+
+| Skill | Description |
+|-------|-------------|
+| [**obsidian-vault**](skills/obsidian-vault/) | Vault management instructions — PARA structure, conventions, safety rules, common operations |
+
 ### Planned (from espennilsen/pi)
 
 | Extension | Description |
