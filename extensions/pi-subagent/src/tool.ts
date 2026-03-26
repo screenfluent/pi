@@ -672,11 +672,11 @@ export function registerSubagentTool(
 				const usage = sumUsage(results);
 				const summaries = results.map((r) => {
 					const output = getFinalOutput(r.messages) || r.response;
-					const preview = output.slice(0, 100) + (output.length > 100 ? "..." : "");
-					return `[${r.agent}] ${r.exitCode === 0 ? "✓" : "✗"}: ${preview || "(no output)"}`;
+					const header = `[${r.agent}] ${r.exitCode === 0 ? "✓" : "✗"}`;
+					return `${header}:\n\n${output || "(no output)"}`;
 				});
 				return {
-					content: [{ type: "text" as const, text: `Parallel: ${ok}/${results.length} succeeded (${fmtUsage(usage)})\n\n${summaries.join("\n\n")}` }],
+					content: [{ type: "text" as const, text: `Parallel: ${ok}/${results.length} succeeded (${fmtUsage(usage)})\n\n${summaries.join("\n\n---\n\n")}` }],
 					details: makeDetails("parallel")(results),
 				};
 			}
