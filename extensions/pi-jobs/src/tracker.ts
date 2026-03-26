@@ -39,12 +39,18 @@ export function registerTracker(pi: ExtensionAPI): void {
 
 	// ── Turn tracking (one turn = one model call) ───────────
 
-	pi.on("turn_start", async (event) => {
+	pi.on("turn_start", async (event, ctx) => {
 		if (!isStoreReady()) return;
 		const store = getJobsStore();
 
 		// First turn of a new run — create a job
 		if (event.turnIndex === 0) {
+			// Ensure model is set (may not have received model_select yet)
+			if (!state.currentModel && ctx.model) {
+				state.currentModel = ctx.model.id;
+				state.currentProvider = ctx.model.provider;
+			}
+
 			// Extract prompt from the user message
 			const prompt = extractPrompt(event);
 			const jobId = await store.createJob({
@@ -208,10 +214,11 @@ function extractPrompt(event: any): string {
 }
 
 function extractResponse(event: any): string {
-	if (event.assistantMessage?.content) {
-		if (typeof event.assistantMessage.content === "string") return event.assistantMessage.content;
-		if (Array.isArray(event.assistantMessage.content)) {
-			return event.assistantMessage.content
+	const msg = event.message ?? event.assistantMessage;
+	if (msg?.content) {
+		if (typeof msg.content === "string") return msg.content;
+		if (Array.isArray(msg.content)) {
+			return msg.content
 				.filter((b: any) => b.type === "text")
 				.map((b: any) => b.text)
 				.join("\n");
@@ -232,7 +239,7 @@ function extractUsage(event: any): {
 	costCacheWrite: number;
 	costTotal: number;
 } {
-	const u = event.usage ?? event.assistantMessage?.usage ?? {};
+	const u = event.message?.usage ?? event.usage ?? event.assistantMessage?.usage ?? {};
 	const cost = u.cost ?? {};
 	return {
 		inputTokens: u.input ?? u.inputTokens ?? 0,
