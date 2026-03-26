@@ -43,11 +43,19 @@ const VALID_TASK_STATUSES = ["open", "in-progress", "blocked", "done", "someday"
 
 function vaultPath(root: string, ...segments: string[]): string {
 	const resolved = path.resolve(root, ...segments);
-	// Check resolved path stays within vault root.
-	// Note: does not follow symlinks. For symlinked vaults, use realpath on both.
+	// Lexical check first
 	const normalizedRoot = root.endsWith("/") ? root : root + "/";
 	if (resolved !== root && !resolved.startsWith(normalizedRoot)) {
 		throw new Error(`Path escapes vault root: ${segments.join("/")}`);
+	}
+	// Follow symlinks for existing paths to catch symlink escapes
+	if (fs.existsSync(resolved)) {
+		const real = fs.realpathSync(resolved);
+		const realRoot = fs.realpathSync(root);
+		const normalizedRealRoot = realRoot.endsWith("/") ? realRoot : realRoot + "/";
+		if (real !== realRoot && !real.startsWith(normalizedRealRoot)) {
+			throw new Error(`Path escapes vault root via symlink: ${segments.join("/")}`);
+		}
 	}
 	return resolved;
 }
@@ -281,9 +289,19 @@ export function registerObsidianTool(pi: ExtensionAPI, config: VaultConfig): voi
 						const fmLines = rawFm.split("\n");
 						const targetLine = fmLines.findIndex(l => l.startsWith(`${params.target}:`));
 
+						// Find the extent of this field (including indented continuation lines like list items)
+						function fieldExtent(startIdx: number): number {
+							let end = startIdx + 1;
+							while (end < fmLines.length && /^[\s-]/.test(fmLines[end]) && !fmLines[end].match(/^\w/)) {
+								end++;
+							}
+							return end;
+						}
+
 						if (params.operation === "replace") {
 							if (targetLine >= 0) {
-								fmLines[targetLine] = `${params.target}: ${params.content}`;
+								const end = fieldExtent(targetLine);
+								fmLines.splice(targetLine, end - targetLine, `${params.target}: ${params.content}`);
 							} else {
 								fmLines.push(`${params.target}: ${params.content}`);
 							}
@@ -806,11 +824,12 @@ tags:
 - [ ] Evening reflection
 
 ## 📍 Top 3 Priorities
-1. ${params.content ? params.content.split("\n")[0] || "" : ""}
+1. 
 2. 
 3. 
 
 ## 📝 Notes
+${params.content ? "\n" + params.content : ""}
 
 ## 💭 End of Day
 **Best Thing Today:** 

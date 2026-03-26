@@ -61,6 +61,7 @@ export function registerTracker(pi: ExtensionAPI): void {
 
 			// Extract prompt from before_agent_start or fall back to event
 			const prompt = pendingPrompt || extractPrompt(event);
+			pendingPrompt = "";
 			const jobId = await store.createJob({
 				channel: "tui",
 				prompt: prompt.slice(0, 50_000),

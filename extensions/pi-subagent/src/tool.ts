@@ -310,7 +310,10 @@ async function runAgent(
 		cost: isolated.costTotal,
 		durationMs: isolated.durationMs,
 		model: isolated.model ?? model,
+		provider: (isolated.model ?? model)?.split("/")[0],
 		response: (getFinalOutput(isolated.messages) || isolated.response || "").slice(0, 50_000),
+		toolCallCount: isolated.toolCallCount,
+		turnCount: isolated.turnCount,
 	});
 	log("complete", { agent: agentName, trackingId, status: oneShotStatus, durationMs: isolated.durationMs },
 		oneShotStatus === "completed" ? "INFO" : "ERROR");
@@ -504,6 +507,29 @@ export function registerSubagentTool(
 
 			const text = (t: string) => ({ content: [{ type: "text" as const, text: t }], details: {} });
 
+			// ── Confirmation for project-local agents (all modes) ──
+			if ((scope === "project" || scope === "both") && ctx.hasUI) {
+				const requested = new Set<string>();
+				if (params.chain) for (const s of params.chain) requested.add(s.agent);
+				if (params.tasks) for (const t of params.tasks) requested.add(t.agent);
+				if (params.agent) requested.add(params.agent);
+				if (params.orchestrator) requested.add(params.orchestrator.agent);
+				if (params.action === "spawn" && params.agent) requested.add(params.agent);
+
+				const projectAgents = [...requested]
+					.map((n) => agents.find((a) => a.name === n))
+					.filter((a): a is AgentConfig => a?.source === "project");
+
+				if (projectAgents.length > 0) {
+					const names = projectAgents.map((a) => a.name).join(", ");
+					const ok = await ctx.ui.confirm(
+						"Run project-local agents?",
+						`Agents: ${names}\nSource: ${discovery.projectAgentsDir}\n\nProject agents are repo-controlled. Only continue for trusted repos.`,
+					);
+					if (!ok) return text("Cancelled: project-local agents not approved.");
+				}
+			}
+
 			// ── Pool actions (spawn/send/list/kill/kill-all) ──
 			if (params.action) {
 				return await handlePoolAction(params, settings, agents, ctx.cwd, log, text);
@@ -530,27 +556,6 @@ export function registerSubagentTool(
 			if (modeCount !== 1) {
 				const avail = agents.map((a) => `${a.name} (${a.source})`).join(", ") || "none";
 				return text(`Provide exactly one mode (agent+task, tasks, chain, orchestrator, or action).\nAvailable agents: ${avail}`);
-			}
-
-			// ── Confirmation for project-local agents ─────────
-			if ((scope === "project" || scope === "both") && ctx.hasUI) {
-				const requested = new Set<string>();
-				if (params.chain) for (const s of params.chain) requested.add(s.agent);
-				if (params.tasks) for (const t of params.tasks) requested.add(t.agent);
-				if (params.agent) requested.add(params.agent);
-
-				const projectAgents = [...requested]
-					.map((n) => agents.find((a) => a.name === n))
-					.filter((a): a is AgentConfig => a?.source === "project");
-
-				if (projectAgents.length > 0) {
-					const names = projectAgents.map((a) => a.name).join(", ");
-					const ok = await ctx.ui.confirm(
-						"Run project-local agents?",
-						`Agents: ${names}\nSource: ${discovery.projectAgentsDir}\n\nProject agents are repo-controlled. Only continue for trusted repos.`,
-					);
-					if (!ok) return text("Cancelled: project-local agents not approved.");
-				}
 			}
 
 			// ── Chain mode ────────────────────────────────────

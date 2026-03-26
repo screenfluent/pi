@@ -75,6 +75,7 @@ interface InternalPendingOp {
 
 export class AgentPool {
 	private agents = new Map<string, { rpc: RpcAgent; node: PoolAgentNode }>();
+	private deadUsage: UsageStats = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, contextTokens: 0, turns: 0 };
 	private server: PoolServer | null = null;
 	private router = new MessageRouter();
 	private settings: SubagentSettings;
@@ -424,6 +425,16 @@ export class AgentPool {
 		entry.rpc.kill();
 		entry.node.state = "dead";
 
+		// Accumulate usage from dead agent
+		const u = entry.node.usage;
+		this.deadUsage.input += u.input;
+		this.deadUsage.output += u.output;
+		this.deadUsage.cacheRead += u.cacheRead;
+		this.deadUsage.cacheWrite += u.cacheWrite;
+		this.deadUsage.cost += u.cost;
+		this.deadUsage.contextTokens += u.contextTokens;
+		this.deadUsage.turns += u.turns;
+
 		// Remove from parent's children
 		if (entry.node.parentId) {
 			const parent = this.agents.get(entry.node.parentId);
@@ -454,7 +465,7 @@ export class AgentPool {
 
 	/** Total usage across all agents (alive and dead). */
 	totalUsage(): UsageStats {
-		const t: UsageStats = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0, cost: 0, contextTokens: 0, turns: 0 };
+		const t: UsageStats = { ...this.deadUsage };
 		for (const { node } of this.agents.values()) {
 			t.input += node.usage.input;
 			t.output += node.usage.output;
