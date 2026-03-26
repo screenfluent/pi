@@ -892,6 +892,7 @@ export default function (pi: ExtensionAPI) {
 		slot: BtwSlotState,
 		question: string,
 	): Promise<void> {
+		const startGeneration = disposeGeneration;
 		const model = ctx.model;
 		if (!model) {
 			slot.pending.error = "No active model selected.";
@@ -1005,8 +1006,9 @@ export default function (pi: ExtensionAPI) {
 				usage: resp.usage,
 			};
 
-			// Late-commit guard: if the slot was disposed/archived during execution, don't persist
-			if (!store.slots.has(slot.id)) return;
+			// Late-commit guard: if the slot was disposed/archived during execution, or
+			// a global dispose happened (session switch/shutdown), don't persist
+			if (!store.slots.has(slot.id) || disposeGeneration !== startGeneration) return;
 
 			// Add to slot thread
 			slot.thread.push(details);
@@ -1216,7 +1218,7 @@ export default function (pi: ExtensionAPI) {
 			if (ctx.isIdle()) pi.sendUserMessage(content);
 			else pi.sendUserMessage(content, { deliverAs: "followUp" });
 			const count = slot.thread.length;
-			doArchiveSlot(slot.id);
+			await doArchiveSlot(slot.id);
 			dismissOverlay();
 			notify(ctx, `💭 BTW → main: injected ${count} exchange(s)`, "info");
 		},
@@ -1242,7 +1244,7 @@ export default function (pi: ExtensionAPI) {
 				if (ctx.isIdle()) pi.sendUserMessage(content);
 				else pi.sendUserMessage(content, { deliverAs: "followUp" });
 				const count = slot.thread.length;
-				doArchiveSlot(slot.id);
+				await doArchiveSlot(slot.id);
 				dismissOverlay();
 				notify(
 					ctx,
@@ -1269,7 +1271,7 @@ export default function (pi: ExtensionAPI) {
 				return;
 			}
 			const title = slot.title;
-			doArchiveSlot(slot.id);
+			await doArchiveSlot(slot.id);
 			syncOverlay();
 			notify(ctx, `💭 BTW: archived "${title}"`, "info");
 		},
