@@ -909,8 +909,8 @@ export default function (pi: ExtensionAPI) {
 		}
 
 		try {
-			const apiKey = await ctx.modelRegistry.getApiKey(model);
-			if (!apiKey) {
+			const auth = await ctx.modelRegistry.getApiKeyAndHeaders(model);
+			if (!auth.ok) {
 				slot.pending.error = `No credentials for ${model.provider}/${model.id}`;
 				slot.pending.statusText = "Error";
 				slot.busy = false;
@@ -1138,8 +1138,8 @@ export default function (pi: ExtensionAPI) {
 	): Promise<string> {
 		const model = ctx.model;
 		if (!model) throw new Error("No active model selected.");
-		const apiKey = await ctx.modelRegistry.getApiKey(model);
-		if (!apiKey) throw new Error(`No credentials for ${model.provider}/${model.id}.`);
+		const auth = await ctx.modelRegistry.getApiKeyAndHeaders(model);
+		if (!auth.ok) throw new Error(`No credentials for ${model.provider}/${model.id}.`);
 
 		const { session } = await createAgentSession({
 			sessionManager: SessionManager.inMemory(),
