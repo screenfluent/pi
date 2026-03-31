@@ -1,0 +1,10 @@
+---
+id: ts-incorrect-optional-input-type
+language: TypeScript
+severity: warning
+message: "This input is optional, but the type for it does not include undefined."
+metadata:
+  weight: 4
+  category: security
+rule:
+  pattern: "$FIELD"

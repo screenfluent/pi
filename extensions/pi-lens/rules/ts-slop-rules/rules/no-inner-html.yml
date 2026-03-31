@@ -1,0 +1,13 @@
+---
+id: ts-no-inner-html
+language: TypeScript
+severity: warning
+message: "Avoid innerHTML/outerHTML — use textContent or a sanitizer to prevent XSS"
+metadata:
+  weight: 4
+  category: security
+rule:
+  any:
+    - pattern: "$EL.innerHTML = $$$"
+    - pattern: "$EL.outerHTML = $$$"
+    - pattern: "$EL.insertAdjacentHTML($$$)"

@@ -1,0 +1,112 @@
+id: toctou
+language: TypeScript
+message: "TOCTOU race — file accessed after existsSync check in same block"
+severity: warning
+note: |
+  Time-of-check-time-of-use race condition. The file could be deleted
+  or modified between the existsSync check and the subsequent operation.
+  Fix: wrap the operation in try/catch instead of pre-checking.
+  Grade 3.4 — moderate complexity, clear fix.
+rule:
+  any:
+    - all:
+        - any:
+            - pattern: if (fs.existsSync($PATH)) { $$$ }
+            - pattern: if (existsSync($PATH)) { $$$ }
+            - pattern: if (fs.existsSync($PATH)) $STMT
+            - pattern: if (existsSync($PATH)) $STMT
+        - has:
+            stopBy: end
+            any:
+              - pattern: fs.readFileSync($PATH)
+              - pattern: fs.readFileSync($PATH, $$$)
+              - pattern: readFileSync($PATH)
+              - pattern: readFileSync($PATH, $$$)
+              - pattern: fs.readFile($PATH)
+              - pattern: fs.readFile($PATH, $$$)
+              - pattern: readFile($PATH)
+              - pattern: readFile($PATH, $$$)
+              - pattern: fs.statSync($PATH)
+              - pattern: fs.statSync($PATH, $$$)
+              - pattern: statSync($PATH)
+              - pattern: statSync($PATH, $$$)
+              - pattern: fs.unlinkSync($PATH)
+              - pattern: fs.unlinkSync($PATH, $$$)
+              - pattern: unlinkSync($PATH)
+              - pattern: unlinkSync($PATH, $$$)
+              - pattern: fs.lstatSync($PATH)
+              - pattern: fs.lstatSync($PATH, $$$)
+              - pattern: lstatSync($PATH)
+              - pattern: lstatSync($PATH, $$$)
+    - all:
+        - any:
+            - pattern: if (!fs.existsSync($PATH)) { $$$ }
+            - pattern: if (!existsSync($PATH)) { $$$ }
+            - pattern: if (!fs.existsSync($PATH)) $STMT
+            - pattern: if (!existsSync($PATH)) $STMT
+        - has:
+            stopBy: end
+            any:
+              - pattern: fs.mkdirSync($PATH)
+              - pattern: fs.mkdirSync($PATH, $$$)
+              - pattern: mkdirSync($PATH)
+              - pattern: mkdirSync($PATH, $$$)
+              - pattern: fs.writeFileSync($PATH, $$$)
+              - pattern: writeFileSync($PATH, $$$)
+              - pattern: fs.appendFileSync($PATH, $$$)
+              - pattern: appendFileSync($PATH, $$$)
+    - all:
+        - any:
+            - pattern: if (fs.accessSync($PATH)) { $$$ }
+            - pattern: if (fs.accessSync($PATH, $$$)) { $$$ }
+            - pattern: if (accessSync($PATH)) { $$$ }
+            - pattern: if (accessSync($PATH, $$$)) { $$$ }
+            - pattern: if (fs.accessSync($PATH)) $STMT
+            - pattern: if (fs.accessSync($PATH, $$$)) $STMT
+            - pattern: if (accessSync($PATH)) $STMT
+            - pattern: if (accessSync($PATH, $$$)) $STMT
+        - has:
+            stopBy: end
+            any:
+              - pattern: fs.readFileSync($PATH)
+              - pattern: fs.readFileSync($PATH, $$$)
+              - pattern: readFileSync($PATH)
+              - pattern: readFileSync($PATH, $$$)
+              - pattern: fs.readFile($PATH)
+              - pattern: fs.readFile($PATH, $$$)
+              - pattern: readFile($PATH)
+              - pattern: readFile($PATH, $$$)
+    - all:
+        - any:
+            - pattern: if (fse.pathExistsSync($PATH)) { $$$ }
+            - pattern: if (pathExistsSync($PATH)) { $$$ }
+            - pattern: if (fse.pathExistsSync($PATH)) $STMT
+            - pattern: if (pathExistsSync($PATH)) $STMT
+        - has:
+            stopBy: end
+            any:
+              - pattern: fse.readFileSync($PATH)
+              - pattern: fse.readFileSync($PATH, $$$)
+              - pattern: fse.readFile($PATH)
+              - pattern: fse.readFile($PATH, $$$)
+    - all:
+        - any:
+            - pattern: if (!fse.pathExistsSync($PATH)) { $$$ }
+            - pattern: if (!pathExistsSync($PATH)) { $$$ }
+            - pattern: if (!fse.pathExistsSync($PATH)) $STMT
+            - pattern: if (!pathExistsSync($PATH)) $STMT
+        - has:
+            stopBy: end
+            any:
+              - pattern: fse.mkdirpSync($PATH)
+              - pattern: fse.mkdirpSync($PATH, $$$)
+              - pattern: mkdirpSync($PATH)
+              - pattern: mkdirpSync($PATH, $$$)
+              - pattern: fse.mkdirsSync($PATH)
+              - pattern: fse.mkdirsSync($PATH, $$$)
+              - pattern: mkdirsSync($PATH)
+              - pattern: mkdirsSync($PATH, $$$)
+              - pattern: fse.mkdirSync($PATH)
+              - pattern: fse.mkdirSync($PATH, $$$)
+              - pattern: mkdirSync($PATH)
+              - pattern: mkdirSync($PATH, $$$)

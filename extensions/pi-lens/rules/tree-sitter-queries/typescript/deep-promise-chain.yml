@@ -1,0 +1,64 @@
+# Deep Promise Chain
+# Detects promise chains 3+ levels deep
+id: deep-promise-chain
+name: Deep Promise Chain
+severity: warning
+category: complexity
+language: typescript
+
+message: "Promise chain {{M1}} → {{M2}} → {{M3}} — consider async/await"
+
+description: |
+  Deep promise chains (.then().catch().then()) are hard to read and debug.
+  Async/await provides clearer control flow.
+  
+  ✅ FIX: Convert to async/await
+
+query: |
+  (call_expression
+    function: (member_expression
+      object: (call_expression
+        function: (member_expression
+          object: (call_expression
+            function: (member_expression
+              property: (property_identifier) @M1)
+            arguments: (arguments))
+          property: (property_identifier) @M2)
+        arguments: (arguments))
+      property: (property_identifier) @M3)
+    arguments: (arguments))
+  (#match? @M1 "^(then|catch)$")
+  (#match? @M2 "^(then|catch)$")
+  (#match? @M3 "^(then|catch)$")
+
+metavars:
+  - M1
+  - M2
+  - M3
+
+tags:
+  - complexity
+  - async
+  - readability
+
+examples:
+  bad: |
+    fetch('/api')
+      .then(r => r.json())
+      .catch(e => console.log(e))
+      .then(data => data.items)
+      .then(items => items[0]);
+  
+  good: |
+    async function fetchFirstItem() {
+      try {
+        const response = await fetch('/api');
+        const data = await response.json();
+        return data.items[0];
+      } catch (e) {
+        console.log(e);
+      }
+    }
+
+has_fix: true
+fix_action: convert_to_async_await

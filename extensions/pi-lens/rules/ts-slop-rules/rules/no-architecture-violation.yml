@@ -1,0 +1,10 @@
+---
+id: ts-no-architecture-violation
+language: TypeScript
+severity: warning
+message: "Forbidden import — layer boundary violation: importing from database/model layer"
+metadata:
+  weight: 4
+  category: security
+rule:
+  pattern: "import { $$$ } from \"$PATH\""

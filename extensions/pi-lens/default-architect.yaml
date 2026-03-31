@@ -1,0 +1,141 @@
+# .pi-lens/architect.yaml
+# Architectural rules for your project
+# Copy to your project root as .pi-lens/architect.yaml and customize.
+#
+# Structure is language-agnostic — regex patterns in must_not are language-specific.
+#
+# IMPORTANT: Patterns are JavaScript regex syntax. Use single quotes for patterns
+# containing double quotes, and escape backslashes appropriately.
+
+version: "1.2"
+
+# =============================================================================
+# FILE SIZE LIMITS (per file type)
+# =============================================================================
+
+  # Services: focused, single-purpose modules
+  - pattern: "**/services/**/*.ts"
+    max_lines: 500
+    must_not:
+      # TUNED: Was (8+ spaces, 5 lines), now (12+ spaces, 10 lines)
+      - pattern: '(?:\s{12,}.*\n){10,}'
+        message: "Extreme nesting detected (6+ levels). Refactor into smaller functions."
+
+  # Clients: can be larger but still bounded
+  - pattern: "**/clients/**/*.ts|**/commands/**/*.ts"
+    max_lines: 1000
+    must_not:
+      # TUNED: Was (8+ spaces, 5 lines), now (12+ spaces, 10 lines)
+      - pattern: '(?:\s{12,}.*\n){10,}'
+        message: "Extreme nesting detected (6+ levels). Refactor into smaller functions."
+
+  # General limit for other files (higher than before)
+  - pattern: "**/*.{ts,tsx,js,jsx,py,go,rs}"
+    max_lines: 3000
+    must_not:
+      # TUNED: Was (8+ spaces, 5 lines), now (12+ spaces, 10 lines) for extreme nesting only
+      - pattern: '(?:\s{12,}.*\n){10,}'
+        message: "Extreme nesting detected (6+ levels). Refactor into smaller functions."
+
+  # Test files: more relaxed (structure is different)
+  - pattern: "**/*.test.ts|**/*.test.js|**/*.spec.ts|**/*.spec.js"
+    max_lines: 5000
+
+# =============================================================================
+# LANGUAGE-AGNOSTIC RULES (The "Universal Truths")
+# =============================================================================
+
+rules:
+  # --- CI & Environment Safety ---
+  - pattern: "**/*.{ts,tsx,js,jsx,py,go,rs,java,cpp}"
+    must_not:
+      - pattern: '[a-zA-Z]:\\(?:Users|Program Files|Windows|Temp)\\[^\\]*'
+        message: "No absolute Windows paths — breaks CI and cross-platform builds."
+        fix: "Use path.join(__dirname, 'relative/path') or process.cwd()"
+      - pattern: '/(?:home|Users|usr|etc|var)/[a-zA-Z0-9_-]+/'
+        message: "Potential absolute Unix path detected — use relative paths or path.join()."
+        fix: "Use path.join(process.cwd(), 'relative/path') or path.resolve()"
+      - pattern: 'https?://localhost:[0-9]+'
+        message: "No hardcoded localhost URLs — use environment variables or a config service."
+        fix: "Use process.env.API_URL || 'http://localhost:3000'"
+
+  # --- Complexity & Technical Debt ---
+  - pattern: "**/*.{ts,tsx,js,jsx,py,go,rs}"
+    must_not:
+      - pattern: '(?:(?://|#).*\n){10,}'
+        message: "Large block of commented-out code detected. This is dead code — delete it and rely on Git history."
+        fix: "Delete the commented code. Git history preserves it if needed later."
+
+  # --- Reliability & Fragility ---
+  - pattern: "**/*.{ts,tsx,js,jsx,py,go,rs}"
+    must_not:
+      - pattern: '(?:catch|except)\s*\(?.*?\)?\s*\{\s*\}'
+        message: "No empty catch/except blocks. Swallowing errors makes debugging impossible — at least log the error."
+        fix: |
+          console.error(`[context] Operation failed:`, err);
+          // or: throw err;
+          // or: return null;
+      - pattern: '\b(?:password|secret|api_?key|token|private_?key)\b\s*[:=]\s*(?:"|'')[^''"]{8,}(?:"|'')'
+        message: "No hardcoded secrets — use environment variables or a secrets manager."
+        fix: "Use process.env.SECRET_NAME and add to .env.example (not .env!)"
+
+# =============================================================================
+# JS/TS-SPECIFIC RULES (Node.js & Frontend)
+# =============================================================================
+
+  # --- Type Safety ---
+  - pattern: "**/*.{ts,tsx}"
+    must_not:
+      - pattern: ':\s*any\b|as\s+any\b'
+        message: "No 'any' types — use 'unknown' or define a proper interface to maintain type safety."
+        fix: |
+          // Instead of: x as any
+          x as unknown as SpecificType
+          // Or define proper interface and use it
+    must:
+      - "Use strict TypeScript mode"
+
+  # --- Configuration & IO ---
+  # REMOVED: no process.env rule - extensions and CLI tools need env access
+  # If you want this rule for your project, add it to your .pi-lens/architect.yaml:
+  # - pattern: "**/services/**/*.ts|**/domain/**/*.ts"
+  #   must_not:
+  #     - pattern: 'process\.env'
+  #       message: "Domain/Service logic must not read env vars directly — inject config."
+
+  # --- Async Patterns ---
+  # DISABLED: .then() rule was too aggressive - flagged all promise usage
+  # Only flag in specific contexts (3+ level chains) via tree-sitter instead
+  # - pattern: "**/*.{ts,tsx,js,jsx}"
+  #   must_not:
+  #     - pattern: '\.then\('
+  #       message: "Prefer async/await over .then() chains for better readability."
+
+  # --- Grep-ability & Agent Search ---
+  # Note: 'export default' is acceptable for entry points (index.ts)
+  - pattern: "**/*.{ts,tsx}"
+    must_not:
+      - pattern: "from\\s+['\"]\.\./\.\./\.\./"
+        message: "Avoid deep relative imports (3+ levels) — use absolute imports (@app/...) for agent reasoning."
+
+# =============================================================================
+# PYTHON-SPECIFIC RULES
+# =============================================================================
+
+  # --- Clean Python ---
+  - pattern: "**/*.py"
+    must_not:
+      - pattern: 'print\('
+        message: "No print() statements in production code — use the 'logging' module."
+      - pattern: 'global\s+[a-zA-Z_]'
+        message: "No 'global' keyword — global state makes code untestable and unpredictable."
+      - pattern: 'def\s+[a-zA-Z0-9_]+\([^)]*=\s*\[\]'
+        message: "No mutable default arguments (e.g., x=[]). Use 'x=None' and initialize inside the function."
+
+  # --- Python Reliability ---
+  - pattern: "**/*.py"
+    must_not:
+      - pattern: 'except:\s*pass|except\s+Exception:\s*pass'
+        message: "Do not use bare 'except: pass'. Explicitly catch specific exceptions and log them."
+      - pattern: 'eval\(|exec\('
+        message: "No eval() or exec() — these are security risks and architectural anti-patterns."

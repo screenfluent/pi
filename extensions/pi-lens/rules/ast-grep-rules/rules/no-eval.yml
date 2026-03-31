@@ -1,0 +1,13 @@
+id: no-eval
+language: TypeScript
+message: "Avoid eval() — it can execute arbitrary code and is a security risk"
+severity: error
+note: |
+  eval() executes strings as code which can lead to security vulnerabilities
+  and performance issues. Use safer alternatives like JSON.parse() for data.
+  Grade 3.5 — high risk, critical security issue.
+rule:
+  any:
+    - pattern: eval($$$ARGS)
+    - pattern: window.eval($$$ARGS)
+    - pattern: global.eval($$$ARGS)

@@ -1,0 +1,10 @@
+---
+id: ts-no-dangerously-set-inner-html
+language: TSX
+severity: warning
+message: "dangerouslySetInnerHTML can expose XSS vulnerabilities — sanitize with DOMPurify"
+metadata:
+  weight: 4
+  category: security
+rule:
+  kind: jsx_attribute

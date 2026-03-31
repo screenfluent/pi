@@ -1,0 +1,10 @@
+---
+id: ts-no-new-symbol
+language: TypeScript
+severity: warning
+message: "Symbol cannot be called as a constructor."
+metadata:
+  weight: 4
+  category: security
+rule:
+  pattern: "new Symbol($$$)"

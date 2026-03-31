@@ -1,0 +1,10 @@
+---
+id: ts-no-dupe-class-members
+language: TypeScript
+severity: warning
+message: "Duplicate class member '$NAME'."
+metadata:
+  weight: 4
+  category: security
+rule:
+  any:

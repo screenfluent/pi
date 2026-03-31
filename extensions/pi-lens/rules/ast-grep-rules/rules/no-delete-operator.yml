@@ -1,0 +1,9 @@
+id: no-delete-operator
+language: TypeScript
+message: "Avoid delete operator — set to undefined or use Map"
+severity: hint
+note: |
+  delete can cause performance issues with V8 hidden classes.
+  Set to undefined or use a Map for dynamic keys.
+rule:
+  pattern: delete $X.$Y

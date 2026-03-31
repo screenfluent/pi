@@ -1,0 +1,81 @@
+{
+	"name": "pi-lens",
+	"version": "2.2.10",
+	"type": "module",
+	"description": "Real-time code feedback for pi — LSP, linters, formatters, type-checking, structural analysis (ast-grep), TODO scanner, dead code detection, duplicate detection, type coverage, complexity metrics, and AI slop detection",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/apmantza/pi-lens.git"
+	},
+	"main": "index.ts",
+	"scripts": {
+		"build": "tsc",
+		"watch": "tsc --watch",
+		"test": "vitest run",
+		"test:watch": "vitest"
+	},
+	"keywords": [
+		"pi",
+		"pi-extension",
+		"pi-package",
+		"linter",
+		"biome",
+		"ast-grep",
+		"ruff",
+		"typescript",
+		"code-quality",
+		"feedback",
+		"type-coverage",
+		"jscpd",
+		"knip"
+	],
+	"author": "R3LiC",
+	"license": "MIT",
+	"files": [
+		"index.ts",
+		"clients/",
+		"commands/",
+		"rules/",
+		"default-architect.yaml",
+		"tsconfig.json",
+		"README.md",
+		"CHANGELOG.md"
+	],
+	"peerDependencies": {
+		"@mariozechner/pi-coding-agent": "*"
+	},
+	"dependencies": {
+		"@sinclair/typebox": "^0.34.0",
+		"effect": "^3.21.0",
+		"vscode-jsonrpc": "^8.2.1"
+	},
+	"optionalDependencies": {
+		"tree-sitter-wasms": "npm:null@^0.11.0",
+		"web-tree-sitter": "^0.25.10"
+	},
+	"devDependencies": {
+		"@ast-grep/napi": "^0.42.0",
+		"@types/node": "^22.10.5",
+		"js-yaml": "^4.1.1",
+		"typescript": "^5.0.0",
+		"typescript-language-server": "^5.1.3",
+		"vitest": "^4.1.1"
+	},
+	"pi": {
+		"extensions": [
+			"./index.ts"
+		]
+	},
+	"knip": {
+		"entry": [
+			"index.ts"
+		],
+		"project": [
+			"**/*.ts",
+			"!**/*.test.ts"
+		],
+		"ignore": [
+			"**/*.test.ts"
+		]
+	}
+}

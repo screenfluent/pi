@@ -1,0 +1,10 @@
+---
+id: ts-no-debugger
+language: TypeScript
+severity: warning
+message: "Unexpected `debugger` statement."
+metadata:
+  weight: 4
+  category: security
+rule:
+  pattern: "debugger"

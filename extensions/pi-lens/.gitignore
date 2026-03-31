@@ -1,0 +1,64 @@
+# Dependencies
+node_modules/
+
+# pi-lens internal
+.pi-lens/
+
+# Session data
+.pisessionsummaries/
+
+# Build artifacts
+target/
+dist/
+build/
+out/
+
+# Compiled TypeScript
+*.js
+*.js.map
+*.d.ts
+
+# Rust
+src/main.rs
+
+# Internal planning docs
+featureideas.md
+SCA.md
+review.md
+
+# Scratch test files (moved to tests/)
+tests/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+
+# Debug logs
+*.log
+
+# Temp scan outputs
+booboo_*.json
+jscpd-report.json
+
+# Linter caches
+.ruff_cache/
+
+# Documentation files - only keep AGENTS.md, README.md, CHANGELOG.md in public repo
+*.md
+!AGENTS.md
+!README.md
+!CHANGELOG.md
+
+# docs folder entirely
+docs/
+# Test artifacts
+test-*.ts
+test-*.js
+test-*.md
+test-*.sh
+test-filetime/
+

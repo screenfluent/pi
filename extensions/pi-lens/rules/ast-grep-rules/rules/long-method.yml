@@ -1,0 +1,15 @@
+id: long-method
+language: TypeScript
+message: "Long method detected — consider extracting smaller functions"
+severity: hint
+note: |
+  Methods over 30 lines are harder to test and maintain.
+  Consider extracting logical chunks into helper functions.
+  Grade 2.2 — low complexity, improved readability.
+rule:
+  any:
+    - kind: function_declaration
+    - kind: method_definition
+    - kind: arrow_function
+  pattern: $FUNC
+  regex: "(.*\n){45,}" # Approximate 45 lines

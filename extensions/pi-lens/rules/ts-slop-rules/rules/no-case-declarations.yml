@@ -1,0 +1,10 @@
+---
+id: ts-no-case-declarations
+language: TypeScript
+severity: warning
+message: "Unexpected lexical declaration in case block — wrap in braces to restrict scope"
+metadata:
+  weight: 4
+  category: security
+rule:
+  all:

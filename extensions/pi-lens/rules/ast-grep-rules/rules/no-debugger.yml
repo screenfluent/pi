@@ -1,0 +1,12 @@
+id: no-debugger
+message: Unexpected `debugger` statement.
+severity: error
+language: TypeScript
+rule:
+  pattern: debugger
+note: |
+  Production code should definitely not contain debugger, as it will cause the browser to stop executing code and open an appropriate debugger.
+
+url: https://eslint.org/docs/rules/no-debugger
+
+fix: ""  # Remove the debugger statement
