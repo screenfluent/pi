@@ -288,6 +288,7 @@ class BtwOverlay extends Container implements Focusable {
 	private readonly onDismissCb: () => void;
 	private readonly onCycleTabCb: (direction: 1 | -1) => void;
 	private _focused = false;
+	private scrollOffset = 0;
 
 	get focused(): boolean {
 		return this._focused;
@@ -339,6 +340,17 @@ class BtwOverlay extends Container implements Focusable {
 			this.onCycleTabCb(-1);
 			return;
 		}
+		// Scroll: PageUp/Shift+Up = up, PageDown/Shift+Down = down
+		if (data === "\x1b[5~" || data === "\x1b[1;2A") {
+			this.scrollOffset += data === "\x1b[5~" ? 5 : 1;
+			this.tui.requestRender();
+			return;
+		}
+		if (data === "\x1b[6~" || data === "\x1b[1;2B") {
+			this.scrollOffset = Math.max(0, this.scrollOffset - (data === "\x1b[6~" ? 5 : 1));
+			this.tui.requestRender();
+			return;
+		}
 		this.input.handleInput(data);
 	}
 
@@ -348,6 +360,10 @@ class BtwOverlay extends Container implements Focusable {
 	}
 	getDraft(): string {
 		return this.input.getValue();
+	}
+
+	resetScroll(): void {
+		this.scrollOffset = 0;
 	}
 
 	private frame(content: string, iw: number): string {
@@ -375,8 +391,14 @@ class BtwOverlay extends Container implements Focusable {
 		const transcriptHeight = Math.max(6, dh - chromeHeight);
 
 		const transcript = this.getTranscript(iw, this.theme);
-		const visibleTranscript = transcript.slice(-transcriptHeight);
+		const maxScroll = Math.max(0, transcript.length - transcriptHeight);
+		this.scrollOffset = Math.min(this.scrollOffset, maxScroll);
+		const end = transcript.length - this.scrollOffset;
+		const start = Math.max(0, end - transcriptHeight);
+		const visibleTranscript = transcript.slice(start, end);
 		const transcriptPadding = Math.max(0, transcriptHeight - visibleTranscript.length);
+		const hasAbove = start > 0;
+		const hasBelow = this.scrollOffset > 0;
 
 		const status = this.getStatus();
 
@@ -385,9 +407,10 @@ class BtwOverlay extends Container implements Focusable {
 		const inputLine = this.input.render(iw)[0] ?? "";
 		this.input.focused = prevFocused;
 
+		const scrollHint = hasBelow ? ` · ↓${this.scrollOffset}` : "";
 		const helpHints = hasMultiSlots
-			? "Enter submit · Tab switch · Esc hide"
-			: "Enter submit · Esc hide";
+			? `Enter submit · Tab switch · PgUp/Dn scroll · Esc hide${scrollHint}`
+			: `Enter submit · PgUp/Dn scroll · Esc hide${scrollHint}`;
 
 		const lines = [this.border(iw, "top")];
 		lines.push(
@@ -396,12 +419,28 @@ class BtwOverlay extends Container implements Focusable {
 		if (hasMultiSlots) {
 			lines.push(this.frame(tabStrip!, iw));
 		}
-		lines.push(this.theme.fg("borderMuted", `├${"─".repeat(iw)}┤`));
+		if (hasAbove) {
+			const lbl = " ▲ scroll up for more ";
+			const pad = Math.max(0, iw - lbl.length);
+			const left = Math.floor(pad / 2);
+			const right = pad - left;
+			lines.push(this.theme.fg("borderMuted", `├${"─".repeat(left)}${lbl}${"─".repeat(right)}┤`));
+		} else {
+			lines.push(this.theme.fg("borderMuted", `├${"─".repeat(iw)}┤`));
+		}
 
 		for (const line of visibleTranscript) lines.push(this.frame(line, iw));
 		for (let i = 0; i < transcriptPadding; i++) lines.push(this.frame("", iw));
 
-		lines.push(this.theme.fg("borderMuted", `├${"─".repeat(iw)}┤`));
+		if (hasBelow) {
+			const lbl = ` ▼ ${this.scrollOffset} more lines `;
+			const pad = Math.max(0, iw - lbl.length);
+			const left = Math.floor(pad / 2);
+			const right = pad - left;
+			lines.push(this.theme.fg("borderMuted", `├${"─".repeat(left)}${lbl}${"─".repeat(right)}┤`));
+		} else {
+			lines.push(this.theme.fg("borderMuted", `├${"─".repeat(iw)}┤`));
+		}
 		lines.push(this.frame(this.theme.fg("warning", status), iw));
 		lines.push(
 			`${this.theme.fg("borderMuted", "│")}${inputLine}${this.theme.fg("borderMuted", "│")}`,
@@ -778,6 +817,7 @@ export default function (pi: ExtensionAPI) {
 						const slot = ensureActiveSlot();
 						slot.draft = "";
 						overlay.setDraft("");
+						overlay.resetScroll();
 						enqueuePrompt(ctx, slot.id, q);
 					},
 					() => {
