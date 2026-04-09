@@ -274,7 +274,7 @@
       "notes": "Complete rewrite from single-thread model to slot-based persisted state with archive, legacy migration, disposeGeneration, and inject/summarize flow. Upstream useful for API migration patterns only."
     },
     "pi-lens": {
-      "strategy": "mirror",
+      "strategy": "patch-stack",
       "upstream": {
         "repo": "https://github.com/apmantza/pi-lens.git",
         "localClonePath": "pi-lens",
@@ -282,8 +282,16 @@
         "sourcePath": ".",
         "lastSyncedCommit": "507a31589be2406e29eb7cd8f186b2374ade2fd2"
       },
-      "diffFiles": [],
-      "notes": "Critical extension for inline code diagnostics. Updated from v2.2.10 to v3.8.22."
+      "diffFiles": [
+        {
+          "path": "index.ts",
+          "note": ".js\u2192.ts imports for Pi TS loading"
+        }
+      ],
+      "notes": "Critical extension for inline code diagnostics. Updated from v2.2.10 to v3.8.22.",
+      "patches": [
+        "Import extensions: .js \u2192 .ts (Pi loads TS directly)"
+      ]
     }
   }
 }

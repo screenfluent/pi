@@ -4,14 +4,14 @@
  * Runs `go vet` for Go files to catch common mistakes.
  */
 
-import { safeSpawn } from "../../safe-spawn.js";
-import { stripAnsi } from "../../sanitize.js";
-import { parseGoVetOutput } from "./utils/diagnostic-parsers.js";
+import { safeSpawn } from "../../safe-spawn.ts";
+import { stripAnsi } from "../../sanitize.ts";
+import { parseGoVetOutput } from "./utils/diagnostic-parsers.ts";
 import type {
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 const goVetRunner: RunnerDefinition = {
 	id: "go-vet",

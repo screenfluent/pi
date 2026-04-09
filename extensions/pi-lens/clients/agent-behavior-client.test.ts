@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import { AgentBehaviorClient } from "./agent-behavior-client.js";
+import { AgentBehaviorClient } from "./agent-behavior-client.ts";
 
 describe("AgentBehaviorClient", () => {
 	let client: AgentBehaviorClient;

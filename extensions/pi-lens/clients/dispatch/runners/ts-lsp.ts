@@ -7,15 +7,15 @@
  * @deprecated The built-in TypeScriptClient is deprecated. Use --lens-lsp for full LSP support.
  */
 
-import { TypeScriptClient } from "../../typescript-client.js";
-import { getLSPService } from "../../lsp/index.js";
+import { TypeScriptClient } from "../../typescript-client.ts";
+import { getLSPService } from "../../lsp/index.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
-import { readFileContent } from "./utils.js";
+} from "../types.ts";
+import { readFileContent } from "./utils.ts";
 
 const tsLspRunner: RunnerDefinition = {
 	id: "ts-lsp",

@@ -8,8 +8,8 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { FormatService, getFormatService, resetFormatService } from "../format-service.js";
-import { FileTimeError } from "../file-time.js";
+import { FormatService, getFormatService, resetFormatService } from "../format-service.ts";
+import { FileTimeError } from "../file-time.ts";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 

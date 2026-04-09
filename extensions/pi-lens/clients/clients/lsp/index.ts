@@ -11,14 +11,14 @@
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
-import type { LSPClientInfo } from "./client.js";
-import { createLSPClient } from "./client.js";
-import { getServersForFileWithConfig } from "./config.js";
-import { getLanguageId } from "./language.js";
-import type { LSPServerInfo } from "./server.js";
-import { normalizeMapKey, uriToPath } from "../path-utils.js";
-import { detectFileKind } from "../file-kinds.js";
-import { detectProjectLanguageProfile } from "../language-profile.js";
+import type { LSPClientInfo } from "./client.ts";
+import { createLSPClient } from "./client.ts";
+import { getServersForFileWithConfig } from "./config.ts";
+import { getLanguageId } from "./language.ts";
+import type { LSPServerInfo } from "./server.ts";
+import { normalizeMapKey, uriToPath } from "../path-utils.ts";
+import { detectFileKind } from "../file-kinds.ts";
+import { detectProjectLanguageProfile } from "../language-profile.ts";
 
 // --- Types ---
 
@@ -264,7 +264,7 @@ export class LSPService {
 	 */
 	async getDiagnostics(
 		filePath: string,
-	): Promise<import("./client.js").LSPDiagnostic[]> {
+	): Promise<import("./client.ts").LSPDiagnostic[]> {
 		const spawned = await this.getClientForFile(filePath);
 		if (!spawned) return [];
 
@@ -348,7 +348,7 @@ export class LSPService {
 	 * If filePath is provided, probes that server; otherwise uses first active client.
 	 */
 	async getOperationSupport(filePath?: string): Promise<
-		import("./client.js").LSPOperationSupport | null
+		import("./client.ts").LSPOperationSupport | null
 	> {
 		if (filePath) {
 			const spawned = await this.getClientForFile(filePath);
@@ -370,7 +370,7 @@ export class LSPService {
 	 * If filePath is provided, probes that server; otherwise uses first active client.
 	 */
 	async getWorkspaceDiagnosticsSupport(filePath?: string): Promise<
-		import("./client.js").LSPWorkspaceDiagnosticsSupport | null
+		import("./client.ts").LSPWorkspaceDiagnosticsSupport | null
 	> {
 		if (filePath) {
 			const spawned = await this.getClientForFile(filePath);
@@ -447,7 +447,7 @@ export class LSPService {
 	/**
 	 * Navigation: find incoming calls (callers)
 	 */
-	async incomingCalls(item: import("./client.js").LSPCallHierarchyItem) {
+	async incomingCalls(item: import("./client.ts").LSPCallHierarchyItem) {
 		const spawned = await this.getClientForFile(uriToPath(item.uri));
 		if (!spawned) return [];
 		return spawned.client.incomingCalls(item);
@@ -456,7 +456,7 @@ export class LSPService {
 	/**
 	 * Navigation: find outgoing calls (callees)
 	 */
-	async outgoingCalls(item: import("./client.js").LSPCallHierarchyItem) {
+	async outgoingCalls(item: import("./client.ts").LSPCallHierarchyItem) {
 		const spawned = await this.getClientForFile(uriToPath(item.uri));
 		if (!spawned) return [];
 		return spawned.client.outgoingCalls(item);
@@ -466,9 +466,9 @@ export class LSPService {
 	 * Get all diagnostics across all tracked files (for cascade checking)
 	 */
 	async getAllDiagnostics(): Promise<
-		Map<string, import("./client.js").LSPDiagnostic[]>
+		Map<string, import("./client.ts").LSPDiagnostic[]>
 	> {
-		const all = new Map<string, import("./client.js").LSPDiagnostic[]>();
+		const all = new Map<string, import("./client.ts").LSPDiagnostic[]>();
 		for (const [_key, client] of this.state.clients) {
 			const clientDiags = client.getAllDiagnostics();
 			for (const [filePath, diags] of clientDiags) {

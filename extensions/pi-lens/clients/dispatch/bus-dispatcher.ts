@@ -18,13 +18,13 @@ import {
 	ReportReady,
 	type Diagnostic,
 	type OutputSemantic,
-} from "../bus/events.js";
-import { publish } from "../bus/bus.js";
-import { formatDiagnostic, formatDiagnostics, EMOJI } from "./utils/format-utils.js";
+} from "../bus/events.ts";
+import { publish } from "../bus/bus.ts";
+import { formatDiagnostic, formatDiagnostics, EMOJI } from "./utils/format-utils.ts";
 // Import runners to register them
-import "./runners/index.js";
+import "./runners/index.ts";
 
-import type { DispatchContext, RunnerDefinition, RunnerResult, RunnerGroup } from "./types.js";
+import type { DispatchContext, RunnerDefinition, RunnerResult, RunnerGroup } from "./types.ts";
 
 // --- Enhanced Dispatch Result ---
 
@@ -129,7 +129,7 @@ export async function dispatchConcurrent(
 		}
 
 		// Get applicable runners
-		const { getRunner } = await import("./dispatcher.js");
+		const { getRunner } = await import("./dispatcher.ts");
 		const runnerIds = group.filterKinds
 			? group.runnerIds.filter((id) => {
 					const runner = getRunner(id);
@@ -228,9 +228,9 @@ export async function dispatchLintWithBus(
 	cwd: string,
 	pi: { getFlag(flag: string): string | boolean | undefined; log?: (msg: string) => void },
 ): Promise<string> {
-	const { createDispatchContext } = await import("./dispatcher.js");
-	const { getRunnersForKind } = await import("./dispatcher.js");
-	const { TOOL_PLANS } = await import("./plan.js");
+	const { createDispatchContext } = await import("./dispatcher.ts");
+	const { getRunnersForKind } = await import("./dispatcher.ts");
+	const { TOOL_PLANS } = await import("./plan.ts");
 
 	// Publish file modified event to trigger any background processing
 	FileModified.publish({

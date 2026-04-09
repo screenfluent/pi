@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { createAstGrepSearchTool } from "../../tools/ast-grep-search.js";
+import { createAstGrepSearchTool } from "../../tools/ast-grep-search.ts";
 
 describe("ast_grep_search tool", () => {
 	it("rejects plain text or rule-yaml-like patterns before search", async () => {

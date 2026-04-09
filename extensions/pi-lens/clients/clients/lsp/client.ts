@@ -15,10 +15,10 @@ import {
 	createMessageConnection,
 	StreamMessageReader,
 	StreamMessageWriter,
-} from "vscode-jsonrpc/node.js";
+} from "vscode-jsonrpc/node.ts";
 
-import type { LSPProcess } from "./launch.js";
-import { normalizeMapKey, uriToPath } from "./path-utils.js";
+import type { LSPProcess } from "./launch.ts";
+import { normalizeMapKey, uriToPath } from "./path-utils.ts";
 
 // --- Types ---
 

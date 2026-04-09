@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import type { AstGrepDiagnostic, RuleDescription } from "./ast-grep-types.js";
+import type { AstGrepDiagnostic, RuleDescription } from "./ast-grep-types.ts";
 
 // New ast-grep JSON format
 export interface AstGrepJsonDiagnostic {

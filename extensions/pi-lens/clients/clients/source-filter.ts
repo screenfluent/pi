@@ -19,18 +19,18 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isExcludedDirName } from "./file-utils.js";
+import { isExcludedDirName } from "./file-utils.ts";
 
 /**
  * Mapping of file extension to the extensions it shadows (build artifacts).
  * Order matters: first entry has highest precedence.
  */
 export const SOURCE_PRECEDENCE: Record<string, string[]> = {
-	".ts": [".js", ".mjs", ".cjs"],
-	".tsx": [".jsx", ".js", ".mjs", ".cjs"],
-	".vue": [".js", ".mjs"],
-	".svelte": [".js", ".mjs"],
-	".coffee": [".js"],
+	".ts": [".ts", ".mjs", ".cjs"],
+	".tsx": [".jsx", ".ts", ".mjs", ".cjs"],
+	".vue": [".ts", ".mjs"],
+	".svelte": [".ts", ".mjs"],
+	".coffee": [".ts"],
 };
 
 /**
@@ -39,7 +39,7 @@ export const SOURCE_PRECEDENCE: Record<string, string[]> = {
 export const ALL_SCANNABLE_EXTENSIONS = [
 	".ts",
 	".tsx",
-	".js",
+	".ts",
 	".jsx",
 	".mjs",
 	".cjs",

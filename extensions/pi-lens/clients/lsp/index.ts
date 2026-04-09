@@ -9,13 +9,13 @@
  */
 
 import { Effect } from "effect";
-import type { LSPClientInfo } from "./client.js";
-import { createLSPClient } from "./client.js";
-import { getServerById, type LSPServerInfo } from "./server.js";
-import { getServersForFileWithConfig, initLSPConfig } from "./config.js";
-import { getLanguageId } from "./language.js";
-import { launchLSP } from "./launch.js";
-import { RunnerStarted, RunnerCompleted, DiagnosticFound } from "../bus/events.js";
+import type { LSPClientInfo } from "./client.ts";
+import { createLSPClient } from "./client.ts";
+import { getServerById, type LSPServerInfo } from "./server.ts";
+import { getServersForFileWithConfig, initLSPConfig } from "./config.ts";
+import { getLanguageId } from "./language.ts";
+import { launchLSP } from "./launch.ts";
+import { RunnerStarted, RunnerCompleted, DiagnosticFound } from "../bus/events.ts";
 
 // --- Types ---
 
@@ -149,7 +149,7 @@ export class LSPService {
 	/**
 	 * Get diagnostics for a file
 	 */
-	async getDiagnostics(filePath: string): Promise<import("./client.js").LSPDiagnostic[]> {
+	async getDiagnostics(filePath: string): Promise<import("./client.ts").LSPDiagnostic[]> {
 		const spawned = await this.getClientForFile(filePath);
 		if (!spawned) return [];
 

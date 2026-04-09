@@ -6,7 +6,7 @@
  */
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { Diagnostic } from "../../clients/diagnostic-logger.js";
+import type { Diagnostic } from "../../clients/diagnostic-logger.ts";
 
 describe("diagnostic-logger", () => {
 	// We'll test the createDiagnosticLogger function behavior

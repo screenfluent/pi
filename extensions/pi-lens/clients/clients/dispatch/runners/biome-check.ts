@@ -10,14 +10,14 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { resolvePackagePath } from "../../package-root.js";
-import { safeSpawnAsync } from "../../safe-spawn.js";
+import { resolvePackagePath } from "../../package-root.ts";
+import { safeSpawnAsync } from "../../safe-spawn.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 const BIOME_CONFIGS = ["biome.json", "biome.jsonc"];
 

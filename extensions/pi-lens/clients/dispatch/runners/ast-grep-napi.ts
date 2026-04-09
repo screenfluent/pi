@@ -15,7 +15,7 @@ import type {
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -33,7 +33,7 @@ async function loadSg(): Promise<typeof import("@ast-grep/napi") | undefined> {
 }
 
 // Supported extensions for NAPI
-const SUPPORTED_EXTS = [".ts", ".tsx", ".js", ".jsx", ".css", ".html", ".htm"];
+const SUPPORTED_EXTS = [".ts", ".tsx", ".ts", ".jsx", ".css", ".html", ".htm"];
 
 function canHandle(filePath: string): boolean {
 	return SUPPORTED_EXTS.includes(path.extname(filePath).toLowerCase());
@@ -44,7 +44,7 @@ function getLang(filePath: string, sgModule: typeof import("@ast-grep/napi")): a
 	switch (ext) {
 		case ".ts": return sgModule.Lang.TypeScript;
 		case ".tsx": return sgModule.Lang.Tsx;
-		case ".js":
+		case ".ts":
 		case ".jsx": return sgModule.Lang.JavaScript;
 		case ".css": return sgModule.Lang.Css;
 		case ".html":

@@ -14,7 +14,7 @@ import {
 	sanitizeToolOutput,
 	stripAnsi,
 	truncateMessage,
-} from "./sanitize.js";
+} from "./sanitize.ts";
 
 describe("stripAnsi", () => {
 	it("should remove ANSI color codes", () => {

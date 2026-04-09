@@ -1,21 +1,21 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { createAvailabilityChecker } from "../../../../clients/dispatch/runners/utils/runner-helpers.js";
-import { setupTestEnvironment } from "../../test-utils.js";
+import { createAvailabilityChecker } from "../../../../clients/dispatch/runners/utils/runner-helpers.ts";
+import { setupTestEnvironment } from "../../test-utils.ts";
 
-vi.mock("../../../../clients/safe-spawn.js", () => ({
+vi.mock("../../../../clients/safe-spawn.ts", () => ({
 	safeSpawn: vi.fn(() => ({ stdout: "", stderr: "", status: 1 })),
 }));
 
 describe("runner-helpers availability checker", () => {
 	beforeEach(async () => {
-		const safeSpawnMod = await import("../../../../clients/safe-spawn.js");
+		const safeSpawnMod = await import("../../../../clients/safe-spawn.ts");
 		vi.mocked(safeSpawnMod.safeSpawn).mockReset();
 	});
 
 	it("caches availability per cwd (does not leak false across projects)", async () => {
-		const safeSpawnMod = await import("../../../../clients/safe-spawn.js");
+		const safeSpawnMod = await import("../../../../clients/safe-spawn.ts");
 		const dirA = setupTestEnvironment("pi-lens-a-");
 		const dirB = setupTestEnvironment("pi-lens-b-");
 		try {

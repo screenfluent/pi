@@ -24,8 +24,8 @@ import {
 	rubocopFormatter,
 	ruffFormatter,
 	standardrbFormatter,
-} from "../../clients/formatters.js";
-import { createTempFile, setupTestEnvironment } from "./test-utils.js";
+} from "../../clients/formatters.ts";
+import { createTempFile, setupTestEnvironment } from "./test-utils.ts";
 
 // ---------------------------------------------------------------------------
 // Platform helpers

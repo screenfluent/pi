@@ -4,7 +4,7 @@ import {
 	getLspCapableKinds,
 	getPrimaryDispatchGroup,
 	getStartupDefaultsForProfile,
-} from "../../clients/language-policy.js";
+} from "../../clients/language-policy.ts";
 
 describe("language-policy", () => {
 	it("exposes LSP-capable kinds from centralized policy", () => {

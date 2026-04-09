@@ -9,21 +9,21 @@ import * as nodeFs from "node:fs";
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as ts from "typescript";
-import { EXCLUDED_DIRS } from "../../file-utils.js";
-import { NativeRustCoreClient } from "../../native-rust-client.js";
+import { EXCLUDED_DIRS } from "../../file-utils.ts";
+import { NativeRustCoreClient } from "../../native-rust-client.ts";
 import {
 	buildProjectIndex,
 	findSimilarFunctions,
 	loadIndex,
 	type ProjectIndex,
-} from "../../project-index.js";
-import { buildStateMatrix, countTransitions } from "../../state-matrix.js";
+} from "../../project-index.ts";
+import { buildStateMatrix, countTransitions } from "../../state-matrix.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 // Singleton Rust client — initialised once, reused across runner invocations.
 const rustClient = new NativeRustCoreClient();

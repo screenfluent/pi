@@ -2,25 +2,25 @@
  * Runner definitions for pi-lens dispatch system
  */
 
-import { registerRunner } from "../dispatcher.js";
-import architectRunner from "./architect.js";
+import { registerRunner } from "../dispatcher.ts";
+import architectRunner from "./architect.ts";
 // Import all runners
-import astGrepNapiRunner from "./ast-grep-napi.js";
-import astGrepRunner from "./ast-grep.js";
-import biomeRunner from "./biome.js";
-import goVetRunner from "./go-vet.js";
-import oxlintRunner from "./oxlint.js";
-import pythonSlopRunner from "./python-slop.js";
-import pyrightRunner from "./pyright.js";
-import ruffRunner from "./ruff.js";
-import rustClippyRunner from "./rust-clippy.js";
-import shellcheckRunner from "./shellcheck.js";
+import astGrepNapiRunner from "./ast-grep-napi.ts";
+import astGrepRunner from "./ast-grep.ts";
+import biomeRunner from "./biome.ts";
+import goVetRunner from "./go-vet.ts";
+import oxlintRunner from "./oxlint.ts";
+import pythonSlopRunner from "./python-slop.ts";
+import pyrightRunner from "./pyright.ts";
+import ruffRunner from "./ruff.ts";
+import rustClippyRunner from "./rust-clippy.ts";
+import shellcheckRunner from "./shellcheck.ts";
 // Import similarity runner
-import similarityRunner from "./similarity.js";
-import spellcheckRunner from "./spellcheck.js";
-import tsLspRunner from "./ts-lsp.js";
-import tsSlopRunner from "./ts-slop.js";
-import typeSafetyRunner from "./type-safety.js";
+import similarityRunner from "./similarity.ts";
+import spellcheckRunner from "./spellcheck.ts";
+import tsLspRunner from "./ts-lsp.ts";
+import tsSlopRunner from "./ts-slop.ts";
+import typeSafetyRunner from "./type-safety.ts";
 
 // Register all runners (ordered by priority)
 registerRunner(tsLspRunner); // TypeScript type-checking (priority 5)

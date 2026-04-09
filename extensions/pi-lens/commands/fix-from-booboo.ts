@@ -11,15 +11,15 @@ import type {
 	ExtensionAPI,
 	ExtensionContext,
 } from "@mariozechner/pi-coding-agent";
-import type { AstGrepClient } from "../clients/ast-grep-client.js";
-import type { BiomeClient } from "../clients/biome-client.js";
-import type { ComplexityClient } from "../clients/complexity-client.js";
-import type { JscpdClient } from "../clients/jscpd-client.js";
-import type { KnipClient } from "../clients/knip-client.js";
-import type { RuffClient } from "../clients/ruff-client.js";
-import type { TypeScriptClient } from "../clients/typescript-client.js";
-import { getSourceFiles } from "../clients/scan-utils.js";
-import { isTestFile } from "../clients/file-utils.js";
+import type { AstGrepClient } from "../clients/ast-grep-client.ts";
+import type { BiomeClient } from "../clients/biome-client.ts";
+import type { ComplexityClient } from "../clients/complexity-client.ts";
+import type { JscpdClient } from "../clients/jscpd-client.ts";
+import type { KnipClient } from "../clients/knip-client.ts";
+import type { RuffClient } from "../clients/ruff-client.ts";
+import type { TypeScriptClient } from "../clients/typescript-client.ts";
+import { getSourceFiles } from "../clients/scan-utils.ts";
+import { isTestFile } from "../clients/file-utils.ts";
 
 interface FixClients {
 	tsClient: TypeScriptClient;
@@ -139,7 +139,7 @@ export async function handleFixFromBooboo(
 		if (isTestFile(file)) return false;
 		
 		// Match booboo's TS project compiled JS exclusion
-		if (isTsProject && file.endsWith(".js") && nodeFs.existsSync(file.replace(/\.js$/, ".ts"))) {
+		if (isTsProject && file.endsWith(".ts") && nodeFs.existsSync(file.replace(/\.js$/, ".ts"))) {
 			return false;
 		}
 		

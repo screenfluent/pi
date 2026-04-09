@@ -1,6 +1,6 @@
-import type { FileKind } from "./file-kinds.js";
-import type { ProjectLanguageProfile } from "./language-profile.js";
-import type { RunnerGroup } from "./dispatch/types.js";
+import type { FileKind } from "./file-kinds.ts";
+import type { ProjectLanguageProfile } from "./language-profile.ts";
+import type { RunnerGroup } from "./dispatch/types.ts";
 
 interface StartupPolicy {
 	defaults?: string[];

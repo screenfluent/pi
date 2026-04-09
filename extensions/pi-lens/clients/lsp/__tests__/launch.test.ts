@@ -17,7 +17,7 @@ import {
 	launchViaNode,
 	launchViaPython,
 	stopLSP,
-} from "../launch.js";
+} from "../launch.ts";
 
 // Mock child_process
 vi.mock("child_process", () => ({
@@ -197,7 +197,7 @@ describe("launchViaNode", () => {
 		const mockProcess = createMockChildProcess();
 		mockSpawn.mockReturnValue(mockProcess as ChildProcess);
 
-		launchViaNode("/path/to/script.js", ["--arg"], { cwd: "/test" });
+		launchViaNode("/path/to/script.ts", ["--arg"], { cwd: "/test" });
 
 		expect(mockSpawn).toHaveBeenCalled();
 		const [cmd, args, options] = mockSpawn.mock.calls[0];

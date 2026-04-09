@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { RustClient } from "./rust-client.js";
-import { setupTestEnvironment } from "./test-utils.js";
+import { RustClient } from "./rust-client.ts";
+import { setupTestEnvironment } from "./test-utils.ts";
 
 describe("RustClient", () => {
 	let client: RustClient;

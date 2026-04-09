@@ -11,7 +11,7 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { safeSpawn } from "./safe-spawn.js";
+import { safeSpawn } from "./safe-spawn.ts";
 
 // --- Types ---
 
@@ -75,7 +75,7 @@ export class DependencyChecker {
 
 		// Auto-install via pi-lens installer
 		this.log("Madge not found, attempting auto-install...");
-		const { ensureTool } = await import("./installer/index.js");
+		const { ensureTool } = await import("./installer/index.ts");
 		const installedPath = await ensureTool("madge");
 
 		if (installedPath) {

@@ -3,8 +3,8 @@
  */
 
 import * as fs from "node:fs";
-import { safeSpawn } from "../../safe-spawn.js";
-import type { Diagnostic } from "../types.js";
+import { safeSpawn } from "../../safe-spawn.ts";
+import type { Diagnostic } from "../types.ts";
 
 /**
  * Read file content, returning undefined if it can't be read

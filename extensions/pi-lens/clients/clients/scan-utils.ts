@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isExcludedDirName, isTestFile } from "./file-utils.js";
-import { collectSourceFiles, isBuildArtifact } from "./source-filter.js";
+import { isExcludedDirName, isTestFile } from "./file-utils.ts";
+import { collectSourceFiles, isBuildArtifact } from "./source-filter.ts";
 
 /**
  * Common parsing logic for ast-grep JSON output (handles both array and NDJSON).
@@ -45,7 +45,7 @@ export function shouldIgnoreFile(
 
 	// Legacy: simple JS check for non-TS projects (hand-written JS)
 	const isJs =
-		relPath.endsWith(".js") ||
+		relPath.endsWith(".ts") ||
 		relPath.endsWith(".mjs") ||
 		relPath.endsWith(".cjs");
 	if (isTsProject && isJs) return true;

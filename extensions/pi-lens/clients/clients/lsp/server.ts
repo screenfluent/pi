@@ -9,16 +9,16 @@
 
 import { stat } from "node:fs/promises";
 import path from "node:path";
-import { ensureTool, getToolEnvironment } from "../installer/index.js";
+import { ensureTool, getToolEnvironment } from "../installer/index.ts";
 import {
 	promptForInstall,
 	supportsInteractiveInstall,
-} from "./interactive-install.js";
+} from "./interactive-install.ts";
 import {
 	type LSPProcess,
 	launchLSP,
 	launchViaPackageManager,
-} from "./launch.js";
+} from "./launch.ts";
 
 // --- Types ---
 
@@ -298,7 +298,7 @@ export const TypeScriptServer: LSPServerInfo = {
 	id: "typescript",
 	name: "TypeScript Language Server",
 	installPolicy: "managed",
-	extensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts"],
+	extensions: [".ts", ".tsx", ".ts", ".jsx", ".mjs", ".cjs", ".mts", ".cts"],
 	root: createRootDetector([
 		"package-lock.json",
 		"bun.lockb",
@@ -360,17 +360,17 @@ export const TypeScriptServer: LSPServerInfo = {
 				"..",
 				"typescript",
 				"lib",
-				"tsserver.js",
+				"tsserver.ts",
 			),
 			// Project root
-			path.join(root, "node_modules", "typescript", "lib", "tsserver.js"),
+			path.join(root, "node_modules", "typescript", "lib", "tsserver.ts"),
 			// Current working directory
 			path.join(
 				process.cwd(),
 				"node_modules",
 				"typescript",
 				"lib",
-				"tsserver.js",
+				"tsserver.ts",
 			),
 		];
 
@@ -388,8 +388,8 @@ export const TypeScriptServer: LSPServerInfo = {
 			const tscPath = await ensureTool("typescript");
 			if (tscPath) {
 				const managedTsserverCandidates = [
-					path.join(path.dirname(tscPath), "..", "typescript", "lib", "tsserver.js"),
-					path.join(path.dirname(tscPath), "..", "..", "typescript", "lib", "tsserver.js"),
+					path.join(path.dirname(tscPath), "..", "typescript", "lib", "tsserver.ts"),
+					path.join(path.dirname(tscPath), "..", "..", "typescript", "lib", "tsserver.ts"),
 				];
 				for (const checkPath of managedTsserverCandidates) {
 					try {
@@ -984,12 +984,12 @@ export const ESLintServer: LSPServerInfo = {
 	id: "eslint",
 	name: "ESLint Language Server",
 	installPolicy: "package-manager",
-	extensions: [".js", ".jsx", ".vue", ".svelte"], // Note: .ts/.tsx handled by TypeScript LSP + Biome
+	extensions: [".ts", ".jsx", ".vue", ".svelte"], // Note: .ts/.tsx handled by TypeScript LSP + Biome
 	root: createRootDetector([
 		".eslintrc",
 		".eslintrc.json",
-		".eslintrc.js",
-		"eslint.config.js",
+		".eslintrc.ts",
+		"eslint.config.ts",
 		"eslint.config.mjs",
 		"package.json",
 	]),
@@ -1019,7 +1019,7 @@ export const CssServer: LSPServerInfo = {
 	name: "CSS Language Server",
 	installPolicy: "package-manager",
 	extensions: [".css", ".scss", ".sass", ".less"],
-	root: PriorityRoot([["package.json", "postcss.config.js", "tailwind.config.js", "vite.config.ts"], [".git"]]),
+	root: PriorityRoot([["package.json", "postcss.config.ts", "tailwind.config.ts", "vite.config.ts"], [".git"]]),
 	async spawn(_root, options) {
 		const launched = await launchWithDirectOrPackageManager(
 			nodeBinCandidates(process.cwd(), "vscode-css-language-server"),

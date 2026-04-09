@@ -8,7 +8,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { FileTime, FileTimeError, createFileTime, clearAllSessions } from "../file-time.js";
+import { FileTime, FileTimeError, createFileTime, clearAllSessions } from "../file-time.ts";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 

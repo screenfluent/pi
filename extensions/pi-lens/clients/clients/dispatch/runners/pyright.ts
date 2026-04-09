@@ -7,16 +7,16 @@
  * Requires: pyright (pip install pyright or npm install -g pyright)
  */
 
-import { ensureTool } from "../../installer/index.js";
-import { getLSPService } from "../../lsp/index.js";
-import { safeSpawnAsync } from "../../safe-spawn.js";
+import { ensureTool } from "../../installer/index.ts";
+import { getLSPService } from "../../lsp/index.ts";
+import { safeSpawnAsync } from "../../safe-spawn.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
-import { createAvailabilityChecker } from "./utils/runner-helpers.js";
+} from "../types.ts";
+import { createAvailabilityChecker } from "./utils/runner-helpers.ts";
 
 const pyright = createAvailabilityChecker("pyright", ".exe");
 
@@ -53,7 +53,7 @@ const pyrightRunner: RunnerDefinition = {
 
 		// Strategy 3: Direct PATH check (handles module cache staleness)
 		if (!cmd) {
-			const { findCommandAsync } = await import("../../safe-spawn.js");
+			const { findCommandAsync } = await import("../../safe-spawn.ts");
 			const foundCmd: string | null = await findCommandAsync("pyright");
 			if (foundCmd) cmd = foundCmd;
 		}

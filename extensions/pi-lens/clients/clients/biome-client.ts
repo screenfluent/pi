@@ -10,8 +10,8 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isFileKind } from "./file-kinds.js";
-import { safeSpawn, safeSpawnAsync } from "./safe-spawn.js";
+import { isFileKind } from "./file-kinds.ts";
+import { safeSpawn, safeSpawnAsync } from "./safe-spawn.ts";
 
 // --- Types ---
 
@@ -131,7 +131,7 @@ export class BiomeClient {
 
 		// Auto-install via pi-lens installer
 		this.log("Biome not found, attempting auto-install...");
-		const { ensureTool } = await import("./installer/index.js");
+		const { ensureTool } = await import("./installer/index.ts");
 		const installedPath = await ensureTool("biome");
 
 		if (installedPath) {

@@ -4,6 +4,6 @@
  * Export all bus-related functionality.
  */
 
-export * from "./bus.js";
-export * from "./events.js";
-export * from "./integration.js";
+export * from "./bus.ts";
+export * from "./events.ts";
+export * from "./integration.ts";

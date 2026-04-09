@@ -14,26 +14,26 @@
 
 import * as nodeFs from "node:fs";
 import * as path from "node:path";
-import type { BiomeClient } from "./biome-client.js";
-import { getDiagnosticLogger } from "./diagnostic-logger.js";
-import { getDiagnosticTracker } from "./diagnostic-tracker.js";
-import { dispatchLintWithResult } from "./dispatch/integration.js";
+import type { BiomeClient } from "./biome-client.ts";
+import { getDiagnosticLogger } from "./diagnostic-logger.ts";
+import { getDiagnosticTracker } from "./diagnostic-tracker.ts";
+import { dispatchLintWithResult } from "./dispatch/integration.ts";
 import {
 	resolveRunnerPath,
 	toRunnerDisplayPath,
-} from "./dispatch/runner-context.js";
-import type { PiAgentAPI } from "./dispatch/types.js";
-import { detectFileKind, getFileKindLabel } from "./file-kinds.js";
-import type { FormatService } from "./format-service.js";
-import { logLatency } from "./latency-logger.js";
-import { getLSPService } from "./lsp/index.js";
-import type { MetricsClient } from "./metrics-client.js";
-import { normalizeMapKey } from "./path-utils.js";
-import type { RuffClient } from "./ruff-client.js";
-import { RUNTIME_CONFIG } from "./runtime-config.js";
-import { safeSpawnAsync } from "./safe-spawn.js";
-import { formatSecrets, scanForSecrets } from "./secrets-scanner.js";
-import type { TestRunnerClient } from "./test-runner-client.js";
+} from "./dispatch/runner-context.ts";
+import type { PiAgentAPI } from "./dispatch/types.ts";
+import { detectFileKind, getFileKindLabel } from "./file-kinds.ts";
+import type { FormatService } from "./format-service.ts";
+import { logLatency } from "./latency-logger.ts";
+import { getLSPService } from "./lsp/index.ts";
+import type { MetricsClient } from "./metrics-client.ts";
+import { normalizeMapKey } from "./path-utils.ts";
+import type { RuffClient } from "./ruff-client.ts";
+import { RUNTIME_CONFIG } from "./runtime-config.ts";
+import { safeSpawnAsync } from "./safe-spawn.ts";
+import { formatSecrets, scanForSecrets } from "./secrets-scanner.ts";
+import type { TestRunnerClient } from "./test-runner-client.ts";
 
 const LSP_MAX_FILE_BYTES = RUNTIME_CONFIG.pipeline.lspMaxFileBytes;
 const LSP_MAX_FILE_LINES = RUNTIME_CONFIG.pipeline.lspMaxFileLines;
@@ -150,17 +150,17 @@ const BIOME_CONFIGS = ["biome.json", "biome.jsonc"];
 
 const ESLINT_CONFIGS = [
 	".eslintrc",
-	".eslintrc.js",
+	".eslintrc.ts",
 	".eslintrc.cjs",
 	".eslintrc.json",
 	".eslintrc.yaml",
 	".eslintrc.yml",
-	"eslint.config.js",
+	"eslint.config.ts",
 	"eslint.config.mjs",
 	"eslint.config.cjs",
 ];
 
-const JSTS_EXTS = new Set([".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"]);
+const JSTS_EXTS = new Set([".ts", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"]);
 
 function isJsTs(filePath: string): boolean {
 	return JSTS_EXTS.has(path.extname(filePath).toLowerCase());
@@ -633,7 +633,7 @@ export async function runPipeline(
 			let stalePathsSkipped = 0;
 			const otherFileErrors: Array<{
 				file: string;
-				errors: import("./lsp/client.js").LSPDiagnostic[];
+				errors: import("./lsp/client.ts").LSPDiagnostic[];
 			}> = [];
 
 			for (const [diagPath, diags] of allDiags) {

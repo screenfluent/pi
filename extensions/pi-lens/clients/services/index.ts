@@ -4,5 +4,5 @@
  * Provides composable, testable async operations.
  */
 
-export * from "./runner-service.js";
-export * from "./effect-integration.js";
+export * from "./runner-service.ts";
+export * from "./effect-integration.ts";

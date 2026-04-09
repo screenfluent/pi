@@ -6,7 +6,7 @@ import {
 	CacheManager,
 	type ModifiedRange,
 	type TurnState,
-} from "./cache-manager.js";
+} from "./cache-manager.ts";
 
 describe("CacheManager", () => {
 	let manager: CacheManager;

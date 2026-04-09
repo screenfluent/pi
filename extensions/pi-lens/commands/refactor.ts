@@ -4,16 +4,16 @@ import type {
 	ExtensionAPI,
 	ExtensionContext,
 } from "@mariozechner/pi-coding-agent";
-import type { ArchitectClient } from "../clients/architect-client.js";
-import type { AstGrepClient } from "../clients/ast-grep-client.js";
-import { createAutoLoop } from "../clients/auto-loop.js";
-import type { ComplexityClient } from "../clients/complexity-client.js";
+import type { ArchitectClient } from "../clients/architect-client.ts";
+import type { AstGrepClient } from "../clients/ast-grep-client.ts";
+import { createAutoLoop } from "../clients/auto-loop.ts";
+import type { ComplexityClient } from "../clients/complexity-client.ts";
 import {
 	scanArchitectViolations,
 	scanComplexityMetrics,
 	scanSkipViolations,
 	scoreFiles,
-} from "../clients/scan-architectural-debt.js";
+} from "../clients/scan-architectural-debt.ts";
 
 // Auto-loop singleton for refactor command (initialized at module load)
 let refactorLoop: ReturnType<typeof createAutoLoop> | null = null;

@@ -1,4 +1,4 @@
-import type { CacheManager } from "./cache-manager.js";
+import type { CacheManager } from "./cache-manager.ts";
 
 export function consumeTurnEndFindings(
 	cacheManager: CacheManager,

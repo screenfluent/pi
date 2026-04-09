@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createTempFile, setupTestEnvironment } from "./test-utils.js";
-import { TypeScriptClient } from "./typescript-client.js";
+import { createTempFile, setupTestEnvironment } from "./test-utils.ts";
+import { TypeScriptClient } from "./typescript-client.ts";
 
 describe("TypeScriptClient - Code Fixes", () => {
 	let client: TypeScriptClient;

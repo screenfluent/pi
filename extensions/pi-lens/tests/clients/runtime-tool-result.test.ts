@@ -1,21 +1,21 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { handleToolResult } from "../../clients/runtime-tool-result.js";
-import { setupTestEnvironment } from "./test-utils.js";
+import { handleToolResult } from "../../clients/runtime-tool-result.ts";
+import { setupTestEnvironment } from "./test-utils.ts";
 
-vi.mock("../../clients/pipeline.js", () => ({
+vi.mock("../../clients/pipeline.ts", () => ({
 	runPipeline: vi.fn(),
 }));
 
 describe("runtime-tool-result inline behavior warnings", () => {
 	beforeEach(async () => {
-		const pipeline = await import("../../clients/pipeline.js");
+		const pipeline = await import("../../clients/pipeline.ts");
 		vi.mocked(pipeline.runPipeline).mockReset();
 	});
 
 	it("does not append behavior warnings when blockers are present", async () => {
-		const { runPipeline } = await import("../../clients/pipeline.js");
+		const { runPipeline } = await import("../../clients/pipeline.ts");
 		vi.mocked(runPipeline).mockResolvedValue({
 			output: "🔴 blocker output",
 			hasBlockers: true,
@@ -79,7 +79,7 @@ describe("runtime-tool-result inline behavior warnings", () => {
 	});
 
 	it("appends behavior warnings when no blockers are present", async () => {
-		const { runPipeline } = await import("../../clients/pipeline.js");
+		const { runPipeline } = await import("../../clients/pipeline.ts");
 		vi.mocked(runPipeline).mockResolvedValue({
 			output: "✓ no blockers",
 			hasBlockers: false,
@@ -143,7 +143,7 @@ describe("runtime-tool-result inline behavior warnings", () => {
 	});
 
 	it("does not emit file-time warnings on rapid consecutive edits", async () => {
-		const { runPipeline } = await import("../../clients/pipeline.js");
+		const { runPipeline } = await import("../../clients/pipeline.ts");
 		vi.mocked(runPipeline).mockResolvedValue({
 			output: "✓ no blockers",
 			hasBlockers: false,

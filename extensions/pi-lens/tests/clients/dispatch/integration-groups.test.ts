@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { getDispatchGroupsForKind } from "../../../clients/dispatch/integration.js";
+import { getDispatchGroupsForKind } from "../../../clients/dispatch/integration.ts";
 
 	describe("dispatch integration groups", () => {
 	it("keeps centralized css primary group when lens-lsp is enabled", () => {

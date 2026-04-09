@@ -6,7 +6,7 @@ import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { DispatchContext } from "../types.js";
+import type { DispatchContext } from "../types.ts";
 
 function createMockContext(filePath: string): DispatchContext {
 	return {
@@ -37,7 +37,7 @@ describe("shellcheck runner", () => {
 	const require = createRequire(import.meta.url);
 
 	it("should have correct runner definition", async () => {
-		const shellcheckModule = await import("./shellcheck.js");
+		const shellcheckModule = await import("./shellcheck.ts");
 		const runner = shellcheckModule.default;
 
 		expect(runner.id).toBe("shellcheck");
@@ -71,7 +71,7 @@ describe("shellcheck runner", () => {
 		);
 
 		try {
-			const shellcheckModule = await import("./shellcheck.js");
+			const shellcheckModule = await import("./shellcheck.ts");
 			const runner = shellcheckModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -114,7 +114,7 @@ describe("shellcheck runner", () => {
 		);
 
 		try {
-			const shellcheckModule = await import("./shellcheck.js");
+			const shellcheckModule = await import("./shellcheck.ts");
 			const runner = shellcheckModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 

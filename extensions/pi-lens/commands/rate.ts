@@ -8,14 +8,14 @@
 import * as childProcess from "node:child_process";
 import * as nodeFs from "node:fs";
 import * as path from "node:path";
-import { safeSpawn } from "../clients/safe-spawn.js";
+import { safeSpawn } from "../clients/safe-spawn.ts";
 import type { ExtensionContext } from "@mariozechner/pi-coding-agent";
-import type { ArchitectClient } from "../clients/architect-client.js";
-import type { ComplexityClient } from "../clients/complexity-client.js";
-import type { KnipClient } from "../clients/knip-client.js";
-import { EXCLUDED_DIRS, isTestFile } from "../clients/file-utils.js";
-import { getSourceFiles } from "../clients/scan-utils.js";
-import type { TypeCoverageClient } from "../clients/type-coverage-client.js";
+import type { ArchitectClient } from "../clients/architect-client.ts";
+import type { ComplexityClient } from "../clients/complexity-client.ts";
+import type { KnipClient } from "../clients/knip-client.ts";
+import { EXCLUDED_DIRS, isTestFile } from "../clients/file-utils.ts";
+import { getSourceFiles } from "../clients/scan-utils.ts";
+import type { TypeCoverageClient } from "../clients/type-coverage-client.ts";
 
 interface CategoryScore {
 	name: string;

@@ -8,8 +8,8 @@
  */
 
 import path from "path";
-import { launchLSP, launchViaPackageManager, launchViaNode, type LSPProcess } from "./launch.js";
-import { ensureTool, getToolPath, getToolEnvironment } from "../installer/index.js";
+import { launchLSP, launchViaPackageManager, launchViaNode, type LSPProcess } from "./launch.ts";
+import { ensureTool, getToolPath, getToolEnvironment } from "../installer/index.ts";
 
 // --- Types ---
 
@@ -76,7 +76,7 @@ export function createRootDetector(
 export const TypeScriptServer: LSPServerInfo = {
 	id: "typescript",
 	name: "TypeScript Language Server",
-	extensions: [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts"],
+	extensions: [".ts", ".tsx", ".ts", ".jsx", ".mjs", ".cjs", ".mts", ".cts"],
 	root: createRootDetector([
 		"package-lock.json",
 		"bun.lockb",
@@ -117,11 +117,11 @@ export const TypeScriptServer: LSPServerInfo = {
 		let tsserverPath: string | undefined;
 		const tsserverCandidates = [
 			// Relative to LSP binary (for locally installed)
-			path.join(path.dirname(lspPath), "..", "typescript", "lib", "tsserver.js"),
+			path.join(path.dirname(lspPath), "..", "typescript", "lib", "tsserver.ts"),
 			// Project root
-			path.join(root, "node_modules", "typescript", "lib", "tsserver.js"),
+			path.join(root, "node_modules", "typescript", "lib", "tsserver.ts"),
 			// Current working directory
-			path.join(process.cwd(), "node_modules", "typescript", "lib", "tsserver.js"),
+			path.join(process.cwd(), "node_modules", "typescript", "lib", "tsserver.ts"),
 		];
 		
 		for (const checkPath of tsserverCandidates) {
@@ -506,12 +506,12 @@ export const SvelteServer: LSPServerInfo = {
 export const ESLintServer: LSPServerInfo = {
 	id: "eslint",
 	name: "ESLint Language Server",
-	extensions: [".js", ".jsx", ".ts", ".tsx", ".vue", ".svelte"],
+	extensions: [".ts", ".jsx", ".ts", ".tsx", ".vue", ".svelte"],
 	root: createRootDetector([
 		".eslintrc",
 		".eslintrc.json",
-		".eslintrc.js",
-		"eslint.config.js",
+		".eslintrc.ts",
+		"eslint.config.ts",
 		"eslint.config.mjs",
 		"package.json",
 	]),

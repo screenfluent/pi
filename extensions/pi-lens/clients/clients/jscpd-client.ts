@@ -11,8 +11,8 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { getExcludedDirGlobs, isExcludedDirName } from "./file-utils.js";
-import { safeSpawn } from "./safe-spawn.js";
+import { getExcludedDirGlobs, isExcludedDirName } from "./file-utils.ts";
+import { safeSpawn } from "./safe-spawn.ts";
 
 // --- Types ---
 
@@ -100,7 +100,7 @@ export class JscpdClient {
 		}
 
 		// Auto-install via pi-lens installer
-		const { ensureTool } = await import("./installer/index.js");
+		const { ensureTool } = await import("./installer/index.ts");
 		const installedPath = await ensureTool("jscpd");
 
 		if (installedPath) {
@@ -186,7 +186,7 @@ export class JscpdClient {
 			"**/tests/**",
 		];
 		if (isTsProject) {
-			baseIgnores.push("**/*.js", "**/*.jsx");
+			baseIgnores.push("**/*.ts", "**/*.jsx");
 		}
 		const ignorePattern = baseIgnores.join(",");
 

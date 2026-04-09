@@ -19,7 +19,7 @@ import {
 	getServerById,
 	getServersForFile,
 	createRootDetector,
-} from "../server.js";
+} from "../server.ts";
 import * as fs from "fs/promises";
 
 // Mock fs/promises - need to mock the module before it's imported
@@ -76,7 +76,7 @@ describe("createRootDetector", () => {
 		});
 
 		const detector = createRootDetector(["package.json"], ["node_modules"]);
-		const root = await detector("/project/node_modules/lib/index.js");
+		const root = await detector("/project/node_modules/lib/index.ts");
 
 		expect(root).toBeUndefined();
 	});
@@ -97,7 +97,7 @@ describe("TypeScriptServer", () => {
 	it("should match TypeScript extensions", () => {
 		expect(TypeScriptServer.extensions).toContain(".ts");
 		expect(TypeScriptServer.extensions).toContain(".tsx");
-		expect(TypeScriptServer.extensions).toContain(".js");
+		expect(TypeScriptServer.extensions).toContain(".ts");
 		expect(TypeScriptServer.extensions).toContain(".jsx");
 		expect(TypeScriptServer.extensions).toContain(".mts");
 		expect(TypeScriptServer.extensions).toContain(".cts");

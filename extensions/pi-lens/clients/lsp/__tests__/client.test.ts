@@ -9,8 +9,8 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { createLSPClient, type LSPDiagnostic } from "../client.js";
-import type { LSPProcess } from "../launch.js";
+import { createLSPClient, type LSPDiagnostic } from "../client.ts";
+import type { LSPProcess } from "../launch.ts";
 import { EventEmitter } from "events";
 
 // Mock vscode-jsonrpc
@@ -23,20 +23,20 @@ const mockConnection = {
 	dispose: vi.fn(),
 };
 
-vi.mock("vscode-jsonrpc/node.js", () => ({
+vi.mock("vscode-jsonrpc/node.ts", () => ({
 	createMessageConnection: vi.fn(() => mockConnection),
 	StreamMessageReader: vi.fn(),
 	StreamMessageWriter: vi.fn(),
 }));
 
-vi.mock("../../bus/events.js", () => ({
+vi.mock("../../bus/events.ts", () => ({
 	DiagnosticFound: {
 		publish: vi.fn(),
 	},
 }));
 
-import { DiagnosticFound } from "../../bus/events.js";
-import { createMessageConnection } from "vscode-jsonrpc/node.js";
+import { DiagnosticFound } from "../../bus/events.ts";
+import { createMessageConnection } from "vscode-jsonrpc/node.ts";
 
 describe("createLSPClient", () => {
 	let mockProcess: LSPProcess;

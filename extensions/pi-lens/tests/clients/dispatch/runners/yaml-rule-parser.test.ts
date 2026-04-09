@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { parseSimpleYaml } from "../../../../clients/dispatch/runners/yaml-rule-parser.js";
+import { parseSimpleYaml } from "../../../../clients/dispatch/runners/yaml-rule-parser.ts";
 
 describe("yaml-rule-parser fix metadata", () => {
 	it("parses note and fix fields (including multiline) from ast-grep YAML", () => {

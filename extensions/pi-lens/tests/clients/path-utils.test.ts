@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
-import { pathToUri, uriToPath } from "../../clients/path-utils.js";
-import { setupTestEnvironment } from "./test-utils.js";
+import { pathToUri, uriToPath } from "../../clients/path-utils.ts";
+import { setupTestEnvironment } from "./test-utils.ts";
 
 describe("path-utils", () => {
 	it("uriToPath decodes URL-encoded file URIs", () => {

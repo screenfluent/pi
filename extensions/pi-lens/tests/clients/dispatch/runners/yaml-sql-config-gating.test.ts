@@ -3,11 +3,11 @@ import * as path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
 	hasSqlfluffConfig,
-} from "../../../../clients/dispatch/runners/sqlfluff.js";
+} from "../../../../clients/dispatch/runners/sqlfluff.ts";
 import {
 	hasYamllintConfig,
-} from "../../../../clients/dispatch/runners/yamllint.js";
-import { setupTestEnvironment } from "../../test-utils.js";
+} from "../../../../clients/dispatch/runners/yamllint.ts";
+import { setupTestEnvironment } from "../../test-utils.ts";
 
 describe("yaml/sql runner config gating", () => {
 	it("detects yamllint config via .yamllint file", () => {

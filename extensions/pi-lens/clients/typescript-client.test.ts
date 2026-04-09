@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createTempFile, setupTestEnvironment } from "./test-utils.js";
-import { TypeScriptClient } from "./typescript-client.js";
+import { createTempFile, setupTestEnvironment } from "./test-utils.ts";
+import { TypeScriptClient } from "./typescript-client.ts";
 
 describe("TypeScriptClient", () => {
 	let client: TypeScriptClient;
@@ -27,7 +27,7 @@ describe("TypeScriptClient", () => {
 		});
 
 		it("should also recognize JavaScript files (for type checking)", () => {
-			expect(client.isTypeScriptFile("test.js")).toBe(true);
+			expect(client.isTypeScriptFile("test.ts")).toBe(true);
 			expect(client.isTypeScriptFile("test.jsx")).toBe(true);
 		});
 

@@ -2,7 +2,7 @@
  * Session Summary — generates turn_end and session-end summaries
  */
 
-import type { SessionStats } from "./diagnostic-tracker.js";
+import type { SessionStats } from "./diagnostic-tracker.ts";
 
 export function formatSessionSummary(stats: SessionStats): string {
 	if (stats.totalShown === 0) return "";

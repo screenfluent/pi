@@ -5,7 +5,7 @@
  * Supports the common `file:line:col: message` format used by most linters.
  */
 
-import type { Diagnostic } from "../../types.js";
+import type { Diagnostic } from "../../types.ts";
 
 export interface LineParserConfig {
 	/** Tool name for diagnostic identification */

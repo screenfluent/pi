@@ -14,11 +14,11 @@
  * - BaselineStore: Track pre-existing issues for delta mode
  */
 
-import type { FileKind } from "../file-kinds.js";
-import { detectFileKind } from "../file-kinds.js";
-import { isTestFile } from "../file-utils.js";
-import { safeSpawn } from "../safe-spawn.js";
-import { formatDiagnostic, formatDiagnostics, EMOJI } from "./utils/format-utils.js";
+import type { FileKind } from "../file-kinds.ts";
+import { detectFileKind } from "../file-kinds.ts";
+import { isTestFile } from "../file-utils.ts";
+import { safeSpawn } from "../safe-spawn.ts";
+import { formatDiagnostic, formatDiagnostics, EMOJI } from "./utils/format-utils.ts";
 
 import type {
 	BaselineStore,
@@ -30,7 +30,7 @@ import type {
 	RunnerDefinition,
 	RunnerGroup,
 	RunnerResult,
-} from "./types.js";
+} from "./types.ts";
 
 // --- In-Memory Baseline Store ---
 

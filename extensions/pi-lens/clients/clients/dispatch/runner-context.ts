@@ -1,5 +1,5 @@
 import * as path from "node:path";
-import { normalizeMapKey } from "../path-utils.js";
+import { normalizeMapKey } from "../path-utils.ts";
 
 export function resolveRunnerPath(cwd: string, filePath: string): string {
 	return normalizeMapKey(path.resolve(cwd, filePath));

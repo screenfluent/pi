@@ -18,8 +18,8 @@ import {
 	TurnEnded,
 	DiagnosticAggregator,
 	type Diagnostic,
-} from "./events.js";
-import { subscribe, enableDebug } from "./bus.js";
+} from "./events.ts";
+import { subscribe, enableDebug } from "./bus.ts";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 
 // --- Integration State ---

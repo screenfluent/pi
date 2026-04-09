@@ -19,7 +19,7 @@
 
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { TreeSitterClient } from "./tree-sitter-client.js";
+import { TreeSitterClient } from "./tree-sitter-client.ts";
 
 // --- Types ---
 
@@ -530,7 +530,7 @@ export class ConfigValidator {
 		switch (ext) {
 			case ".py":
 				return "python";
-			case ".js":
+			case ".ts":
 				return "javascript";
 			case ".ts":
 				return "typescript";

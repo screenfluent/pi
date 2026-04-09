@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { DispatchContext } from "../types.js";
+import type { DispatchContext } from "../types.ts";
 
 function createMockContext(filePath: string): DispatchContext {
 	return {
@@ -22,7 +22,7 @@ describe("pyright runner", () => {
 	const require = createRequire(import.meta.url);
 
 	it("should have correct runner definition", async () => {
-		const pyrightModule = await import("./pyright.js");
+		const pyrightModule = await import("./pyright.ts");
 		const runner = pyrightModule.default;
 
 		expect(runner.id).toBe("pyright");
@@ -64,7 +64,7 @@ greet(123)
 		);
 
 		try {
-			const pyrightModule = await import("./pyright.js");
+			const pyrightModule = await import("./pyright.ts");
 			const runner = pyrightModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -102,7 +102,7 @@ greet("world")
 		);
 
 		try {
-			const pyrightModule = await import("./pyright.js");
+			const pyrightModule = await import("./pyright.ts");
 			const runner = pyrightModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 

@@ -9,4 +9,4 @@ export {
 	pathsEqual,
 	pathToUri,
 	uriToPath,
-} from "../path-utils.js";
+} from "../path-utils.ts";

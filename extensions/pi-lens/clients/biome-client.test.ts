@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { BiomeClient } from "./biome-client.js";
-import { createTempFile, setupTestEnvironment } from "./test-utils.js";
+import { BiomeClient } from "./biome-client.ts";
+import { createTempFile, setupTestEnvironment } from "./test-utils.ts";
 
 describe("BiomeClient", () => {
 	let client: BiomeClient;
@@ -23,7 +23,7 @@ describe("BiomeClient", () => {
 
 	describe("isSupportedFile", () => {
 		it("should support JS/TS files", () => {
-			expect(client.isSupportedFile("test.js")).toBe(true);
+			expect(client.isSupportedFile("test.ts")).toBe(true);
 			expect(client.isSupportedFile("test.jsx")).toBe(true);
 			expect(client.isSupportedFile("test.ts")).toBe(true);
 			expect(client.isSupportedFile("test.tsx")).toBe(true);

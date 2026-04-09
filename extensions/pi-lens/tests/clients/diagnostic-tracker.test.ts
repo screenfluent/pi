@@ -3,7 +3,7 @@ import {
 	createDiagnosticTracker,
 	type Diagnostic,
 	getDiagnosticTracker,
-} from "../../clients/diagnostic-tracker.js";
+} from "../../clients/diagnostic-tracker.ts";
 
 describe("diagnostic-tracker", () => {
 	describe("createDiagnosticTracker", () => {

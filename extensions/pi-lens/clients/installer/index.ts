@@ -36,7 +36,7 @@ import { spawn } from "child_process";
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
-import { findCommand } from "../safe-spawn.js";
+import { findCommand } from "../safe-spawn.ts";
 
 // Global installation directory for pi-lens tools
 const TOOLS_DIR = path.join(process.cwd(), ".pi-lens", "tools");

@@ -187,8 +187,8 @@ function detectNodeProject(targetPath: string): ProjectMetadata | null {
 
 	// Detect linting
 	if (allDeps["eslint"] || fs.existsSync(path.join(targetPath, ".eslintrc")) ||
-	    fs.existsSync(path.join(targetPath, ".eslintrc.js")) ||
-	    fs.existsSync(path.join(targetPath, "eslint.config.js")) ||
+	    fs.existsSync(path.join(targetPath, ".eslintrc.ts")) ||
+	    fs.existsSync(path.join(targetPath, "eslint.config.ts")) ||
 	    fs.existsSync(path.join(targetPath, "eslint.config.mjs"))) {
 		metadata.hasLinting = true;
 		metadata.linter = "eslint";

@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 describe("similarity runner name overlap filters", () => {
 	it("uses stricter similarity guardrail defaults", async () => {
 		const similarity = await import(
-			"../../clients/dispatch/runners/similarity.js"
+			"../../clients/dispatch/runners/similarity.ts"
 		);
 		expect(similarity.CONFIG.SIMILARITY_THRESHOLD).toBe(0.96);
 		expect(similarity.CONFIG.MIN_TRANSITIONS).toBe(40);
@@ -12,7 +12,7 @@ describe("similarity runner name overlap filters", () => {
 
 	it("tokenizes camelCase and snake_case names", async () => {
 		const similarity = await import(
-			"../../clients/dispatch/runners/similarity.js"
+			"../../clients/dispatch/runners/similarity.ts"
 		);
 		expect(similarity.tokenizeFunctionName("registerHopListener")).toEqual([
 			"register",
@@ -28,7 +28,7 @@ describe("similarity runner name overlap filters", () => {
 
 	it("keeps matches that share specific domain tokens", async () => {
 		const similarity = await import(
-			"../../clients/dispatch/runners/similarity.js"
+			"../../clients/dispatch/runners/similarity.ts"
 		);
 		expect(
 			similarity.hasMeaningfulNameOverlap(
@@ -46,7 +46,7 @@ describe("similarity runner name overlap filters", () => {
 
 	it("drops noisy matches with only generic overlap", async () => {
 		const similarity = await import(
-			"../../clients/dispatch/runners/similarity.js"
+			"../../clients/dispatch/runners/similarity.ts"
 		);
 		expect(
 			similarity.hasMeaningfulNameOverlap(

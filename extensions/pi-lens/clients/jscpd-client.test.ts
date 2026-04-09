@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { JscpdClient } from "./jscpd-client.js";
-import { createTempFile, setupTestEnvironment } from "./test-utils.js";
+import { JscpdClient } from "./jscpd-client.ts";
+import { createTempFile, setupTestEnvironment } from "./test-utils.ts";
 
 describe("JscpdClient", () => {
 	let client: JscpdClient;

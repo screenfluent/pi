@@ -4,14 +4,14 @@
  * Requires: @biomejs/biome (npm install -D @biomejs/biome)
  */
 
-import { safeSpawnAsync } from "../../safe-spawn.js";
+import { safeSpawnAsync } from "../../safe-spawn.ts";
 import type {
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
-import { createBiomeParser } from "./utils/diagnostic-parsers.js";
-import { biome } from "./utils/runner-helpers.js";
+} from "../types.ts";
+import { createBiomeParser } from "./utils/diagnostic-parsers.ts";
+import { biome } from "./utils/runner-helpers.ts";
 
 const biomeRunner: RunnerDefinition = {
 	id: "biome-lint",

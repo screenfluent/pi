@@ -9,7 +9,7 @@ import {
 	getFilterStats,
 	isBuildArtifact,
 	SOURCE_PRECEDENCE,
-} from "../clients/source-filter.js";
+} from "../clients/source-filter.ts";
 
 /**
  * Helper to create a temporary directory structure for testing.
@@ -38,10 +38,10 @@ describe("findSourceSibling", () => {
 	it("should find .ts sibling for .js file", () => {
 		const { dir, cleanup } = createTempDir({
 			"src/plan.ts": "// source",
-			"src/plan.js": "// compiled",
+			"src/plan.ts": "// compiled",
 		});
 
-		const jsPath = path.join(dir, "src", "plan.js");
+		const jsPath = path.join(dir, "src", "plan.ts");
 		const tsPath = path.join(dir, "src", "plan.ts");
 
 		expect(findSourceSibling(jsPath)).toBe(tsPath);
@@ -66,10 +66,10 @@ describe("findSourceSibling", () => {
 	it("should find .tsx sibling for .js file (fallback chain)", () => {
 		const { dir, cleanup } = createTempDir({
 			"app.tsx": "// source",
-			"app.js": "// compiled",
+			"app.ts": "// compiled",
 		});
 
-		const jsPath = path.join(dir, "app.js");
+		const jsPath = path.join(dir, "app.ts");
 		const tsxPath = path.join(dir, "app.tsx");
 
 		expect(findSourceSibling(jsPath)).toBe(tsxPath);
@@ -79,10 +79,10 @@ describe("findSourceSibling", () => {
 
 	it("should return null for .js file without sibling", () => {
 		const { dir, cleanup } = createTempDir({
-			"legacy.js": "// hand-written",
+			"legacy.ts": "// hand-written",
 		});
 
-		const jsPath = path.join(dir, "legacy.js");
+		const jsPath = path.join(dir, "legacy.ts");
 
 		expect(findSourceSibling(jsPath)).toBeNull();
 
@@ -101,13 +101,13 @@ describe("findSourceSibling", () => {
 		cleanup();
 	});
 
-	it("should handle .vue files shadowing .js", () => {
+	it("should handle .vue files shadowing .ts", () => {
 		const { dir, cleanup } = createTempDir({
 			"App.vue": "<!-- vue template -->",
-			"App.js": "// compiled vue",
+			"App.ts": "// compiled vue",
 		});
 
-		const jsPath = path.join(dir, "App.js");
+		const jsPath = path.join(dir, "App.ts");
 		const vuePath = path.join(dir, "App.vue");
 
 		expect(findSourceSibling(jsPath)).toBe(vuePath);
@@ -115,13 +115,13 @@ describe("findSourceSibling", () => {
 		cleanup();
 	});
 
-	it("should handle .svelte files shadowing .js", () => {
+	it("should handle .svelte files shadowing .ts", () => {
 		const { dir, cleanup } = createTempDir({
 			"Button.svelte": "<!-- svelte component -->",
-			"Button.js": "// compiled svelte",
+			"Button.ts": "// compiled svelte",
 		});
 
-		const jsPath = path.join(dir, "Button.js");
+		const jsPath = path.join(dir, "Button.ts");
 		const sveltePath = path.join(dir, "Button.svelte");
 
 		expect(findSourceSibling(jsPath)).toBe(sveltePath);
@@ -154,20 +154,20 @@ describe("isBuildArtifact", () => {
 	it("should return true for .js with .ts sibling", () => {
 		const { dir, cleanup } = createTempDir({
 			"plan.ts": "// source",
-			"plan.js": "// compiled",
+			"plan.ts": "// compiled",
 		});
 
-		expect(isBuildArtifact(path.join(dir, "plan.js"))).toBe(true);
+		expect(isBuildArtifact(path.join(dir, "plan.ts"))).toBe(true);
 
 		cleanup();
 	});
 
-	it("should return false for standalone .js", () => {
+	it("should return false for standalone .ts", () => {
 		const { dir, cleanup } = createTempDir({
-			"legacy.js": "// hand-written",
+			"legacy.ts": "// hand-written",
 		});
 
-		expect(isBuildArtifact(path.join(dir, "legacy.js"))).toBe(false);
+		expect(isBuildArtifact(path.join(dir, "legacy.ts"))).toBe(false);
 
 		cleanup();
 	});
@@ -187,16 +187,16 @@ describe("filterSourceFiles", () => {
 	it("should filter out .js files that have .ts siblings", () => {
 		const { dir, cleanup } = createTempDir({
 			"src/utils.ts": "// source",
-			"src/utils.js": "// compiled",
+			"src/utils.ts": "// compiled",
 			"src/helpers.ts": "// source",
-			"src/helpers.js": "// compiled",
+			"src/helpers.ts": "// compiled",
 		});
 
 		const input = [
 			path.join(dir, "src", "utils.ts"),
-			path.join(dir, "src", "utils.js"),
+			path.join(dir, "src", "utils.ts"),
 			path.join(dir, "src", "helpers.ts"),
-			path.join(dir, "src", "helpers.js"),
+			path.join(dir, "src", "helpers.ts"),
 		];
 
 		const result = filterSourceFiles(input);
@@ -205,30 +205,30 @@ describe("filterSourceFiles", () => {
 		expect(result).toHaveLength(2);
 		expect(result).toContain(path.join(dir, "src", "utils.ts"));
 		expect(result).toContain(path.join(dir, "src", "helpers.ts"));
-		expect(result).not.toContain(path.join(dir, "src", "utils.js"));
-		expect(result).not.toContain(path.join(dir, "src", "helpers.js"));
+		expect(result).not.toContain(path.join(dir, "src", "utils.ts"));
+		expect(result).not.toContain(path.join(dir, "src", "helpers.ts"));
 
 		cleanup();
 	});
 
 	it("should keep .js files without .ts siblings", () => {
 		const { dir, cleanup } = createTempDir({
-			"lib/legacy.js": "// hand-written",
+			"lib/legacy.ts": "// hand-written",
 			"lib/modern.ts": "// source",
-			"lib/modern.js": "// compiled",
+			"lib/modern.ts": "// compiled",
 		});
 
 		const input = [
-			path.join(dir, "lib", "legacy.js"),
+			path.join(dir, "lib", "legacy.ts"),
 			path.join(dir, "lib", "modern.ts"),
-			path.join(dir, "lib", "modern.js"),
+			path.join(dir, "lib", "modern.ts"),
 		];
 
 		const result = filterSourceFiles(input);
 
 		// legacy.js has no sibling, modern.ts shadows modern.js
 		expect(result).toHaveLength(2);
-		expect(result).toContain(path.join(dir, "lib", "legacy.js"));
+		expect(result).toContain(path.join(dir, "lib", "legacy.ts"));
 		expect(result).toContain(path.join(dir, "lib", "modern.ts"));
 
 		cleanup();
@@ -237,7 +237,7 @@ describe("filterSourceFiles", () => {
 	it("should handle mixed file types", () => {
 		const { dir, cleanup } = createTempDir({
 			"main.ts": "// ts source",
-			"main.js": "// compiled",
+			"main.ts": "// compiled",
 			"script.py": "# python",
 			"helper.go": "// go",
 			"lib.rs": "// rust",
@@ -245,7 +245,7 @@ describe("filterSourceFiles", () => {
 
 		const input = [
 			path.join(dir, "main.ts"),
-			path.join(dir, "main.js"),
+			path.join(dir, "main.ts"),
 			path.join(dir, "script.py"),
 			path.join(dir, "helper.go"),
 			path.join(dir, "lib.rs"),
@@ -260,7 +260,7 @@ describe("filterSourceFiles", () => {
 		expect(result).toContain(path.join(dir, "script.py"));
 		expect(result).toContain(path.join(dir, "helper.go"));
 		expect(result).toContain(path.join(dir, "lib.rs"));
-		expect(result).not.toContain(path.join(dir, "main.js"));
+		expect(result).not.toContain(path.join(dir, "main.ts"));
 
 		cleanup();
 	});
@@ -272,16 +272,16 @@ describe("filterSourceFiles", () => {
 	it("should handle paths with spaces and special characters", () => {
 		const { dir, cleanup } = createTempDir({
 			"path with spaces/file.ts": "// source",
-			"path with spaces/file.js": "// compiled",
+			"path with spaces/file.ts": "// compiled",
 			"unicode-文件/日本語.ts": "// source",
-			"unicode-文件/日本語.js": "// compiled",
+			"unicode-文件/日本語.ts": "// compiled",
 		});
 
 		const input = [
 			path.join(dir, "path with spaces", "file.ts"),
-			path.join(dir, "path with spaces", "file.js"),
+			path.join(dir, "path with spaces", "file.ts"),
 			path.join(dir, "unicode-文件", "日本語.ts"),
-			path.join(dir, "unicode-文件", "日本語.js"),
+			path.join(dir, "unicode-文件", "日本語.ts"),
 		];
 
 		const result = filterSourceFiles(input);
@@ -298,10 +298,10 @@ describe("collectSourceFiles", () => {
 	it("should collect files excluding build artifacts", () => {
 		const { dir, cleanup } = createTempDir({
 			"src/plan.ts": "// source",
-			"src/plan.js": "// compiled",
+			"src/plan.ts": "// compiled",
 			"src/utils/helper.ts": "// helper",
-			"src/utils/helper.js": "// compiled",
-			"legacy/lib.js": "// hand-written js",
+			"src/utils/helper.ts": "// compiled",
+			"legacy/lib.ts": "// hand-written js",
 		});
 
 		const result = collectSourceFiles(dir);
@@ -309,9 +309,9 @@ describe("collectSourceFiles", () => {
 		// Should find .ts files and hand-written .js, skip compiled .js
 		expect(result).toContain(path.join(dir, "src", "plan.ts"));
 		expect(result).toContain(path.join(dir, "src", "utils", "helper.ts"));
-		expect(result).toContain(path.join(dir, "legacy", "lib.js"));
-		expect(result).not.toContain(path.join(dir, "src", "plan.js"));
-		expect(result).not.toContain(path.join(dir, "src", "utils", "helper.js"));
+		expect(result).toContain(path.join(dir, "legacy", "lib.ts"));
+		expect(result).not.toContain(path.join(dir, "src", "plan.ts"));
+		expect(result).not.toContain(path.join(dir, "src", "utils", "helper.ts"));
 
 		cleanup();
 	});
@@ -319,8 +319,8 @@ describe("collectSourceFiles", () => {
 	it("should exclude node_modules and other standard dirs", () => {
 		const { dir, cleanup } = createTempDir({
 			"src/main.ts": "// source",
-			"node_modules/lodash/index.js": "// library",
-			"dist/bundle.js": "// bundle",
+			"node_modules/lodash/index.ts": "// library",
+			"dist/bundle.ts": "// bundle",
 			".git/hooks/pre-commit": "#!/bin/sh",
 		});
 
@@ -328,9 +328,9 @@ describe("collectSourceFiles", () => {
 
 		expect(result).toContain(path.join(dir, "src", "main.ts"));
 		expect(result).not.toContain(
-			path.join(dir, "node_modules", "lodash", "index.js"),
+			path.join(dir, "node_modules", "lodash", "index.ts"),
 		);
-		expect(result).not.toContain(path.join(dir, "dist", "bundle.js"));
+		expect(result).not.toContain(path.join(dir, "dist", "bundle.ts"));
 		expect(result).not.toContain(path.join(dir, ".git", "hooks", "pre-commit"));
 
 		cleanup();
@@ -339,7 +339,7 @@ describe("collectSourceFiles", () => {
 	it("should handle nested directories", () => {
 		const { dir, cleanup } = createTempDir({
 			"deep/nested/dir/file.ts": "// deep",
-			"deep/nested/dir/file.js": "// compiled",
+			"deep/nested/dir/file.ts": "// compiled",
 			"a/b/c/d/e/f/g.py": "# python",
 		});
 
@@ -352,7 +352,7 @@ describe("collectSourceFiles", () => {
 			path.join(dir, "a", "b", "c", "d", "e", "f", "g.py"),
 		);
 		expect(result).not.toContain(
-			path.join(dir, "deep", "nested", "dir", "file.js"),
+			path.join(dir, "deep", "nested", "dir", "file.ts"),
 		);
 
 		cleanup();
@@ -451,20 +451,20 @@ describe("getFilterStats", () => {
 	it("should calculate correct statistics", () => {
 		const allFiles = [
 			"a.ts",
-			"a.js", // artifact
+			"a.ts", // artifact
 			"b.ts",
-			"b.js", // artifact
-			"c.js", // source
+			"b.ts", // artifact
+			"c.ts", // source
 			"d.py",
 		];
-		const filtered = ["a.ts", "b.ts", "c.js", "d.py"];
+		const filtered = ["a.ts", "b.ts", "c.ts", "d.py"];
 
 		const stats = getFilterStats(allFiles, filtered);
 
 		expect(stats.total).toBe(6);
 		expect(stats.kept).toBe(4);
 		expect(stats.skipped).toBe(2);
-		expect(stats.byType[".js"]).toBe(2);
+		expect(stats.byType[".ts"]).toBe(2);
 	});
 
 	it("should handle no filtering", () => {
@@ -479,7 +479,7 @@ describe("getFilterStats", () => {
 	});
 
 	it("should handle all files filtered", () => {
-		const allFiles = ["a.js", "b.js", "c.jsx"];
+		const allFiles = ["a.ts", "b.ts", "c.jsx"];
 		const filtered: string[] = [];
 
 		const stats = getFilterStats(allFiles, filtered);

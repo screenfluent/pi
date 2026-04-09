@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { afterAll, describe, expect, it } from "vitest";
-import { TreeSitterQueryLoader } from "../../clients/tree-sitter-query-loader.js";
+import { TreeSitterQueryLoader } from "../../clients/tree-sitter-query-loader.ts";
 
 const tmpDirs: string[] = [];
 

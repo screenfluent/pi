@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { detectFileKind, type FileKind } from "./file-kinds.js";
-import { getStartupDefaultsForProfile } from "./language-policy.js";
-import { getSourceFiles } from "./scan-utils.js";
+import { detectFileKind, type FileKind } from "./file-kinds.ts";
+import { getStartupDefaultsForProfile } from "./language-policy.ts";
+import { getSourceFiles } from "./scan-utils.ts";
 
 export const SUPPORTED_FILE_KINDS: readonly FileKind[] = [
 	"jsts",

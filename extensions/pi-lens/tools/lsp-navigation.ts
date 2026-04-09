@@ -7,12 +7,12 @@
 import * as nodeFs from "node:fs";
 import * as path from "node:path";
 import { Type } from "@sinclair/typebox";
-import type { LSPCallHierarchyItem } from "../clients/lsp/client.js";
-import { getLSPService } from "../clients/lsp/index.js";
+import type { LSPCallHierarchyItem } from "../clients/lsp/client.ts";
+import { getLSPService } from "../clients/lsp/index.ts";
 
 function operationSupportStatus(
 	operation: string,
-	support: import("../clients/lsp/client.js").LSPOperationSupport | null,
+	support: import("../clients/lsp/client.ts").LSPOperationSupport | null,
 ): boolean | null {
 	if (!support) return null;
 	if (operation === "definition") return support.definition;

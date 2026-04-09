@@ -19,7 +19,7 @@ describe("tree-sitter-logger", () => {
 			homedir: () => "/mock-home",
 		}));
 
-		const mod = await import("../../clients/tree-sitter-logger.js");
+		const mod = await import("../../clients/tree-sitter-logger.ts");
 		mod.logTreeSitter({
 			phase: "runner_complete",
 			filePath: "src/main.go",
@@ -51,7 +51,7 @@ describe("tree-sitter-logger", () => {
 			homedir: () => "/mock-home",
 		}));
 
-		const mod = await import("../../clients/tree-sitter-logger.js");
+		const mod = await import("../../clients/tree-sitter-logger.ts");
 		expect(() =>
 			mod.logTreeSitter({ phase: "runner_start", filePath: "src/a.go" }),
 		).not.toThrow();

@@ -10,8 +10,8 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isFileKind } from "./file-kinds.js";
-import { safeSpawn } from "./safe-spawn.js";
+import { isFileKind } from "./file-kinds.ts";
+import { safeSpawn } from "./safe-spawn.ts";
 
 // --- Types ---
 

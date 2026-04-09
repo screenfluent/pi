@@ -6,15 +6,15 @@
 
 import { existsSync } from "node:fs";
 import { dirname, join } from "node:path";
-import { safeSpawnAsync } from "../../safe-spawn.js";
-import { stripAnsi } from "../../sanitize.js";
-import { tryLazyInstall } from "./utils/lazy-installer.js";
+import { safeSpawnAsync } from "../../safe-spawn.ts";
+import { stripAnsi } from "../../sanitize.ts";
+import { tryLazyInstall } from "./utils/lazy-installer.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 const rustClippyRunner: RunnerDefinition = {
 	id: "rust-clippy",

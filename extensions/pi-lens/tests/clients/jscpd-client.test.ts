@@ -1,9 +1,9 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { setupTestEnvironment } from "./test-utils.js";
+import { setupTestEnvironment } from "./test-utils.ts";
 
-vi.mock("../../clients/safe-spawn.js", () => ({
+vi.mock("../../clients/safe-spawn.ts", () => ({
 	safeSpawn: vi.fn(() => ({
 		error: null,
 		status: 0,
@@ -14,13 +14,13 @@ vi.mock("../../clients/safe-spawn.js", () => ({
 
 describe("jscpd-client", () => {
 	beforeEach(async () => {
-		const safeSpawnMod = await import("../../clients/safe-spawn.js");
+		const safeSpawnMod = await import("../../clients/safe-spawn.ts");
 		vi.mocked(safeSpawnMod.safeSpawn).mockClear();
 	});
 
 	it("scans when source exists in nested directories", async () => {
-		const { JscpdClient } = await import("../../clients/jscpd-client.js");
-		const safeSpawnMod = await import("../../clients/safe-spawn.js");
+		const { JscpdClient } = await import("../../clients/jscpd-client.ts");
+		const safeSpawnMod = await import("../../clients/safe-spawn.ts");
 
 		const { tmpDir, cleanup } = setupTestEnvironment("pi-lens-jscpd-");
 		try {
@@ -43,15 +43,15 @@ describe("jscpd-client", () => {
 			const ignorePattern = String(args[ignoreIndex + 1] ?? "");
 			expect(ignorePattern).toContain("**/.turbo/**");
 			expect(ignorePattern).toContain("**/.cache/**");
-			expect(ignorePattern).toContain("**/*.js");
+			expect(ignorePattern).toContain("**/*.ts");
 		} finally {
 			cleanup();
 		}
 	});
 
 	it("does not scan when only excluded directories contain source files", async () => {
-		const { JscpdClient } = await import("../../clients/jscpd-client.js");
-		const safeSpawnMod = await import("../../clients/safe-spawn.js");
+		const { JscpdClient } = await import("../../clients/jscpd-client.ts");
+		const safeSpawnMod = await import("../../clients/safe-spawn.ts");
 
 		const { tmpDir, cleanup } = setupTestEnvironment("pi-lens-jscpd-");
 		try {
@@ -79,8 +79,8 @@ describe("jscpd-client", () => {
 	});
 
 	it("does not scan when no source files exist", async () => {
-		const { JscpdClient } = await import("../../clients/jscpd-client.js");
-		const safeSpawnMod = await import("../../clients/safe-spawn.js");
+		const { JscpdClient } = await import("../../clients/jscpd-client.ts");
+		const safeSpawnMod = await import("../../clients/safe-spawn.ts");
 
 		const { tmpDir, cleanup } = setupTestEnvironment("pi-lens-jscpd-");
 		try {

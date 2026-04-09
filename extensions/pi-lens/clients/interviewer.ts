@@ -3,7 +3,7 @@ import * as http from "node:http";
 import * as net from "node:net";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { Type } from "@sinclair/typebox";
-import { CONFIRMATION_HTML, INTERVIEW_HTML } from "./interviewer-templates.js";
+import { CONFIRMATION_HTML, INTERVIEW_HTML } from "./interviewer-templates.ts";
 
 export type InterviewOption = {
 	value: string;

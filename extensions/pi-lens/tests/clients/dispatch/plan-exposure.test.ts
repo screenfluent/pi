@@ -3,7 +3,7 @@ import {
 	FULL_LINT_PLANS,
 	LANGUAGE_CAPABILITY_MATRIX,
 	TOOL_PLANS,
-} from "../../../clients/dispatch/plan.js";
+} from "../../../clients/dispatch/plan.ts";
 
 function flattenRunnerIds(plan: { groups: Array<{ runnerIds: string[] }> }): string[] {
 	return plan.groups.flatMap((g) => g.runnerIds);

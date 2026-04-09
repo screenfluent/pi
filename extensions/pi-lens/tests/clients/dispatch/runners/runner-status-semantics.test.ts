@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { setupTestEnvironment } from "../../test-utils.js";
+import { setupTestEnvironment } from "../../test-utils.ts";
 
 const safeSpawnAsync = vi.fn();
 const tryLazyInstall = vi.fn(async () => true);
@@ -11,15 +11,15 @@ const getDiagnostics = vi.fn();
 const codeAction = vi.fn();
 const readFileContent = vi.fn(() => "const x = 1;\n");
 
-vi.mock("../../../../clients/safe-spawn.js", () => ({
+vi.mock("../../../../clients/safe-spawn.ts", () => ({
 	safeSpawnAsync,
 }));
 
-vi.mock("../../../../clients/dispatch/runners/utils/lazy-installer.js", () => ({
+vi.mock("../../../../clients/dispatch/runners/utils/lazy-installer.ts", () => ({
 	tryLazyInstall,
 }));
 
-vi.mock("../../../../clients/lsp/index.js", () => ({
+vi.mock("../../../../clients/lsp/index.ts", () => ({
 	getLSPService: () => ({
 		hasLSP,
 		openFile,
@@ -29,7 +29,7 @@ vi.mock("../../../../clients/lsp/index.js", () => ({
 	}),
 }));
 
-vi.mock("../../../../clients/dispatch/runners/utils.js", () => ({
+vi.mock("../../../../clients/dispatch/runners/utils.ts", () => ({
 	readFileContent,
 }));
 
@@ -63,7 +63,7 @@ describe("runner status/semantic edge cases", () => {
 
 	it("golangci-lint returns failed/blocking for error diagnostics", async () => {
 		const runner = (await import(
-			"../../../../clients/dispatch/runners/golangci-lint.js"
+			"../../../../clients/dispatch/runners/golangci-lint.ts"
 		)).default;
 		const env = setupTestEnvironment("pi-lens-go-");
 		try {
@@ -99,7 +99,7 @@ describe("runner status/semantic edge cases", () => {
 
 	it("rust-clippy returns warning semantic for non-parseable output", async () => {
 		const runner = (await import(
-			"../../../../clients/dispatch/runners/rust-clippy.js"
+			"../../../../clients/dispatch/runners/rust-clippy.ts"
 		)).default;
 		const env = setupTestEnvironment("pi-lens-rs-");
 		try {
@@ -129,7 +129,7 @@ describe("runner status/semantic edge cases", () => {
 
 	it("rubocop returns failed/blocking for error offenses", async () => {
 		const runner = (await import(
-			"../../../../clients/dispatch/runners/rubocop.js"
+			"../../../../clients/dispatch/runners/rubocop.ts"
 		)).default;
 		const env = setupTestEnvironment("pi-lens-rb-");
 		try {
@@ -170,7 +170,7 @@ describe("runner status/semantic edge cases", () => {
 
 	it("lsp runner returns warning semantic when server open fails", async () => {
 		const runner = (await import(
-			"../../../../clients/dispatch/runners/lsp.js"
+			"../../../../clients/dispatch/runners/lsp.ts"
 		)).default;
 		const env = setupTestEnvironment("pi-lens-lsp-");
 		try {
@@ -192,7 +192,7 @@ describe("runner status/semantic edge cases", () => {
 
 	it("lsp runner surfaces codeAction guidance for blocking diagnostics", async () => {
 		const runner = (await import(
-			"../../../../clients/dispatch/runners/lsp.js"
+			"../../../../clients/dispatch/runners/lsp.ts"
 		)).default;
 		const env = setupTestEnvironment("pi-lens-lsp-fix-");
 		try {
@@ -234,7 +234,7 @@ describe("runner status/semantic edge cases", () => {
 
 	it("lsp runner ignores refactor-only code actions for fix guidance", async () => {
 		const runner = (await import(
-			"../../../../clients/dispatch/runners/lsp.js"
+			"../../../../clients/dispatch/runners/lsp.ts"
 		)).default;
 		const env = setupTestEnvironment("pi-lens-lsp-refactor-");
 		try {

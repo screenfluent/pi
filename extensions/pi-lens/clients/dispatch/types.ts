@@ -11,7 +11,7 @@
  * The dispatcher must handle these semantics consistently.
  */
 
-import type { FileKind } from "../file-kinds.js";
+import type { FileKind } from "../file-kinds.ts";
 
 // --- API Interface ---
 

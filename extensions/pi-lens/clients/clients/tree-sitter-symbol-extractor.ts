@@ -4,8 +4,8 @@
  */
 
 import * as path from "node:path";
-import type { Symbol, SymbolKind, SymbolRef } from "./symbol-types.js";
-import type { TreeSitterClient } from "./tree-sitter-client.js";
+import type { Symbol, SymbolKind, SymbolRef } from "./symbol-types.ts";
+import type { TreeSitterClient } from "./tree-sitter-client.ts";
 
 // Tree-sitter query patterns for symbol extraction
 const SYMBOL_QUERIES: Record<string, { defs: string; refs: string }> = {

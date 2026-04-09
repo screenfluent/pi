@@ -20,17 +20,17 @@
  * Config: .shellcheckrc (optional, zero-config works)
  */
 
-import { safeSpawn } from "../../safe-spawn.js";
+import { safeSpawn } from "../../safe-spawn.ts";
 import {
 	createAvailabilityChecker,
 	createConfigFinder,
-} from "./utils/runner-helpers.js";
+} from "./utils/runner-helpers.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 const shellcheck = createAvailabilityChecker("shellcheck", ".exe");
 const findShellcheckConfig = createConfigFinder(".shellcheckrc");

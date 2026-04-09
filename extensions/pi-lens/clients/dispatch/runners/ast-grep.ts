@@ -10,13 +10,13 @@
 import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { safeSpawn } from "../../safe-spawn.js";
+import { safeSpawn } from "../../safe-spawn.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 // Simple YAML fix: field extractor
 function extractFixFromRule(ruleId: string, ruleDir: string): string | undefined {

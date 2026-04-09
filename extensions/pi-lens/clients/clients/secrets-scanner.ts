@@ -13,7 +13,7 @@
  * - Generic API key/password patterns
  */
 
-import { isTestFile } from "./file-utils.js";
+import { isTestFile } from "./file-utils.ts";
 
 interface SecretPattern {
 	pattern: RegExp;

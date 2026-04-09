@@ -5,8 +5,8 @@
  */
 
 import { Type } from "@sinclair/typebox";
-import type { AstGrepClient } from "../clients/ast-grep-client.js";
-import { LANGUAGES } from "./shared.js";
+import type { AstGrepClient } from "../clients/ast-grep-client.ts";
+import { LANGUAGES } from "./shared.ts";
 
 export function createAstGrepReplaceTool(astGrepClient: AstGrepClient) {
 	return {

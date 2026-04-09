@@ -12,8 +12,8 @@ import * as path from "node:path";
 import {
 	getSgCommand,
 	isSgAvailable,
-} from "./dispatch/runners/utils/runner-helpers.js";
-import { safeSpawn } from "./safe-spawn.js";
+} from "./dispatch/runners/utils/runner-helpers.ts";
+import { safeSpawn } from "./safe-spawn.ts";
 
 /**
  * Escape an argument for Windows cmd.exe shell execution.
@@ -73,7 +73,7 @@ export class SgRunner {
 
 		// Auto-install via pi-lens installer
 		this.log("ast-grep not found, attempting auto-install...");
-		const { ensureTool } = await import("./installer/index.js");
+		const { ensureTool } = await import("./installer/index.ts");
 		const installedPath = await ensureTool("ast-grep");
 
 		if (installedPath) {

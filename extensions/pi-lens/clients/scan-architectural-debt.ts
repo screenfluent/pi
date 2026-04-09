@@ -6,11 +6,11 @@
 import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import type { ArchitectClient } from "./architect-client.js";
-import type { AstGrepClient } from "./ast-grep-client.js";
-import type { ComplexityClient } from "./complexity-client.js";
-import { safeSpawn } from "./safe-spawn.js";
-import { getSourceFiles, parseAstGrepJson } from "./scan-utils.js";
+import type { ArchitectClient } from "./architect-client.ts";
+import type { AstGrepClient } from "./ast-grep-client.ts";
+import type { ComplexityClient } from "./complexity-client.ts";
+import { safeSpawn } from "./safe-spawn.ts";
+import { getSourceFiles, parseAstGrepJson } from "./scan-utils.ts";
 
 export type SkipIssue = { rule: string; line: number; note: string };
 export type FileMetrics = { mi: number; cognitive: number; nesting: number };
@@ -45,7 +45,7 @@ export function scanSkipViolations(
 			"!**/test-utils.ts",
 			"--globs",
 			"!**/.pi-lens/**",
-			...(isTsProject ? ["--globs", "!**/*.js"] : []),
+			...(isTsProject ? ["--globs", "!**/*.ts"] : []),
 			targetPath,
 		],
 		{

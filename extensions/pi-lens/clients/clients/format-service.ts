@@ -12,14 +12,14 @@
  */
 
 import * as path from "node:path";
-import { FileTime } from "./file-time.js";
+import { FileTime } from "./file-time.ts";
 import {
 	clearFormatterRuntimeState,
 	type FormatterInfo,
 	type FormatterResult,
 	formatFile,
 	getFormattersForFile,
-} from "./formatters.js";
+} from "./formatters.ts";
 
 // --- Configuration ---
 
@@ -179,7 +179,7 @@ export class FormatService {
 	 */
 	private async getFormattersByName(names: string[]): Promise<FormatterInfo[]> {
 		const { listAllFormatters, ...formatters } = await import(
-			"./formatters.js"
+			"./formatters.ts"
 		);
 		const allNames = listAllFormatters();
 
@@ -260,4 +260,4 @@ export function clearFormatServiceAndFileState(): void {
 }
 
 // Re-export for convenience
-export { clearAllSessions } from "./file-time.js";
+export { clearAllSessions } from "./file-time.ts";

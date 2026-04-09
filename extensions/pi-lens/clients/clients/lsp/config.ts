@@ -22,12 +22,12 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { launchLSP } from "./launch.js";
+import { launchLSP } from "./launch.ts";
 import {
 	createRootDetector,
 	LSP_SERVERS,
 	type LSPServerInfo,
-} from "./server.js";
+} from "./server.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

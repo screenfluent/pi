@@ -1,39 +1,39 @@
 import * as nodeFs from "node:fs";
 import * as path from "node:path";
-import type { ArchitectClient } from "./architect-client.js";
-import type { AstGrepClient } from "./ast-grep-client.js";
-import type { BiomeClient } from "./biome-client.js";
-import type { CacheManager } from "./cache-manager.js";
-import type { DependencyChecker } from "./dependency-checker.js";
-import { getDiagnosticTracker } from "./diagnostic-tracker.js";
-import { getKnipIgnorePatterns } from "./file-utils.js";
-import type { GoClient } from "./go-client.js";
-import type { JscpdClient } from "./jscpd-client.js";
-import type { KnipClient } from "./knip-client.js";
+import type { ArchitectClient } from "./architect-client.ts";
+import type { AstGrepClient } from "./ast-grep-client.ts";
+import type { BiomeClient } from "./biome-client.ts";
+import type { CacheManager } from "./cache-manager.ts";
+import type { DependencyChecker } from "./dependency-checker.ts";
+import { getDiagnosticTracker } from "./diagnostic-tracker.ts";
+import { getKnipIgnorePatterns } from "./file-utils.ts";
+import type { GoClient } from "./go-client.ts";
+import type { JscpdClient } from "./jscpd-client.ts";
+import type { KnipClient } from "./knip-client.ts";
 import {
 	detectProjectLanguageProfile,
 	getDefaultStartupTools,
 	hasLanguage,
 	isLanguageConfigured,
-} from "./language-profile.js";
-import { canRunStartupHeavyScans } from "./language-policy.js";
-import type { MetricsClient } from "./metrics-client.js";
+} from "./language-profile.ts";
+import { canRunStartupHeavyScans } from "./language-policy.ts";
+import type { MetricsClient } from "./metrics-client.ts";
 import {
 	buildProjectIndex,
 	isIndexFresh,
 	loadIndex,
 	saveIndex,
-} from "./project-index.js";
-import type { RuffClient } from "./ruff-client.js";
-import { scanProjectRules } from "./rules-scanner.js";
-import type { RuntimeCoordinator } from "./runtime-coordinator.js";
-import type { RustClient } from "./rust-client.js";
-import { safeSpawn } from "./safe-spawn.js";
-import { getSourceFiles } from "./scan-utils.js";
-import { resolveStartupScanContext } from "./startup-scan.js";
-import type { TestRunnerClient } from "./test-runner-client.js";
-import type { TodoScanner } from "./todo-scanner.js";
-import type { TypeCoverageClient } from "./type-coverage-client.js";
+} from "./project-index.ts";
+import type { RuffClient } from "./ruff-client.ts";
+import { scanProjectRules } from "./rules-scanner.ts";
+import type { RuntimeCoordinator } from "./runtime-coordinator.ts";
+import type { RustClient } from "./rust-client.ts";
+import { safeSpawn } from "./safe-spawn.ts";
+import { getSourceFiles } from "./scan-utils.ts";
+import { resolveStartupScanContext } from "./startup-scan.ts";
+import type { TestRunnerClient } from "./test-runner-client.ts";
+import type { TodoScanner } from "./todo-scanner.ts";
+import type { TypeCoverageClient } from "./type-coverage-client.ts";
 
 interface SessionStartDeps {
 	ctxCwd?: string;

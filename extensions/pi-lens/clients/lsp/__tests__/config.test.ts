@@ -22,7 +22,7 @@ vi.mock("fs/promises", async () => {
 });
 
 // Import after mocking
-const { loadLSPConfig, createCustomServer, initLSPConfig, getAllServers, isServerDisabled, getServersForFileWithConfig } = await import("../config.js");
+const { loadLSPConfig, createCustomServer, initLSPConfig, getAllServers, isServerDisabled, getServersForFileWithConfig } = await import("../config.ts");
 
 const mockReadFile = vi.mocked(fs.readFile);
 

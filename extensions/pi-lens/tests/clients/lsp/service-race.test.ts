@@ -3,11 +3,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 const getServersForFileWithConfig = vi.fn();
 const createLSPClient = vi.fn();
 
-vi.mock("../../../clients/lsp/config.js", () => ({
+vi.mock("../../../clients/lsp/config.ts", () => ({
 	getServersForFileWithConfig,
 }));
 
-vi.mock("../../../clients/lsp/client.js", () => ({
+vi.mock("../../../clients/lsp/client.ts", () => ({
 	createLSPClient,
 }));
 
@@ -26,7 +26,7 @@ describe("LSPService race hardening", () => {
 	});
 
 	it("deduplicates concurrent spawn for same server/root key", async () => {
-		const { LSPService } = await import("../../../clients/lsp/index.js");
+		const { LSPService } = await import("../../../clients/lsp/index.ts");
 		const service = new LSPService();
 
 		const spawn = vi.fn(async () => {
@@ -70,7 +70,7 @@ describe("LSPService race hardening", () => {
 		const now = vi.spyOn(Date, "now");
 		now.mockReturnValue(0);
 
-		const { LSPService } = await import("../../../clients/lsp/index.js");
+		const { LSPService } = await import("../../../clients/lsp/index.ts");
 		const service = new LSPService();
 
 		const spawn = vi.fn(async () => undefined);

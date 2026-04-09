@@ -5,12 +5,12 @@
  * with the existing index.ts tool_result handler.
  */
 
-import { detectFileKind } from "../file-kinds.js";
-import type { FileKind } from "../file-kinds.js";
+import { detectFileKind } from "../file-kinds.ts";
+import type { FileKind } from "../file-kinds.ts";
 import {
 	getLspCapableKinds,
 	getPrimaryDispatchGroup,
-} from "../language-policy.js";
+} from "../language-policy.ts";
 import {
 	clearLatencyReports,
 	clearCoverageNoticeState,
@@ -22,22 +22,22 @@ import {
 	getLatencyReports,
 	getRunnersForKind,
 	type RunnerLatency,
-} from "./dispatcher.js";
-import { TOOL_PLANS } from "./plan.js";
+} from "./dispatcher.ts";
+import { TOOL_PLANS } from "./plan.ts";
 import type {
 	BaselineStore,
 	DispatchResult,
 	ModifiedRange,
 	PiAgentAPI,
 	RunnerGroup,
-} from "./types.js";
+} from "./types.ts";
 
 export type { DispatchLatencyReport, RunnerLatency };
 // Re-export latency tracking types and functions
 export { clearLatencyReports, formatLatencyReport, getLatencyReports };
 
 // Import runners to register them
-import "./runners/index.js";
+import "./runners/index.ts";
 
 // --- Persistent Baseline Store ---
 // Survives across dispatchLint calls within a session.

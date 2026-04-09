@@ -7,21 +7,21 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { RuleCache } from "../../cache/rule-cache.js";
-import { getSourceFiles } from "../../scan-utils.js";
-import { TreeSitterClient } from "../../tree-sitter-client.js";
-import { logTreeSitter } from "../../tree-sitter-logger.js";
-import { classifyDefect } from "../diagnostic-taxonomy.js";
+import { RuleCache } from "../../cache/rule-cache.ts";
+import { getSourceFiles } from "../../scan-utils.ts";
+import { TreeSitterClient } from "../../tree-sitter-client.ts";
+import { logTreeSitter } from "../../tree-sitter-logger.ts";
+import { classifyDefect } from "../diagnostic-taxonomy.ts";
 import {
 	queryLoader,
 	type TreeSitterQuery,
-} from "../../tree-sitter-query-loader.js";
+} from "../../tree-sitter-query-loader.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 // Module-level singleton: web-tree-sitter WASM must only be initialized once per process.
 // Creating a new TreeSitterClient() on every write resets TRANSFER_BUFFER (a module-level
@@ -398,7 +398,7 @@ const treeSitterRunner: RunnerDefinition = {
 			".mts": "typescript",
 			".cts": "typescript",
 			".tsx": "tsx",
-			".js": "javascript",
+			".ts": "javascript",
 			".mjs": "javascript",
 			".cjs": "javascript",
 			".jsx": "javascript",

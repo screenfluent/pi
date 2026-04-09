@@ -4,48 +4,48 @@ import * as path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ExtensionAPI } from "@mariozechner/pi-coding-agent";
 import { isToolCallEventType } from "@mariozechner/pi-coding-agent";
-import { AgentBehaviorClient } from "./clients/agent-behavior-client.js";
-import { ArchitectClient } from "./clients/architect-client.js";
-import { AstGrepClient } from "./clients/ast-grep-client.js";
-import { BiomeClient } from "./clients/biome-client.js";
-import { CacheManager } from "./clients/cache-manager.js";
-import { ComplexityClient } from "./clients/complexity-client.js";
-import { DependencyChecker } from "./clients/dependency-checker.js";
-import { getDiagnosticTracker } from "./clients/diagnostic-tracker.js";
+import { AgentBehaviorClient } from "./clients/agent-behavior-client.ts";
+import { ArchitectClient } from "./clients/architect-client.ts";
+import { AstGrepClient } from "./clients/ast-grep-client.ts";
+import { BiomeClient } from "./clients/biome-client.ts";
+import { CacheManager } from "./clients/cache-manager.ts";
+import { ComplexityClient } from "./clients/complexity-client.ts";
+import { DependencyChecker } from "./clients/dependency-checker.ts";
+import { getDiagnosticTracker } from "./clients/diagnostic-tracker.ts";
 import {
 	getLatencyReports,
 	resetDispatchBaselines,
-} from "./clients/dispatch/integration.js";
-import { extractFunctions } from "./clients/dispatch/runners/similarity.js";
-import { resetFormatService } from "./clients/format-service.js";
-import { evaluateGitGuard, isGitCommitOrPushAttempt } from "./clients/git-guard.js";
-import { GoClient } from "./clients/go-client.js";
-import { ensureTool } from "./clients/installer/index.js";
-import { JscpdClient } from "./clients/jscpd-client.js";
-import { KnipClient } from "./clients/knip-client.js";
-import { getLSPService, resetLSPService } from "./clients/lsp/index.js";
-import { MetricsClient } from "./clients/metrics-client.js";
-import { captureSnapshot } from "./clients/metrics-history.js";
-import { findSimilarFunctions } from "./clients/project-index.js";
-import { RuffClient } from "./clients/ruff-client.js";
-import { RuntimeCoordinator } from "./clients/runtime-coordinator.js";
+} from "./clients/dispatch/integration.ts";
+import { extractFunctions } from "./clients/dispatch/runners/similarity.ts";
+import { resetFormatService } from "./clients/format-service.ts";
+import { evaluateGitGuard, isGitCommitOrPushAttempt } from "./clients/git-guard.ts";
+import { GoClient } from "./clients/go-client.ts";
+import { ensureTool } from "./clients/installer/index.ts";
+import { JscpdClient } from "./clients/jscpd-client.ts";
+import { KnipClient } from "./clients/knip-client.ts";
+import { getLSPService, resetLSPService } from "./clients/lsp/index.ts";
+import { MetricsClient } from "./clients/metrics-client.ts";
+import { captureSnapshot } from "./clients/metrics-history.ts";
+import { findSimilarFunctions } from "./clients/project-index.ts";
+import { RuffClient } from "./clients/ruff-client.ts";
+import { RuntimeCoordinator } from "./clients/runtime-coordinator.ts";
 import {
 	consumeSessionStartGuidance,
 	consumeTurnEndFindings,
-} from "./clients/runtime-context.js";
-import { handleSessionStart } from "./clients/runtime-session.js";
-import { handleToolResult } from "./clients/runtime-tool-result.js";
-import { handleTurnEnd } from "./clients/runtime-turn.js";
-import { formatRulesForPrompt } from "./clients/rules-scanner.js";
-import { RustClient } from "./clients/rust-client.js";
-import { TestRunnerClient } from "./clients/test-runner-client.js";
-import { TodoScanner } from "./clients/todo-scanner.js";
-import { TypeCoverageClient } from "./clients/type-coverage-client.js";
-import { TypeScriptClient } from "./clients/typescript-client.js";
-import { handleBooboo } from "./commands/booboo.js";
-import { createAstGrepReplaceTool } from "./tools/ast-grep-replace.js";
-import { createAstGrepSearchTool } from "./tools/ast-grep-search.js";
-import { createLspNavigationTool } from "./tools/lsp-navigation.js";
+} from "./clients/runtime-context.ts";
+import { handleSessionStart } from "./clients/runtime-session.ts";
+import { handleToolResult } from "./clients/runtime-tool-result.ts";
+import { handleTurnEnd } from "./clients/runtime-turn.ts";
+import { formatRulesForPrompt } from "./clients/rules-scanner.ts";
+import { RustClient } from "./clients/rust-client.ts";
+import { TestRunnerClient } from "./clients/test-runner-client.ts";
+import { TodoScanner } from "./clients/todo-scanner.ts";
+import { TypeCoverageClient } from "./clients/type-coverage-client.ts";
+import { TypeScriptClient } from "./clients/typescript-client.ts";
+import { handleBooboo } from "./commands/booboo.ts";
+import { createAstGrepReplaceTool } from "./tools/ast-grep-replace.ts";
+import { createAstGrepSearchTool } from "./tools/ast-grep-search.ts";
+import { createLspNavigationTool } from "./tools/lsp-navigation.ts";
 
 const _getExtensionDir = () => {
 	if (typeof __dirname !== "undefined") {
@@ -323,7 +323,7 @@ export default function (pi: ExtensionAPI) {
 			"Show Technical Debt Index (TDI) and project health trend. Usage: /lens-tdi",
 		handler: async (_args, ctx) => {
 			const { loadHistory, computeTDI } = await import(
-				"./clients/metrics-history.js"
+				"./clients/metrics-history.ts"
 			);
 			const history = loadHistory();
 			const tdi = computeTDI(history);
@@ -449,11 +449,11 @@ export default function (pi: ExtensionAPI) {
 // Delta baselines: store pre-write diagnostics to diff against post-write
 const _astGrepBaselines = new Map<
 	string,
-	import("./clients/ast-grep-types.js").AstGrepDiagnostic[]
+	import("./clients/ast-grep-types.ts").AstGrepDiagnostic[]
 >();
 const _biomeBaselines = new Map<
 	string,
-	import("./clients/biome-client.js").BiomeDiagnostic[]
+	import("./clients/biome-client.ts").BiomeDiagnostic[]
 >();
 
 // Project rules scan result and per-turn state live in RuntimeCoordinator.

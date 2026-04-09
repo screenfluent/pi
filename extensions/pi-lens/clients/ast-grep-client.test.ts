@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { AstGrepClient } from "./ast-grep-client.js";
-import { createTempFile, setupTestEnvironment } from "./test-utils.js";
+import { AstGrepClient } from "./ast-grep-client.ts";
+import { createTempFile, setupTestEnvironment } from "./test-utils.ts";
 
 describe("AstGrepClient", () => {
 	let client: AstGrepClient;

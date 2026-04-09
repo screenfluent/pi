@@ -32,8 +32,8 @@ import {
 	type MockInstance,
 	vi,
 } from "vitest";
-import { createLSPClient } from "../../../clients/lsp/client.js";
-import type { LSPProcess } from "../../../clients/lsp/launch.js";
+import { createLSPClient } from "../../../clients/lsp/client.ts";
+import type { LSPProcess } from "../../../clients/lsp/launch.ts";
 
 // ---------------------------------------------------------------------------
 // Helpers

@@ -20,14 +20,14 @@
  * Config: .oxlintrc.json (optional, zero-config works)
  */
 
-import { safeSpawn } from "../../safe-spawn.js";
-import { createAvailabilityChecker, createConfigFinder } from "./utils/runner-helpers.js";
+import { safeSpawn } from "../../safe-spawn.ts";
+import { createAvailabilityChecker, createConfigFinder } from "./utils/runner-helpers.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 const oxlint = createAvailabilityChecker("oxlint", ".exe");
 const findOxlintConfig = createConfigFinder(".oxlintrc.json");

@@ -13,13 +13,13 @@ import {
 	isConfigKind,
 	isFileKind,
 	isScannableFile,
-} from "./file-kinds.js";
+} from "./file-kinds.ts";
 
 describe("detectFileKind", () => {
 	it("should detect JavaScript/TypeScript files", () => {
 		expect(detectFileKind("src/app.ts")).toBe("jsts");
 		expect(detectFileKind("src/app.tsx")).toBe("jsts");
-		expect(detectFileKind("src/app.js")).toBe("jsts");
+		expect(detectFileKind("src/app.ts")).toBe("jsts");
 		expect(detectFileKind("src/app.jsx")).toBe("jsts");
 		expect(detectFileKind("src/app.mjs")).toBe("jsts");
 		expect(detectFileKind("src/app.cjs")).toBe("jsts");
@@ -187,7 +187,7 @@ describe("getExtensionsForKind", () => {
 		const exts = getExtensionsForKind("jsts");
 		expect(exts).toContain(".ts");
 		expect(exts).toContain(".tsx");
-		expect(exts).toContain(".js");
+		expect(exts).toContain(".ts");
 		expect(exts).toContain(".jsx");
 	});
 

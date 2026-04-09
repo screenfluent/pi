@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { DispatchContext } from "../types.js";
+import type { DispatchContext } from "../types.ts";
 
 function createMockContext(filePath: string): DispatchContext {
 	return {
@@ -33,7 +33,7 @@ describe("ts-slop runner", () => {
 	const require = createRequire(import.meta.url);
 
 	it("should have correct runner definition", async () => {
-		const slopModule = await import("./ts-slop.js");
+		const slopModule = await import("./ts-slop.ts");
 		const runner = slopModule.default;
 
 		expect(runner.id).toBe("ts-slop");
@@ -75,7 +75,7 @@ function processItems(items: string[]) {
 		);
 
 		try {
-			const slopModule = await import("./ts-slop.js");
+			const slopModule = await import("./ts-slop.ts");
 			const runner = slopModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -107,7 +107,7 @@ function getMax(a: number, b: number): number {
 		);
 
 		try {
-			const slopModule = await import("./ts-slop.js");
+			const slopModule = await import("./ts-slop.ts");
 			const runner = slopModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -137,7 +137,7 @@ function hasItem(arr: string[], item: string): boolean {
 		);
 
 		try {
-			const slopModule = await import("./ts-slop.js");
+			const slopModule = await import("./ts-slop.ts");
 			const runner = slopModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -166,7 +166,7 @@ function processItems(arr: string[]): void {
 		);
 
 		try {
-			const slopModule = await import("./ts-slop.js");
+			const slopModule = await import("./ts-slop.ts");
 			const runner = slopModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -207,7 +207,7 @@ function hasItems(arr: string[]): boolean {
 		);
 
 		try {
-			const slopModule = await import("./ts-slop.js");
+			const slopModule = await import("./ts-slop.ts");
 			const runner = slopModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 

@@ -9,7 +9,7 @@ import type {
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../../clients/dispatch/types.js";
+} from "../../clients/dispatch/types.ts";
 
 export interface MockRunnerConfig {
 	id: string;

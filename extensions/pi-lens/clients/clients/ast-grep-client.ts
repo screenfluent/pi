@@ -11,16 +11,16 @@
 import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { AstGrepParser } from "./ast-grep-parser.js";
-import { AstGrepRuleManager } from "./ast-grep-rule-manager.js";
+import { AstGrepParser } from "./ast-grep-parser.ts";
+import { AstGrepRuleManager } from "./ast-grep-rule-manager.ts";
 import type {
 	AstGrepDiagnostic,
 	AstGrepMatch,
 	RuleDescription,
 	SgMatch,
-} from "./ast-grep-types.js";
-import { resolvePackagePath } from "./package-root.js";
-import { SgRunner } from "./sg-runner.js";
+} from "./ast-grep-types.ts";
+import { resolvePackagePath } from "./package-root.ts";
+import { SgRunner } from "./sg-runner.ts";
 
 const _getExtensionDir = () => {
 	if (typeof __dirname !== "undefined") {

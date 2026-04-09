@@ -1,4 +1,4 @@
-import { safeSpawnAsync } from "../../../safe-spawn.js";
+import { safeSpawnAsync } from "../../../safe-spawn.ts";
 
 type LazyTool = "golangci-lint" | "rubocop" | "rust-clippy";
 

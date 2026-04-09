@@ -16,7 +16,7 @@ import {
 	formatError,
 	type RunnerResult,
 	type ConcurrentRunnerResult,
-} from "./runner-service.js";
+} from "./runner-service.ts";
 
 import {
 	DiagnosticFound,
@@ -24,12 +24,12 @@ import {
 	RunnerCompleted,
 	FileModified,
 	type Diagnostic,
-} from "../bus/events.js";
-import { formatDiagnostic, formatDiagnostics } from "../dispatch/utils/format-utils.js";
+} from "../bus/events.ts";
+import { formatDiagnostic, formatDiagnostics } from "../dispatch/utils/format-utils.ts";
 // Import runners to register them in the dispatcher
-import "../dispatch/runners/index.js";
+import "../dispatch/runners/index.ts";
 
-import type { DispatchContext, RunnerGroup } from "../dispatch/types.js";
+import type { DispatchContext, RunnerGroup } from "../dispatch/types.ts";
 
 // --- Enhanced Result Type ---
 
@@ -54,7 +54,7 @@ async function runGroupConcurrent(
 	ctx: DispatchContext,
 	group: RunnerGroup,
 ): Promise<{ results: ConcurrentRunnerResult[]; diagnostics: Diagnostic[] }> {
-	const { getRunner, getRunnersForKind } = await import("../dispatch/dispatcher.js");
+	const { getRunner, getRunnersForKind } = await import("../dispatch/dispatcher.ts");
 	const startTime = Date.now();
 
 	// Get runner definitions
@@ -252,8 +252,8 @@ export async function dispatchLintWithEffect(
 	cwd: string,
 	pi: { getFlag(flag: string): string | boolean | undefined },
 ): Promise<string> {
-	const { createDispatchContext } = await import("../dispatch/dispatcher.js");
-	const { TOOL_PLANS } = await import("../dispatch/plan.js");
+	const { createDispatchContext } = await import("../dispatch/dispatcher.ts");
+	const { TOOL_PLANS } = await import("../dispatch/plan.ts");
 
 	const ctx = createDispatchContext(filePath, cwd, pi);
 

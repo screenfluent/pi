@@ -11,17 +11,17 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { safeSpawn } from "../../safe-spawn.js";
+import { safeSpawn } from "../../safe-spawn.ts";
 import {
 	createConfigFinder,
 	isSgAvailable,
-} from "./utils/runner-helpers.js";
+} from "./utils/runner-helpers.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 const findSlopConfig = createConfigFinder("ts-slop-rules");
 

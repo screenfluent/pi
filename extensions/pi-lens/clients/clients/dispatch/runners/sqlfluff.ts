@@ -1,14 +1,14 @@
 import * as nodeFs from "node:fs";
 import * as path from "node:path";
-import { ensureTool } from "../../installer/index.js";
-import { safeSpawn } from "../../safe-spawn.js";
-import { createAvailabilityChecker } from "./utils/runner-helpers.js";
+import { ensureTool } from "../../installer/index.ts";
+import { safeSpawn } from "../../safe-spawn.ts";
+import { createAvailabilityChecker } from "./utils/runner-helpers.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 const sqlfluff = createAvailabilityChecker("sqlfluff", ".exe");
 

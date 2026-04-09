@@ -22,8 +22,8 @@
 import fs from "fs/promises";
 import path from "path";
 import { fileURLToPath } from "url";
-import { LSP_SERVERS, type LSPServerInfo, createRootDetector } from "./server.js";
-import { launchLSP } from "./launch.js";
+import { LSP_SERVERS, type LSPServerInfo, createRootDetector } from "./server.ts";
+import { launchLSP } from "./launch.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -138,7 +138,7 @@ export function isServerDisabled(serverId: string): boolean {
 
 // --- Override getServersForFile to include custom servers
 
-import { getServersForFile as getBuiltinServersForFile } from "./server.js";
+import { getServersForFile as getBuiltinServersForFile } from "./server.ts";
 
 export function getServersForFileWithConfig(filePath: string): LSPServerInfo[] {
 	const ext = path.extname(filePath).toLowerCase();

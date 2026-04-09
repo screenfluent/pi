@@ -1,4 +1,4 @@
-import type { Diagnostic } from "./types.js";
+import type { Diagnostic } from "./types.ts";
 
 export type DefectClass =
 	| "silent-error"

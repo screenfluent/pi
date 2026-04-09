@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
-import { KnipClient } from "../../clients/knip-client.js";
-import { setupTestEnvironment } from "./test-utils.js";
+import { KnipClient } from "../../clients/knip-client.ts";
+import { setupTestEnvironment } from "./test-utils.ts";
 
 describe("knip-client", () => {
 	it("resolves project root from nested directory", () => {

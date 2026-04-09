@@ -12,8 +12,8 @@ import type {
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
-import { readFileContent } from "./utils.js";
+} from "../types.ts";
+import { readFileContent } from "./utils.ts";
 
 const typeSafetyRunner: RunnerDefinition = {
 	id: "type-safety",

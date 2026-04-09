@@ -8,7 +8,7 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { EXCLUDED_DIRS } from "./file-utils.js";
+import { EXCLUDED_DIRS } from "./file-utils.ts";
 
 // --- Types ---
 
@@ -377,7 +377,7 @@ function scoreToGrade(score: number): "A" | "B" | "C" | "D" | "F" {
 
 function findSourceFiles(root: string): string[] {
 	const files: string[] = [];
-	const exts = [".ts", ".tsx", ".js", ".jsx", ".mjs", ".py", ".go", ".rs", ".java"];
+	const exts = [".ts", ".tsx", ".ts", ".jsx", ".mjs", ".py", ".go", ".rs", ".java"];
 
 	const scan = (dir: string) => {
 		try {

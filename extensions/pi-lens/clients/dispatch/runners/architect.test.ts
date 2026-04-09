@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { describe, expect, it, beforeAll, afterAll } from "vitest";
-import type { DispatchContext } from "../types.js";
+import type { DispatchContext } from "../types.ts";
 
 function createMockContext(
 	filePath: string,
@@ -55,7 +55,7 @@ rules:
 	});
 
 	it("should load default config when no user config exists", async () => {
-		const module = await import("./architect.js");
+		const module = await import("./architect.ts");
 		const runner = module.default;
 
 		// Use a unique temp dir with no user config (will fall back to default)
@@ -83,7 +83,7 @@ rules:
 	});
 
 	it("should detect file size violations", async () => {
-		const module = await import("./architect.js");
+		const module = await import("./architect.ts");
 		const runner = module.default;
 
 		const tmpFile = path.join(testDir, `large_file_${Date.now()}.ts`);
@@ -105,7 +105,7 @@ rules:
 	});
 
 	it("should detect pattern violations", async () => {
-		const module = await import("./architect.js");
+		const module = await import("./architect.ts");
 		const runner = module.default;
 
 		const tmpFile = path.join(testDir, `bad_patterns_${Date.now()}.ts`);
@@ -134,7 +134,7 @@ console.log(x);
 	});
 
 	it("should return no diagnostics for clean files", async () => {
-		const module = await import("./architect.js");
+		const module = await import("./architect.ts");
 		const runner = module.default;
 
 		const tmpFile = path.join(testDir, `clean_${Date.now()}.ts`);
@@ -153,7 +153,7 @@ console.log(x);
 	});
 
 	it("should skip test files", async () => {
-		const module = await import("./architect.js");
+		const module = await import("./architect.ts");
 		const runner = module.default;
 
 		// The runner should have skipTestFiles: true

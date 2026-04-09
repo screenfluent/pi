@@ -17,7 +17,7 @@ import {
 	getInstallCommand,
 	getInstallStrategy,
 	supportsInteractiveInstall,
-} from "../../../clients/lsp/interactive-install.js";
+} from "../../../clients/lsp/interactive-install.ts";
 
 // ---------------------------------------------------------------------------
 // 1. Originally-supported languages still present

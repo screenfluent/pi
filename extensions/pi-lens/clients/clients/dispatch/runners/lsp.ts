@@ -12,16 +12,16 @@
  * unified runner that delegates to the LSP service.
  */
 
-import { getLSPService } from "../../lsp/index.js";
-import { RUNTIME_CONFIG } from "../../runtime-config.js";
-import { resolveRunnerPath } from "../runner-context.js";
+import { getLSPService } from "../../lsp/index.ts";
+import { RUNTIME_CONFIG } from "../../runtime-config.ts";
+import { resolveRunnerPath } from "../runner-context.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
-import { readFileContent } from "./utils.js";
+} from "../types.ts";
+import { readFileContent } from "./utils.ts";
 
 const LSP_MAX_FILE_BYTES = RUNTIME_CONFIG.pipeline.lspMaxFileBytes;
 const LSP_MAX_FILE_LINES = RUNTIME_CONFIG.pipeline.lspMaxFileLines;
@@ -33,7 +33,7 @@ function normalizeActionTitle(title: string): string {
 }
 
 function buildCodeActionSuggestion(
-	actions: import("../../lsp/client.js").LSPCodeAction[],
+	actions: import("../../lsp/client.ts").LSPCodeAction[],
 ): string | undefined {
 	if (!actions.length) return undefined;
 	const quickFixes = actions.filter((action) =>
@@ -89,7 +89,7 @@ const lspRunner: RunnerDefinition = {
 
 		// Always sync current file content before reading diagnostics so dispatch
 		// does not operate on stale LSP snapshots.
-		let lspDiags: import("../../lsp/client.js").LSPDiagnostic[] = [];
+		let lspDiags: import("../../lsp/client.ts").LSPDiagnostic[] = [];
 		let serverFailed = false;
 		let failureReason = "";
 		const content = readFileContent(ctx.filePath);

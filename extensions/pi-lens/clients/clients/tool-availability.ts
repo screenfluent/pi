@@ -6,7 +6,7 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { safeSpawn } from "./safe-spawn.js";
+import { safeSpawn } from "./safe-spawn.ts";
 
 // --- Types ---
 

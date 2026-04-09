@@ -1,9 +1,9 @@
 import * as path from "node:path";
-import type { FileComplexity } from "./complexity-client.js";
-import type { RuleScanResult } from "./rules-scanner.js";
-import { RUNTIME_CONFIG } from "./runtime-config.js";
-import type { ProjectIndex } from "./project-index.js";
-import { normalizeMapKey } from "./path-utils.js";
+import type { FileComplexity } from "./complexity-client.ts";
+import type { RuleScanResult } from "./rules-scanner.ts";
+import { RUNTIME_CONFIG } from "./runtime-config.ts";
+import type { ProjectIndex } from "./project-index.ts";
+import { normalizeMapKey } from "./path-utils.ts";
 
 export interface ErrorDebtBaseline {
 	testsPassed: boolean;

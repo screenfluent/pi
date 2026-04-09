@@ -6,7 +6,7 @@
  */
 
 import * as ts from "typescript";
-import { getStateIndex, NUM_STATES, NUM_SYNTAX } from "./amain-types.js";
+import { getStateIndex, NUM_STATES, NUM_SYNTAX } from "./amain-types.ts";
 
 // ============================================================================
 // Matrix Construction

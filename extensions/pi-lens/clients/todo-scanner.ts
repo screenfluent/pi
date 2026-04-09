@@ -119,7 +119,7 @@ export class TodoScanner {
 	 */
 	scanDirectory(
 		dirPath: string,
-		extensions = [".ts", ".tsx", ".js", ".jsx", ".py"],
+		extensions = [".ts", ".tsx", ".ts", ".jsx", ".py"],
 	): TodoScanResult {
 		const items: TodoItem[] = [];
 
@@ -149,7 +149,7 @@ export class TodoScanner {
 					// Skip this scanner file — its own type literals and regex cause false positives
 					if (
 						entry.name === "todo-scanner.ts" ||
-						entry.name === "todo-scanner.js"
+						entry.name === "todo-scanner.ts"
 					)
 						continue;
 					// Skip test files — intentional annotations are test fixtures, not work items

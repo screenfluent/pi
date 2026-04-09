@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { setupTestEnvironment } from "./test-utils.js";
-import { TypeCoverageClient } from "./type-coverage-client.js";
+import { setupTestEnvironment } from "./test-utils.ts";
+import { TypeCoverageClient } from "./type-coverage-client.ts";
 
 describe("TypeCoverageClient", () => {
 	let client: TypeCoverageClient;

@@ -6,7 +6,7 @@ import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { DispatchContext } from "../types.js";
+import type { DispatchContext } from "../types.ts";
 
 /**
  * Delay helper for Windows file cleanup
@@ -36,7 +36,7 @@ describe("oxlint runner", () => {
 	const require = createRequire(import.meta.url);
 
 	it("should have correct runner definition", async () => {
-		const oxlintModule = await import("./oxlint.js");
+		const oxlintModule = await import("./oxlint.ts");
 		const runner = oxlintModule.default;
 
 		expect(runner.id).toBe("oxlint");
@@ -81,7 +81,7 @@ function test() {
 		);
 
 		try {
-			const oxlintModule = await import("./oxlint.js");
+			const oxlintModule = await import("./oxlint.ts");
 			const runner = oxlintModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -120,7 +120,7 @@ function test() {
 		);
 
 		try {
-			const oxlintModule = await import("./oxlint.js");
+			const oxlintModule = await import("./oxlint.ts");
 			const runner = oxlintModule.default;
 
 			// Create context with no-oxlint flag set to true
@@ -152,7 +152,7 @@ const x = !!value;
 		);
 
 		try {
-			const oxlintModule = await import("./oxlint.js");
+			const oxlintModule = await import("./oxlint.ts");
 			const runner = oxlintModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -189,7 +189,7 @@ export { greet };
 		);
 
 		try {
-			const oxlintModule = await import("./oxlint.js");
+			const oxlintModule = await import("./oxlint.ts");
 			const runner = oxlintModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -218,7 +218,7 @@ export { greet };
 		);
 
 		try {
-			const oxlintModule = await import("./oxlint.js");
+			const oxlintModule = await import("./oxlint.ts");
 			const runner = oxlintModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -249,7 +249,7 @@ export { greet };
 		fs.writeFileSync(tmpFile, `const x = 1;`);
 
 		try {
-			const oxlintModule = await import("./oxlint.js");
+			const oxlintModule = await import("./oxlint.ts");
 			const runner = oxlintModule.default;
 
 			// Check if oxlint is available
@@ -286,7 +286,7 @@ export { greet };
 		fs.writeFileSync(tmpFile, `const x = `);
 
 		try {
-			const oxlintModule = await import("./oxlint.js");
+			const oxlintModule = await import("./oxlint.ts");
 			const runner = oxlintModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 

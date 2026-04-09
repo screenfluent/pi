@@ -4,13 +4,13 @@
  * Requires: @biomejs/biome (npm install -D @biomejs/biome)
  */
 
-import { safeSpawn } from "../../safe-spawn.js";
-import { createBiomeParser } from "./utils/diagnostic-parsers.js";
+import { safeSpawn } from "../../safe-spawn.ts";
+import { createBiomeParser } from "./utils/diagnostic-parsers.ts";
 import type {
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 // Cache biome availability check
 let biomeAvailable: boolean | null = null;

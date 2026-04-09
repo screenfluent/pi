@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { DispatchContext } from "../types.js";
+import type { DispatchContext } from "../types.ts";
 
 function createMockContext(filePath: string, kind: any = "jsts"): DispatchContext {
 	return {
@@ -20,7 +20,7 @@ function createMockContext(filePath: string, kind: any = "jsts"): DispatchContex
 
 describe("ast-grep-napi vs CLI comparison", () => {
 	it("should load the napi module", async () => {
-		const napiModule = await import("./ast-grep-napi.js");
+		const napiModule = await import("./ast-grep-napi.ts");
 		expect(napiModule.default.id).toBe("ast-grep-napi");
 		expect(napiModule.default.appliesTo).toEqual(["jsts"]);
 	});
@@ -59,7 +59,7 @@ function riskyOperation() {
 
 		try {
 			// Test NAPI version
-			const napiModule = await import("./ast-grep-napi.js");
+			const napiModule = await import("./ast-grep-napi.ts");
 			const napiRunner = napiModule.default;
 			
 			console.time("napi");
@@ -67,7 +67,7 @@ function riskyOperation() {
 			console.timeEnd("napi");
 			
 			// Test CLI version
-			const cliModule = await import("./ast-grep.js");
+			const cliModule = await import("./ast-grep.ts");
 			const cliRunner = cliModule.default;
 			
 			console.time("cli");
@@ -115,7 +115,7 @@ function riskyOperation() {
 		fs.writeFileSync(tmpFile, "# Python file\nprint('hello')");
 
 		try {
-			const napiModule = await import("./ast-grep-napi.js");
+			const napiModule = await import("./ast-grep-napi.ts");
 			const napiRunner = napiModule.default;
 			
 			const result = await napiRunner.run(createMockContext(tmpFile, "python"));

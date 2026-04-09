@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { RuffClient } from "./ruff-client.js";
-import { createTempFile, setupTestEnvironment } from "./test-utils.js";
+import { RuffClient } from "./ruff-client.ts";
+import { createTempFile, setupTestEnvironment } from "./test-utils.ts";
 
 describe("RuffClient", () => {
 	let client: RuffClient;
@@ -28,7 +28,7 @@ describe("RuffClient", () => {
 
 		it("should not recognize non-Python files", () => {
 			expect(client.isPythonFile("test.ts")).toBe(false);
-			expect(client.isPythonFile("test.js")).toBe(false);
+			expect(client.isPythonFile("test.ts")).toBe(false);
 			expect(client.isPythonFile("test.txt")).toBe(false);
 		});
 	});

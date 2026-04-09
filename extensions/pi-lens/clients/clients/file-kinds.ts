@@ -27,7 +27,7 @@ export type FileKind =
 // --- Extension Maps ---
 
 const KIND_EXTENSIONS: Record<FileKind, readonly string[]> = {
-	jsts: [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".svelte"],
+	jsts: [".ts", ".jsx", ".ts", ".tsx", ".mjs", ".cjs", ".svelte"],
 	python: [".py"],
 	go: [".go"],
 	rust: [".rs"],

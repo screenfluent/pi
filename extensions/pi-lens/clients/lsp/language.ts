@@ -10,7 +10,7 @@ export const LANGUAGE_EXTENSIONS: Record<string, string> = {
 	".tsx": "typescriptreact",
 	".mts": "typescript",
 	".cts": "typescript",
-	".js": "javascript",
+	".ts": "javascript",
 	".jsx": "javascriptreact",
 	".mjs": "javascript",
 	".cjs": "javascript",

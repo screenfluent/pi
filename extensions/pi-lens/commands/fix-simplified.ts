@@ -8,21 +8,21 @@
 import * as childProcess from "node:child_process";
 import * as nodeFs from "node:fs";
 import * as path from "node:path";
-import { safeSpawn } from "../clients/safe-spawn.js";
+import { safeSpawn } from "../clients/safe-spawn.ts";
 import type {
 	ExtensionAPI,
 	ExtensionContext,
 } from "@mariozechner/pi-coding-agent";
-import type { AstGrepClient } from "../clients/ast-grep-client.js";
-import type { BiomeClient } from "../clients/biome-client.js";
-import { CacheManager } from "../clients/cache-manager.js";
-import { detectFileKind } from "../clients/file-kinds.js";
-import { EXCLUDED_DIRS, isTestFile } from "../clients/file-utils.js";
-import type { ComplexityClient } from "../clients/complexity-client.js";
-import type { JscpdClient } from "../clients/jscpd-client.js";
-import type { KnipClient } from "../clients/knip-client.js";
-import type { RuffClient } from "../clients/ruff-client.js";
-import type { TypeScriptClient } from "../clients/typescript-client.js";
+import type { AstGrepClient } from "../clients/ast-grep-client.ts";
+import type { BiomeClient } from "../clients/biome-client.ts";
+import { CacheManager } from "../clients/cache-manager.ts";
+import { detectFileKind } from "../clients/file-kinds.ts";
+import { EXCLUDED_DIRS, isTestFile } from "../clients/file-utils.ts";
+import type { ComplexityClient } from "../clients/complexity-client.ts";
+import type { JscpdClient } from "../clients/jscpd-client.ts";
+import type { KnipClient } from "../clients/knip-client.ts";
+import type { RuffClient } from "../clients/ruff-client.ts";
+import type { TypeScriptClient } from "../clients/typescript-client.ts";
 
 // --- Types ---
 interface FixClients {

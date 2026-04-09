@@ -8,20 +8,20 @@
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
 import * as ts from "typescript";
-import { EXCLUDED_DIRS } from "../../file-utils.js";
+import { EXCLUDED_DIRS } from "../../file-utils.ts";
 import {
 	buildProjectIndex,
 	findSimilarFunctions,
 	loadIndex,
 	type ProjectIndex,
-} from "../../project-index.js";
-import { buildStateMatrix, countTransitions } from "../../state-matrix.js";
+} from "../../project-index.ts";
+import { buildStateMatrix, countTransitions } from "../../state-matrix.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 // ============================================================================
 // Configuration

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
-import { handleSessionStart } from "../../clients/runtime-session.js";
-import { setupTestEnvironment } from "./test-utils.js";
+import { handleSessionStart } from "../../clients/runtime-session.ts";
+import { setupTestEnvironment } from "./test-utils.ts";
 
 describe("runtime-session notifications", () => {
 	it("emits one compact startup info note and keeps critical warnings separate", async () => {

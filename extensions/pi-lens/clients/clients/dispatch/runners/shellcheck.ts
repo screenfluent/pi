@@ -22,14 +22,14 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { safeSpawn } from "../../safe-spawn.js";
-import { createAvailabilityChecker } from "./utils/runner-helpers.js";
+import { safeSpawn } from "../../safe-spawn.ts";
+import { createAvailabilityChecker } from "./utils/runner-helpers.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 const shellcheck = createAvailabilityChecker("shellcheck", ".exe");
 

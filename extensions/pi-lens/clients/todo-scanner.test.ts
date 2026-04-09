@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createTempFile, setupTestEnvironment } from "./test-utils.js";
-import { TodoScanner } from "./todo-scanner.js";
+import { createTempFile, setupTestEnvironment } from "./test-utils.ts";
+import { TodoScanner } from "./todo-scanner.ts";
 
 describe("TodoScanner", () => {
 	let client: TodoScanner;

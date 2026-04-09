@@ -1,13 +1,13 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { setupTestEnvironment } from "../../test-utils.js";
+import { setupTestEnvironment } from "../../test-utils.ts";
 
-vi.mock("../../../../clients/safe-spawn.js", () => ({
+vi.mock("../../../../clients/safe-spawn.ts", () => ({
 	safeSpawn: vi.fn(() => ({ error: null, status: 0, stdout: "", stderr: "" })),
 }));
 
-vi.mock("../../../../clients/dispatch/runners/utils/runner-helpers.js", () => ({
+vi.mock("../../../../clients/dispatch/runners/utils/runner-helpers.ts", () => ({
 	createAvailabilityChecker: (command: string) => ({
 		isAvailable: () => true,
 		getCommand: () => command,
@@ -30,7 +30,7 @@ function createCtx(kind: "yaml" | "sql", filePath: string, cwd = process.cwd()) 
 
 describe("yaml/sql runners", () => {
 	beforeEach(async () => {
-		const safeSpawnMod = await import("../../../../clients/safe-spawn.js");
+		const safeSpawnMod = await import("../../../../clients/safe-spawn.ts");
 		vi.mocked(safeSpawnMod.safeSpawn).mockReset();
 	});
 
@@ -38,9 +38,9 @@ describe("yaml/sql runners", () => {
 		const env = setupTestEnvironment("pi-lens-yamllint-runner-");
 		try {
 			const runner = (await import(
-				"../../../../clients/dispatch/runners/yamllint.js"
+				"../../../../clients/dispatch/runners/yamllint.ts"
 			)).default;
-			const safeSpawnMod = await import("../../../../clients/safe-spawn.js");
+			const safeSpawnMod = await import("../../../../clients/safe-spawn.ts");
 			fs.writeFileSync(path.join(env.tmpDir, ".yamllint"), "extends: default\n");
 
 			vi.mocked(safeSpawnMod.safeSpawn).mockReturnValue({
@@ -66,9 +66,9 @@ describe("yaml/sql runners", () => {
 		const env = setupTestEnvironment("pi-lens-sqlfluff-runner-");
 		try {
 			const runner = (await import(
-				"../../../../clients/dispatch/runners/sqlfluff.js"
+				"../../../../clients/dispatch/runners/sqlfluff.ts"
 			)).default;
-			const safeSpawnMod = await import("../../../../clients/safe-spawn.js");
+			const safeSpawnMod = await import("../../../../clients/safe-spawn.ts");
 			fs.writeFileSync(
 				path.join(env.tmpDir, ".sqlfluff"),
 				"[sqlfluff]\ndialect = postgres\n",

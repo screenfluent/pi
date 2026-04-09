@@ -12,7 +12,7 @@ import {
 	buildStateMatrixFromFile,
 	calculateSimilarity,
 	countTransitions,
-} from "./state-matrix.js";
+} from "./state-matrix.ts";
 
 // ============================================================================
 // Types

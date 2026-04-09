@@ -13,7 +13,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import * as ts from "typescript";
-import { getTypeScriptService } from "./ts-service.js";
+import { getTypeScriptService } from "./ts-service.ts";
 
 // --- Types ---
 
@@ -47,7 +47,7 @@ export class TypeSafetyClient {
 	 */
 	isSupportedFile(filePath: string): boolean {
 		const ext = path.extname(filePath).toLowerCase();
-		return [".ts", ".tsx", ".js", ".jsx"].includes(ext);
+		return [".ts", ".tsx", ".ts", ".jsx"].includes(ext);
 	}
 
 	/**

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { scanForSecrets } from "../../clients/secrets-scanner.js";
+import { scanForSecrets } from "../../clients/secrets-scanner.ts";
 
 describe("secrets-scanner", () => {
 	it("flags obvious hardcoded secret assignment", () => {

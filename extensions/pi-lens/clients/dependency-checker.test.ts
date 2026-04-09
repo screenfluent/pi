@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { DependencyChecker } from "./dependency-checker.js";
-import { setupTestEnvironment } from "./test-utils.js";
+import { DependencyChecker } from "./dependency-checker.ts";
+import { setupTestEnvironment } from "./test-utils.ts";
 
 describe("DependencyChecker", () => {
 	let client: DependencyChecker;

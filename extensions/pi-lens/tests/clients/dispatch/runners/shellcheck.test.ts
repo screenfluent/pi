@@ -1,9 +1,9 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { setupTestEnvironment } from "../../test-utils.js";
+import { setupTestEnvironment } from "../../test-utils.ts";
 
-vi.mock("../../../../clients/safe-spawn.js", () => ({
+vi.mock("../../../../clients/safe-spawn.ts", () => ({
 	safeSpawn: vi.fn(() => ({
 		error: null,
 		status: 0,
@@ -12,7 +12,7 @@ vi.mock("../../../../clients/safe-spawn.js", () => ({
 	})),
 }));
 
-vi.mock("../../../../clients/dispatch/runners/utils/runner-helpers.js", () => ({
+vi.mock("../../../../clients/dispatch/runners/utils/runner-helpers.ts", () => ({
 	createAvailabilityChecker: () => ({
 		isAvailable: () => true,
 		getCommand: () => "shellcheck",
@@ -39,15 +39,15 @@ function createShellCtx(filePath: string, cwd: string) {
 
 describe("shellcheck runner", () => {
 	beforeEach(async () => {
-		const safeSpawnMod = await import("../../../../clients/safe-spawn.js");
+		const safeSpawnMod = await import("../../../../clients/safe-spawn.ts");
 		vi.mocked(safeSpawnMod.safeSpawn).mockReset();
 	});
 
 	it("adds --severity warning when no .shellcheckrc exists", async () => {
 		const shellcheckRunner = (await import(
-			"../../../../clients/dispatch/runners/shellcheck.js"
+			"../../../../clients/dispatch/runners/shellcheck.ts"
 		)).default;
-		const safeSpawnMod = await import("../../../../clients/safe-spawn.js");
+		const safeSpawnMod = await import("../../../../clients/safe-spawn.ts");
 
 		vi.mocked(safeSpawnMod.safeSpawn).mockReturnValue({
 			error: null,
@@ -73,9 +73,9 @@ describe("shellcheck runner", () => {
 
 	it("finds parent .shellcheckrc and does not force --severity", async () => {
 		const shellcheckRunner = (await import(
-			"../../../../clients/dispatch/runners/shellcheck.js"
+			"../../../../clients/dispatch/runners/shellcheck.ts"
 		)).default;
-		const safeSpawnMod = await import("../../../../clients/safe-spawn.js");
+		const safeSpawnMod = await import("../../../../clients/safe-spawn.ts");
 
 		vi.mocked(safeSpawnMod.safeSpawn).mockReturnValue({
 			error: null,
@@ -103,9 +103,9 @@ describe("shellcheck runner", () => {
 
 	it("returns failed/blocking when shellcheck reports error severity", async () => {
 		const shellcheckRunner = (await import(
-			"../../../../clients/dispatch/runners/shellcheck.js"
+			"../../../../clients/dispatch/runners/shellcheck.ts"
 		)).default;
-		const safeSpawnMod = await import("../../../../clients/safe-spawn.js");
+		const safeSpawnMod = await import("../../../../clients/safe-spawn.ts");
 
 		vi.mocked(safeSpawnMod.safeSpawn).mockReturnValue({
 			error: null,

@@ -11,7 +11,7 @@
 
 import * as fs from "node:fs/promises";
 import * as path from "node:path";
-import { safeSpawn } from "./safe-spawn.js";
+import { safeSpawn } from "./safe-spawn.ts";
 
 const _lazyInstallAttempts = new Set<string>();
 
@@ -235,7 +235,7 @@ export const biomeFormatter: FormatterInfo = {
 		return null;
 	},
 	extensions: [
-		".js",
+		".ts",
 		".jsx",
 		".mjs",
 		".cjs",
@@ -280,7 +280,7 @@ export const prettierFormatter: FormatterInfo = {
 		return null;
 	},
 	extensions: [
-		".js",
+		".ts",
 		".jsx",
 		".mjs",
 		".cjs",
@@ -312,9 +312,9 @@ export const prettierFormatter: FormatterInfo = {
 			".prettierrc.json",
 			".prettierrc.yml",
 			".prettierrc.yaml",
-			".prettierrc.js",
+			".prettierrc.ts",
 			".prettierrc.cjs",
-			"prettier.config.js",
+			"prettier.config.ts",
 			"prettier.config.cjs",
 		];
 		const found = await findUp(configs, cwd);
@@ -346,7 +346,7 @@ export const ruffFormatter: FormatterInfo = {
 	async resolveCommand(filePath, cwd) {
 		const venv = await findInVenv("ruff", cwd);
 		if (venv) return [venv, "format", filePath];
-		const { getToolPath } = await import("./installer/index.js");
+		const { getToolPath } = await import("./installer/index.ts");
 		const installed = await getToolPath("ruff");
 		if (installed) return [installed, "format", filePath];
 		return null;
@@ -377,7 +377,7 @@ export const ruffFormatter: FormatterInfo = {
 
 		// No-config fallback: if Ruff is already available, allow formatter usage.
 		// This keeps Python default behavior consistent with startup defaults.
-		const { getToolPath } = await import("./installer/index.js");
+		const { getToolPath } = await import("./installer/index.ts");
 		const installed = await getToolPath("ruff");
 		return Boolean(installed);
 	},

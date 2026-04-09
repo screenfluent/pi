@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDiagnostic } from "./utils/format-utils.js";
+import { formatDiagnostic } from "./utils/format-utils.ts";
 
 describe("formatDiagnostic inline output verification", () => {
 	it("should display complete architect messages (NOT truncated to 'No ')", () => {

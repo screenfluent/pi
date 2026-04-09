@@ -1,13 +1,13 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { RUNTIME_CONFIG } from "./runtime-config.js";
-import { resolveRunnerPath, toRunnerDisplayPath } from "./dispatch/runner-context.js";
-import type { CacheManager } from "./cache-manager.js";
-import type { DependencyChecker } from "./dependency-checker.js";
-import type { JscpdClient } from "./jscpd-client.js";
-import type { KnipClient, KnipIssue } from "./knip-client.js";
-import { getKnipIgnorePatterns } from "./file-utils.js";
-import type { RuntimeCoordinator } from "./runtime-coordinator.js";
+import { RUNTIME_CONFIG } from "./runtime-config.ts";
+import { resolveRunnerPath, toRunnerDisplayPath } from "./dispatch/runner-context.ts";
+import type { CacheManager } from "./cache-manager.ts";
+import type { DependencyChecker } from "./dependency-checker.ts";
+import type { JscpdClient } from "./jscpd-client.ts";
+import type { KnipClient, KnipIssue } from "./knip-client.ts";
+import { getKnipIgnorePatterns } from "./file-utils.ts";
+import type { RuntimeCoordinator } from "./runtime-coordinator.ts";
 
 interface TurnEndDeps {
 	ctxCwd?: string;

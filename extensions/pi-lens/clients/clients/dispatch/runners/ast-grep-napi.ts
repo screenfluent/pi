@@ -9,14 +9,14 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { resolvePackagePath } from "../../package-root.js";
-import { classifyDefect } from "../diagnostic-taxonomy.js";
+import { resolvePackagePath } from "../../package-root.ts";
+import { classifyDefect } from "../diagnostic-taxonomy.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 import {
 	calculateRuleComplexity,
 	hasUnsupportedConditions,
@@ -26,7 +26,7 @@ import {
 	MAX_BLOCKING_RULE_COMPLEXITY,
 	type YamlRule,
 	type YamlRuleCondition,
-} from "./yaml-rule-parser.js";
+} from "./yaml-rule-parser.ts";
 
 // Lazy load the napi package
 let sg: typeof import("@ast-grep/napi") | undefined;
@@ -45,7 +45,7 @@ async function loadSg(): Promise<typeof import("@ast-grep/napi") | undefined> {
 }
 
 // Supported extensions for NAPI
-const SUPPORTED_EXTS = [".ts", ".tsx", ".js", ".jsx", ".css", ".html", ".htm"];
+const SUPPORTED_EXTS = [".ts", ".tsx", ".ts", ".jsx", ".css", ".html", ".htm"];
 
 /** Maximum matches per rule to prevent excessive false positives */
 const MAX_MATCHES_PER_RULE = 10;
@@ -118,12 +118,12 @@ function explicitRuleFixSuggestion(rule: YamlRule): string | undefined {
 
 const ESLINT_CONFIGS = [
 	".eslintrc",
-	".eslintrc.js",
+	".eslintrc.ts",
 	".eslintrc.cjs",
 	".eslintrc.json",
 	".eslintrc.yaml",
 	".eslintrc.yml",
-	"eslint.config.js",
+	"eslint.config.ts",
 	"eslint.config.mjs",
 	"eslint.config.cjs",
 ];
@@ -162,7 +162,7 @@ function getLang(filePath: string, sgModule: typeof import("@ast-grep/napi")) {
 			return sgModule.ts;
 		case ".tsx":
 			return sgModule.tsx;
-		case ".js":
+		case ".ts":
 		case ".jsx":
 			return sgModule.js;
 		case ".css":

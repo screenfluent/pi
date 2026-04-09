@@ -11,38 +11,38 @@
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { Effect } from "effect";
-import { LSPService, lspEffect, getLSPService, resetLSPService } from "../index.js";
-import type { LSPClientInfo } from "../client.js";
-import type { LSPServerInfo } from "../server.js";
+import { LSPService, lspEffect, getLSPService, resetLSPService } from "../index.ts";
+import type { LSPClientInfo } from "../client.ts";
+import type { LSPServerInfo } from "../server.ts";
 
 // Mock the dependencies
-vi.mock("../server.js", async () => {
-	const actual = await vi.importActual<typeof import("../server.js")>("../server.js");
+vi.mock("../server.ts", async () => {
+	const actual = await vi.importActual<typeof import("../server.ts")>("../server.ts");
 	return {
 		...actual,
 		getServersForFileWithConfig: vi.fn(),
 	};
 });
 
-vi.mock("../config.js", () => ({
+vi.mock("../config.ts", () => ({
 	initLSPConfig: vi.fn(),
 	getServersForFileWithConfig: vi.fn(),
 }));
 
-vi.mock("../language.js", () => ({
+vi.mock("../language.ts", () => ({
 	getLanguageId: vi.fn(() => "typescript"),
 }));
 
-vi.mock("../launch.js", () => ({
+vi.mock("../launch.ts", () => ({
 	launchLSP: vi.fn(),
 }));
 
-vi.mock("../client.js", () => ({
+vi.mock("../client.ts", () => ({
 	createLSPClient: vi.fn(),
 }));
 
-import { getServersForFileWithConfig as mockGetServersForFile } from "../config.js";
-import { createLSPClient as mockCreateLSPClient } from "../client.js";
+import { getServersForFileWithConfig as mockGetServersForFile } from "../config.ts";
+import { createLSPClient as mockCreateLSPClient } from "../client.ts";
 
 describe("LSPService", () => {
 	let service: LSPService;

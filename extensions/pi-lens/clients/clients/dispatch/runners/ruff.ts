@@ -5,17 +5,17 @@
  * Supports venv-local installations.
  */
 
-import { ensureTool } from "../../installer/index.js";
-import { safeSpawnAsync } from "../../safe-spawn.js";
-import { stripAnsi } from "../../sanitize.js";
+import { ensureTool } from "../../installer/index.ts";
+import { safeSpawnAsync } from "../../safe-spawn.ts";
+import { stripAnsi } from "../../sanitize.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
-import { parseRuffOutput } from "./utils/diagnostic-parsers.js";
-import { createAvailabilityChecker } from "./utils/runner-helpers.js";
+} from "../types.ts";
+import { parseRuffOutput } from "./utils/diagnostic-parsers.ts";
+import { createAvailabilityChecker } from "./utils/runner-helpers.ts";
 
 const ruff = createAvailabilityChecker("ruff", ".exe");
 

@@ -9,14 +9,14 @@
  * - File size limits
  */
 
-import { ArchitectClient } from "../../architect-client.js";
+import { ArchitectClient } from "../../architect-client.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
-import { readFileContent } from "./utils.js";
+} from "../types.ts";
+import { readFileContent } from "./utils.ts";
 
 const architectRunner: RunnerDefinition = {
 	id: "architect",

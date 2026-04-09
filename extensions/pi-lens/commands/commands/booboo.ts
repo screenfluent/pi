@@ -4,38 +4,38 @@ import type {
 	ExtensionAPI,
 	ExtensionContext,
 } from "@mariozechner/pi-coding-agent";
-import type { ArchitectClient } from "../clients/architect-client.js";
-import type { AstGrepClient } from "../clients/ast-grep-client.js";
-import type { ComplexityClient } from "../clients/complexity-client.js";
-import type { DependencyChecker } from "../clients/dependency-checker.js";
+import type { ArchitectClient } from "../clients/architect-client.ts";
+import type { AstGrepClient } from "../clients/ast-grep-client.ts";
+import type { ComplexityClient } from "../clients/complexity-client.ts";
+import type { DependencyChecker } from "../clients/dependency-checker.ts";
 import {
 	EXCLUDED_DIRS,
 	getKnipIgnorePatterns,
 	isTestFile,
-} from "../clients/file-utils.js";
-import type { JscpdClient } from "../clients/jscpd-client.js";
-import type { KnipClient } from "../clients/knip-client.js";
-import { validateProductionReadiness } from "../clients/production-readiness.js";
+} from "../clients/file-utils.ts";
+import type { JscpdClient } from "../clients/jscpd-client.ts";
+import type { KnipClient } from "../clients/knip-client.ts";
+import { validateProductionReadiness } from "../clients/production-readiness.ts";
 import {
 	buildProjectIndex,
 	type ProjectIndex,
-} from "../clients/project-index.js";
+} from "../clients/project-index.ts";
 import {
 	detectProjectMetadata,
 	formatProjectMetadata,
 	getAvailableCommands,
-} from "../clients/project-metadata.js";
-import { RunnerTracker } from "../clients/runner-tracker.js";
-import { safeSpawn } from "../clients/safe-spawn.js";
-import { getSourceFiles } from "../clients/scan-utils.js";
+} from "../clients/project-metadata.ts";
+import { RunnerTracker } from "../clients/runner-tracker.ts";
+import { safeSpawn } from "../clients/safe-spawn.ts";
+import { getSourceFiles } from "../clients/scan-utils.ts";
 import {
 	collectSourceFiles,
 	getFilterStats,
-} from "../clients/source-filter.js";
-import { calculateSimilarity } from "../clients/state-matrix.js";
-import type { TodoScanner } from "../clients/todo-scanner.js";
-import { TreeSitterClient } from "../clients/tree-sitter-client.js";
-import type { TypeCoverageClient } from "../clients/type-coverage-client.js";
+} from "../clients/source-filter.ts";
+import { calculateSimilarity } from "../clients/state-matrix.ts";
+import type { TodoScanner } from "../clients/todo-scanner.ts";
+import { TreeSitterClient } from "../clients/tree-sitter-client.ts";
+import type { TypeCoverageClient } from "../clients/type-coverage-client.ts";
 
 const getExtensionDir = () => {
 	if (typeof __dirname !== "undefined") {
@@ -56,11 +56,11 @@ function shouldIncludeFile(filePath: string): boolean {
 const _TEST_FILE_EXCLUDES = [
 	"!**/*.test.ts",
 	"!**/*.test.tsx",
-	"!**/*.test.js",
+	"!**/*.test.ts",
 	"!**/*.test.jsx",
 	"!**/*.spec.ts",
 	"!**/*.spec.tsx",
-	"!**/*.spec.js",
+	"!**/*.spec.ts",
 	"!**/*.spec.jsx",
 	"!**/*.poc.test.ts",
 	"!**/*.poc.test.tsx",
@@ -109,7 +109,7 @@ export async function handleBooboo(
 		extensions: [
 			".ts",
 			".tsx",
-			".js",
+			".ts",
 			".jsx",
 			".mjs",
 			".cjs",
@@ -429,7 +429,7 @@ export async function handleBooboo(
 
 	// Runner 4: Complexity metrics
 	await tracker.run("complexity metrics", async () => {
-		const results: import("../clients/complexity-client.js").FileComplexity[] =
+		const results: import("../clients/complexity-client.ts").FileComplexity[] =
 			[];
 		const aiSlopIssues: string[] = [];
 		// Use pre-collected sourceFiles (already filtered for artifacts)

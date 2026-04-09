@@ -1,6 +1,6 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { EXCLUDED_DIRS, isTestFile } from "./file-utils.js";
+import { EXCLUDED_DIRS, isTestFile } from "./file-utils.ts";
 
 /**
  * Common parsing logic for ast-grep JSON output (handles both array and NDJSON).
@@ -37,7 +37,7 @@ export function shouldIgnoreFile(
 
 	// Ignore compiled JS in TS projects
 	const isJs =
-		relPath.endsWith(".js") ||
+		relPath.endsWith(".ts") ||
 		relPath.endsWith(".mjs") ||
 		relPath.endsWith(".cjs");
 	if (isTsProject && isJs) return true;
@@ -75,7 +75,7 @@ export function getSourceFiles(dir: string, isTsProject: boolean): string[] {
 				// Skip compiled JS if it's a TS project
 				if (
 					isTsProject &&
-					entry.name.endsWith(".js") &&
+					entry.name.endsWith(".ts") &&
 					fs.existsSync(full.replace(/\.js$/, ".ts"))
 				)
 					continue;

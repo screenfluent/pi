@@ -10,14 +10,14 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { safeSpawnAsync } from "../../safe-spawn.js";
-import { tryLazyInstall } from "./utils/lazy-installer.js";
+import { safeSpawnAsync } from "../../safe-spawn.ts";
+import { tryLazyInstall } from "./utils/lazy-installer.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 function findRubocop(cwd: string): { cmd: string; args: string[] } {
 	// Prefer bundle exec if Gemfile exists

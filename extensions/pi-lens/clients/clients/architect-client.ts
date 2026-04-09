@@ -12,7 +12,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { minimatch } from "minimatch";
-import { resolvePackagePath } from "./package-root.js";
+import { resolvePackagePath } from "./package-root.ts";
 
 // --- Types ---
 

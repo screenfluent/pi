@@ -10,7 +10,7 @@
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
-import { isExcludedDirName } from "./file-utils.js";
+import { isExcludedDirName } from "./file-utils.ts";
 
 export const PROJECT_ROOT_MARKERS = [
 	".git",

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatRateResult } from "./rate.js";
+import { formatRateResult } from "./rate.ts";
 
 // Test the formatting functions directly with mock data
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isExcludedDirName } from "../../clients/file-utils.js";
+import { isExcludedDirName } from "../../clients/file-utils.ts";
 
 describe("file-utils exclusion matching", () => {
 	it("matches exact exclusions case-insensitively", () => {

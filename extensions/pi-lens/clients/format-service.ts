@@ -20,8 +20,8 @@ import {
 	FormatterInfo,
 	FormatterResult,
 	clearFormatterCache,
-} from "./formatters.js";
-import { FileTime } from "./file-time.js";
+} from "./formatters.ts";
+import { FileTime } from "./file-time.ts";
 
 // --- Types ---
 
@@ -163,7 +163,7 @@ export class FormatService {
 	 * Get formatters by name (for explicit formatter selection)
 	 */
 	private async getFormattersByName(names: string[]): Promise<FormatterInfo[]> {
-		const { listAllFormatters, ...formatters } = await import("./formatters.js");
+		const { listAllFormatters, ...formatters } = await import("./formatters.ts");
 		const allNames = listAllFormatters();
 
 		return names

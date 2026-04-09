@@ -8,12 +8,12 @@ const getToolEnvironment = vi.fn(async () => ({}));
 const launchLSP = vi.fn();
 const launchViaPackageManager = vi.fn();
 
-vi.mock("../../../clients/installer/index.js", () => ({
+vi.mock("../../../clients/installer/index.ts", () => ({
 	ensureTool,
 	getToolEnvironment,
 }));
 
-vi.mock("../../../clients/lsp/launch.js", () => ({
+vi.mock("../../../clients/lsp/launch.ts", () => ({
 	launchLSP,
 	launchViaPackageManager,
 }));
@@ -32,7 +32,7 @@ afterEach(() => {
 
 describe("lsp server policy", () => {
 	it("declares installPolicy for every built-in server", async () => {
-		const { LSP_SERVERS } = await import("../../../clients/lsp/server.js");
+		const { LSP_SERVERS } = await import("../../../clients/lsp/server.ts");
 		const missing = LSP_SERVERS.filter((server) => !server.installPolicy).map(
 			(server) => server.id,
 		);
@@ -40,7 +40,7 @@ describe("lsp server policy", () => {
 	});
 
 	it("prioritizes go.work root over go.mod", async () => {
-		const { PriorityRoot } = await import("../../../clients/lsp/server.js");
+		const { PriorityRoot } = await import("../../../clients/lsp/server.ts");
 		const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-lens-go-root-"));
 		dirs.push(tmp);
 
@@ -58,7 +58,7 @@ describe("lsp server policy", () => {
 	});
 
 	it("resolves relative file roots without hanging", async () => {
-		const { NearestRoot } = await import("../../../clients/lsp/server.js");
+		const { NearestRoot } = await import("../../../clients/lsp/server.ts");
 		const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-lens-relative-root-"));
 		dirs.push(tmp);
 
@@ -79,7 +79,7 @@ describe("lsp server policy", () => {
 	});
 
 	it("uses git root fallback for ruby files without ruby config", async () => {
-		const { RubyServer } = await import("../../../clients/lsp/server.js");
+		const { RubyServer } = await import("../../../clients/lsp/server.ts");
 		const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-lens-ruby-root-"));
 		dirs.push(tmp);
 
@@ -94,7 +94,7 @@ describe("lsp server policy", () => {
 	});
 
 	it("skips managed TypeScript install when lsp install is disabled", async () => {
-		const { TypeScriptServer } = await import("../../../clients/lsp/server.js");
+		const { TypeScriptServer } = await import("../../../clients/lsp/server.ts");
 		const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-lens-ts-policy-"));
 		dirs.push(tmp);
 		fs.writeFileSync(path.join(tmp, "package.json"), "{}\n");
@@ -107,7 +107,7 @@ describe("lsp server policy", () => {
 	});
 
 	it("skips managed TypeScript install when install is disallowed for file", async () => {
-		const { TypeScriptServer } = await import("../../../clients/lsp/server.js");
+		const { TypeScriptServer } = await import("../../../clients/lsp/server.ts");
 		const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-lens-ts-install-off-"));
 		dirs.push(tmp);
 		fs.writeFileSync(path.join(tmp, "package.json"), "{}\n");
@@ -120,7 +120,7 @@ describe("lsp server policy", () => {
 	});
 
 	it("skips package-manager fallback when lsp install is disabled", async () => {
-		const { SvelteServer } = await import("../../../clients/lsp/server.js");
+		const { SvelteServer } = await import("../../../clients/lsp/server.ts");
 		const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-lens-sv-policy-"));
 		dirs.push(tmp);
 		fs.writeFileSync(path.join(tmp, "package.json"), "{}\n");
@@ -134,7 +134,7 @@ describe("lsp server policy", () => {
 	});
 
 	it("skips package-manager fallback when install is disallowed for file", async () => {
-		const { SvelteServer } = await import("../../../clients/lsp/server.js");
+		const { SvelteServer } = await import("../../../clients/lsp/server.ts");
 		const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "pi-lens-sv-install-off-"));
 		dirs.push(tmp);
 		fs.writeFileSync(path.join(tmp, "package.json"), "{}\n");

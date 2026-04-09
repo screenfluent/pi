@@ -6,7 +6,7 @@ import * as fs from "node:fs";
 import { createRequire } from "node:module";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { DispatchContext } from "../types.js";
+import type { DispatchContext } from "../types.ts";
 
 function createMockContext(filePath: string): DispatchContext {
 	return {
@@ -26,7 +26,7 @@ describe("spellcheck runner", () => {
 	const require = createRequire(import.meta.url);
 
 	it("should have correct runner definition", async () => {
-		const spellcheckModule = await import("./spellcheck.js");
+		const spellcheckModule = await import("./spellcheck.ts");
 		const runner = spellcheckModule.default;
 
 		expect(runner.id).toBe("spellcheck");
@@ -64,7 +64,7 @@ The seperation of concerns is important.
 		);
 
 		try {
-			const spellcheckModule = await import("./spellcheck.js");
+			const spellcheckModule = await import("./spellcheck.ts");
 			const runner = spellcheckModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -104,7 +104,7 @@ This is a recieving test.
 		);
 
 		try {
-			const spellcheckModule = await import("./spellcheck.js");
+			const spellcheckModule = await import("./spellcheck.ts");
 			const runner = spellcheckModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -141,7 +141,7 @@ All spelling is proper in this file.
 		);
 
 		try {
-			const spellcheckModule = await import("./spellcheck.js");
+			const spellcheckModule = await import("./spellcheck.ts");
 			const runner = spellcheckModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -165,7 +165,7 @@ All spelling is proper in this file.
 		fs.writeFileSync(tmpFile, `# Test\n\nSimple file.`);
 
 		try {
-			const spellcheckModule = await import("./spellcheck.js");
+			const spellcheckModule = await import("./spellcheck.ts");
 			const runner = spellcheckModule.default;
 			const result = await runner.run(createMockContext(tmpFile));
 
@@ -186,7 +186,7 @@ All spelling is proper in this file.
 		fs.writeFileSync(tmpFile, `# Test\n\nContent with typo: recieve.`);
 
 		try {
-			const spellcheckModule = await import("./spellcheck.js");
+			const spellcheckModule = await import("./spellcheck.ts");
 			const runner = spellcheckModule.default;
 
 			// Check if typos is available

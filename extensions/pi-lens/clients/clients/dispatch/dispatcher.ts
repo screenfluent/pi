@@ -15,17 +15,17 @@
  */
 
 import * as path from "node:path";
-import type { FileKind } from "../file-kinds.js";
-import { detectFileKind } from "../file-kinds.js";
-import { getPrimaryDispatchGroup } from "../language-policy.js";
-import { resolveLanguageRootForFile } from "../language-profile.js";
-import { isTestFile } from "../file-utils.js";
-import { logLatency } from "../latency-logger.js";
-import { normalizeMapKey } from "../path-utils.js";
-import { RUNTIME_CONFIG } from "../runtime-config.js";
-import { safeSpawnAsync } from "../safe-spawn.js";
-import { classifyDiagnostic } from "./diagnostic-taxonomy.js";
-import { resolveRunnerPath } from "./runner-context.js";
+import type { FileKind } from "../file-kinds.ts";
+import { detectFileKind } from "../file-kinds.ts";
+import { getPrimaryDispatchGroup } from "../language-policy.ts";
+import { resolveLanguageRootForFile } from "../language-profile.ts";
+import { isTestFile } from "../file-utils.ts";
+import { logLatency } from "../latency-logger.ts";
+import { normalizeMapKey } from "../path-utils.ts";
+import { RUNTIME_CONFIG } from "../runtime-config.ts";
+import { safeSpawnAsync } from "../safe-spawn.ts";
+import { classifyDiagnostic } from "./diagnostic-taxonomy.ts";
+import { resolveRunnerPath } from "./runner-context.ts";
 import type {
 	BaselineStore,
 	Diagnostic,
@@ -36,8 +36,8 @@ import type {
 	RunnerDefinition,
 	RunnerGroup,
 	RunnerResult,
-} from "./types.js";
-import { formatDiagnostics } from "./utils/format-utils.js";
+} from "./types.ts";
+import { formatDiagnostics } from "./utils/format-utils.ts";
 
 // --- In-Memory Baseline Store ---
 
@@ -129,7 +129,7 @@ export function createDispatchContext(
 	pi: PiAgentAPI,
 	baselines?: BaselineStore,
 	blockingOnly?: boolean,
-	modifiedRanges?: import("./types.js").ModifiedRange[],
+	modifiedRanges?: import("./types.ts").ModifiedRange[],
 ): DispatchContext {
 	const normalizedCwd = normalizeMapKey(
 		resolveLanguageRootForFile(path.resolve(cwd, filePath), cwd),

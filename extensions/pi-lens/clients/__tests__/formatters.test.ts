@@ -20,7 +20,7 @@ import {
 	getFormattersForFile,
 	clearFormatterCache,
 	formatFile,
-} from "../formatters.js";
+} from "../formatters.ts";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
@@ -371,7 +371,7 @@ describe("Formatter Detection", () => {
 		it("biome should handle TS/JS/JSON/CSS/Vue/Svelte", () => {
 			expect(biomeFormatter.extensions).toContain(".ts");
 			expect(biomeFormatter.extensions).toContain(".tsx");
-			expect(biomeFormatter.extensions).toContain(".js");
+			expect(biomeFormatter.extensions).toContain(".ts");
 			expect(biomeFormatter.extensions).toContain(".json");
 			expect(biomeFormatter.extensions).toContain(".css");
 			expect(biomeFormatter.extensions).toContain(".vue");

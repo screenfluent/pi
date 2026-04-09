@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatDiagnostic } from "./utils/format-utils.js";
+import { formatDiagnostic } from "./utils/format-utils.ts";
 
 describe("formatDiagnostic edge cases", () => {
 	it("should handle messages with colons correctly", () => {

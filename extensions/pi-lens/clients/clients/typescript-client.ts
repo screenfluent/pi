@@ -16,10 +16,10 @@ import type {
 	HoverInfo,
 	Location,
 	SymbolInfo,
-} from "./types.js";
+} from "./types.ts";
 
 // TypeScript file extensions
-const TS_EXTENSIONS = new Set([".ts", ".tsx", ".js", ".jsx"]);
+const TS_EXTENSIONS = new Set([".ts", ".tsx", ".ts", ".jsx"]);
 
 // Default compiler options when no tsconfig is found
 /**

@@ -9,7 +9,7 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { collectSourceFiles } from "./source-filter.js";
+import { collectSourceFiles } from "./source-filter.ts";
 
 // --- Types ---
 
@@ -135,7 +135,7 @@ export class TodoScanner {
 			// Skip this scanner file — its own type literals and regex cause false positives
 			if (
 				filePath.endsWith("todo-scanner.ts") ||
-				filePath.endsWith("todo-scanner.js")
+				filePath.endsWith("todo-scanner.ts")
 			)
 				continue;
 			// Skip test files — intentional annotations are test fixtures, not work items

@@ -2,7 +2,7 @@ import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
-import { TodoScanner } from "../../clients/todo-scanner.js";
+import { TodoScanner } from "../../clients/todo-scanner.ts";
 
 const tempDirs: string[] = [];
 

@@ -11,7 +11,7 @@
 
 import * as path from "path";
 import * as fs from "fs/promises";
-import { safeSpawn } from "./safe-spawn.js";
+import { safeSpawn } from "./safe-spawn.ts";
 
 // --- Types ---
 
@@ -88,7 +88,7 @@ export const biomeFormatter: FormatterInfo = {
 	name: "biome",
 	command: ["npx", "@biomejs/biome", "format", "--write", "$FILE"],
 	extensions: [
-		".js", ".jsx", ".mjs", ".cjs",
+		".ts", ".jsx", ".mjs", ".cjs",
 		".ts", ".tsx", ".mts", ".cts",
 		".json", ".jsonc",
 		".css", ".scss", ".sass",
@@ -115,7 +115,7 @@ export const prettierFormatter: FormatterInfo = {
 	name: "prettier",
 	command: ["npx", "prettier", "--write", "$FILE"],
 	extensions: [
-		".js", ".jsx", ".mjs", ".cjs",
+		".ts", ".jsx", ".mjs", ".cjs",
 		".ts", ".tsx", ".mts", ".cts",
 		".json", ".jsonc",
 		".css", ".scss", ".sass", ".less",
@@ -129,8 +129,8 @@ export const prettierFormatter: FormatterInfo = {
 		// Check for prettier config files
 		const configs = [
 			".prettierrc", ".prettierrc.json", ".prettierrc.yml",
-			".prettierrc.yaml", ".prettierrc.js", ".prettierrc.cjs",
-			"prettier.config.js", "prettier.config.cjs"
+			".prettierrc.yaml", ".prettierrc.ts", ".prettierrc.cjs",
+			"prettier.config.ts", "prettier.config.cjs"
 		];
 		const found = await findUp(configs, cwd);
 		if (found.length > 0) return true;

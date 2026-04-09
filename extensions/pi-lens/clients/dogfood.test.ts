@@ -15,8 +15,8 @@ import {
 	findSimilarFunctions,
 	type IndexEntry,
 	type ProjectIndex,
-} from "./project-index.js";
-import { calculateSimilarity as calcMatrixSimilarity } from "./state-matrix.js";
+} from "./project-index.ts";
+import { calculateSimilarity as calcMatrixSimilarity } from "./state-matrix.ts";
 
 // Find project root by looking for package.json
 async function findProjectRoot(startDir: string): Promise<string> {

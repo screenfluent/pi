@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
-import { ArchitectClient } from "../../clients/architect-client.js";
-import { setupTestEnvironment } from "./test-utils.js";
+import { ArchitectClient } from "../../clients/architect-client.ts";
+import { setupTestEnvironment } from "./test-utils.ts";
 
 describe("architect-client", () => {
 	it("skips invalid regex patterns without throwing", () => {

@@ -2,31 +2,31 @@
  * Runner definitions for pi-lens dispatch system
  */
 
-import { registerRunner } from "../dispatcher.js";
-import architectRunner from "./architect.js";
-import astGrepNapiRunner from "./ast-grep-napi.js";
-import biomeRunner from "./biome.js";
-import biomeCheckJsonRunner from "./biome-check.js";
-import eslintRunner from "./eslint.js";
-import goVetRunner from "./go-vet.js";
-import golangciRunner from "./golangci-lint.js";
-import lspRunner from "./lsp.js";
-import oxlintRunner from "./oxlint.js";
-import pyrightRunner from "./pyright.js";
-import pythonSlopRunner from "./python-slop.js";
-import rubocopRunner from "./rubocop.js";
-import ruffRunner from "./ruff.js";
-import rustClippyRunner from "./rust-clippy.js";
-import shellcheckRunner from "./shellcheck.js";
-import sqlfluffRunner from "./sqlfluff.js";
+import { registerRunner } from "../dispatcher.ts";
+import architectRunner from "./architect.ts";
+import astGrepNapiRunner from "./ast-grep-napi.ts";
+import biomeRunner from "./biome.ts";
+import biomeCheckJsonRunner from "./biome-check.ts";
+import eslintRunner from "./eslint.ts";
+import goVetRunner from "./go-vet.ts";
+import golangciRunner from "./golangci-lint.ts";
+import lspRunner from "./lsp.ts";
+import oxlintRunner from "./oxlint.ts";
+import pyrightRunner from "./pyright.ts";
+import pythonSlopRunner from "./python-slop.ts";
+import rubocopRunner from "./rubocop.ts";
+import ruffRunner from "./ruff.ts";
+import rustClippyRunner from "./rust-clippy.ts";
+import shellcheckRunner from "./shellcheck.ts";
+import sqlfluffRunner from "./sqlfluff.ts";
 // Import similarity runner
-import similarityRunner from "./similarity.js";
-import spellcheckRunner from "./spellcheck.js";
-import yamllintRunner from "./yamllint.js";
+import similarityRunner from "./similarity.ts";
+import spellcheckRunner from "./spellcheck.ts";
+import yamllintRunner from "./yamllint.ts";
 // Import tree-sitter runner
-import treeSitterRunner from "./tree-sitter.js";
-import tsLspRunner from "./ts-lsp.js";
-import typeSafetyRunner from "./type-safety.js";
+import treeSitterRunner from "./tree-sitter.ts";
+import tsLspRunner from "./ts-lsp.ts";
+import typeSafetyRunner from "./type-safety.ts";
 
 // Register all runners (ordered by priority)
 // Unified LSP runner for all languages (TypeScript, Python, Go, Rust, etc.) - priority 4

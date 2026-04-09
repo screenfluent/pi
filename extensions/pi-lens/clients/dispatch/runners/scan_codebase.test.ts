@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { describe, expect, it } from "vitest";
-import type { DispatchContext } from "../types.js";
+import type { DispatchContext } from "../types.ts";
 
 // Find all TS files
 function findTsFiles(dir: string): string[] {
@@ -45,7 +45,7 @@ describe("Codebase scan with NAPI runner", () => {
 		const tsFiles = findTsFiles(process.cwd());
 		console.log(`\nFound ${tsFiles.length} TypeScript files to scan\n`);
 		
-		const runner = (await import("./ast-grep-napi.js")).default;
+		const runner = (await import("./ast-grep-napi.ts")).default;
 		
 		const allIssues: Array<{ file: string; line: number; rule: string; message: string }> = [];
 		let totalTime = 0;

@@ -5,12 +5,12 @@
  * with the existing index.ts tool_result handler.
  */
 
-import { detectFileKind } from "../file-kinds.js";
-import { createBaselineStore, createDispatchContext } from "./dispatcher.js";
-import type { PiAgentAPI } from "./types.js";
+import { detectFileKind } from "../file-kinds.ts";
+import { createBaselineStore, createDispatchContext } from "./dispatcher.ts";
+import type { PiAgentAPI } from "./types.ts";
 
 // Import runners to register them
-import "./runners/index.js";
+import "./runners/index.ts";
 
 /**
  * Run linting for a file using the declarative dispatch system
@@ -28,9 +28,9 @@ export async function dispatchLint(
 	const ctx = createDispatchContext(filePath, cwd, pi);
 
 	// Import dispatchForFile dynamically to avoid circular deps
-	const { dispatchForFile } = await import("./dispatcher.js");
-	const { getRunnersForKind } = await import("./dispatcher.js");
-	const { TOOL_PLANS } = await import("./plan.js");
+	const { dispatchForFile } = await import("./dispatcher.ts");
+	const { getRunnersForKind } = await import("./dispatcher.ts");
+	const { TOOL_PLANS } = await import("./plan.ts");
 
 	const kind = ctx.kind;
 	if (!kind) return "";
@@ -65,7 +65,7 @@ export async function getAvailableRunners(filePath: string): Promise<string[]> {
 	const kind = detectFileKind(filePath);
 	if (!kind) return [];
 
-	const { getRunnersForKind } = await import("./dispatcher.js");
+	const { getRunnersForKind } = await import("./dispatcher.ts");
 	const runners = getRunnersForKind(kind);
 	return runners.map((r) => r.id);
 }

@@ -4,8 +4,8 @@
  * Multi-language LSP client supporting 40+ languages.
  */
 
-export * from "./client.js";
-export * from "./server.js";
-export * from "./language.js";
-export * from "./launch.js";
-export * from "./index.js";
+export * from "./client.ts";
+export * from "./server.ts";
+export * from "./language.ts";
+export * from "./launch.ts";
+export * from "./index.ts";

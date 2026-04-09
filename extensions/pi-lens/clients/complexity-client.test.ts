@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { ComplexityClient } from "./complexity-client.js";
-import { createTempFile, setupTestEnvironment } from "./test-utils.js";
+import { ComplexityClient } from "./complexity-client.ts";
+import { createTempFile, setupTestEnvironment } from "./test-utils.ts";
 
 describe("ComplexityClient", () => {
 	let client: ComplexityClient;
@@ -23,7 +23,7 @@ describe("ComplexityClient", () => {
 		});
 
 		it("should support JavaScript files", () => {
-			expect(client.isSupportedFile("test.js")).toBe(true);
+			expect(client.isSupportedFile("test.ts")).toBe(true);
 			expect(client.isSupportedFile("test.jsx")).toBe(true);
 			expect(client.isSupportedFile("test.mjs")).toBe(true);
 			expect(client.isSupportedFile("test.cjs")).toBe(true);

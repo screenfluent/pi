@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
 	formatRulesForPrompt,
 	type RuleScanResult,
-} from "../../clients/rules-scanner.js";
+} from "../../clients/rules-scanner.ts";
 
 function makeResult(count: number): RuleScanResult {
 	return {

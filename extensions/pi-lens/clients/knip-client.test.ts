@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { KnipClient } from "./knip-client.js";
-import { setupTestEnvironment } from "./test-utils.js";
+import { KnipClient } from "./knip-client.ts";
+import { setupTestEnvironment } from "./test-utils.ts";
 
 describe("KnipClient", () => {
 	let client: KnipClient;

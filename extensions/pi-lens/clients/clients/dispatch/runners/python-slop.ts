@@ -11,18 +11,18 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { safeSpawn } from "../../safe-spawn.js";
+import { safeSpawn } from "../../safe-spawn.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 import {
 	createConfigFinder,
 	getSgCommand,
 	isSgAvailable,
-} from "./utils/runner-helpers.js";
+} from "./utils/runner-helpers.ts";
 
 const findSlopConfig = createConfigFinder("python-slop-rules");
 

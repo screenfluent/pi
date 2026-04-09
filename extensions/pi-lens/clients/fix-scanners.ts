@@ -12,13 +12,13 @@
 import * as childProcess from "node:child_process";
 import * as nodeFs from "node:fs";
 import * as path from "node:path";
-import type { BiomeClient } from "./biome-client.js";
-import type { ComplexityClient } from "./complexity-client.js";
-import { EXCLUDED_DIRS } from "./file-utils.js";
-import type { JscpdClient } from "./jscpd-client.js";
-import type { KnipClient } from "./knip-client.js";
-import { safeSpawn } from "./safe-spawn.js";
-import { shouldIgnoreFile } from "./scan-utils.js";
+import type { BiomeClient } from "./biome-client.ts";
+import type { ComplexityClient } from "./complexity-client.ts";
+import { EXCLUDED_DIRS } from "./file-utils.ts";
+import type { JscpdClient } from "./jscpd-client.ts";
+import type { KnipClient } from "./knip-client.ts";
+import { safeSpawn } from "./safe-spawn.ts";
+import { shouldIgnoreFile } from "./scan-utils.ts";
 
 export interface DuplicateClone {
 	fileA: string;
@@ -88,7 +88,7 @@ export function scanDuplicates(
 
 	const jscpdResult = jscpd.scan(targetPath);
 	return jscpdResult.clones.filter((c) => {
-		if (isTsProject && (c.fileA.endsWith(".js") || c.fileB.endsWith(".js")))
+		if (isTsProject && (c.fileA.endsWith(".ts") || c.fileB.endsWith(".ts")))
 			return false;
 		return path.resolve(c.fileA) !== path.resolve(c.fileB);
 	});
@@ -143,7 +143,7 @@ export function scanAstGrep(
 			"!**/test-utils.ts",
 			"--globs",
 			"!**/.pi-lens/**",
-			...(isTsProject ? ["--globs", "!**/*.js"] : []),
+			...(isTsProject ? ["--globs", "!**/*.ts"] : []),
 			targetPath,
 		],
 		{

@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { CacheManager } from "../../clients/cache-manager.js";
+import { CacheManager } from "../../clients/cache-manager.ts";
 import {
 	evaluateGitGuard,
 	isGitCommitOrPushAttempt,
-} from "../../clients/git-guard.js";
-import { setupTestEnvironment } from "./test-utils.js";
+} from "../../clients/git-guard.ts";
+import { setupTestEnvironment } from "./test-utils.ts";
 
 describe("git-guard", () => {
 	it("detects git commit/push attempts from bash tool calls", () => {

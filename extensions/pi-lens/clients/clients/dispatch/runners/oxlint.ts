@@ -7,14 +7,14 @@
  * Requires: oxlint (npm install -g oxlint)
  */
 
-import { safeSpawnAsync } from "../../safe-spawn.js";
+import { safeSpawnAsync } from "../../safe-spawn.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
-import { createAvailabilityChecker } from "./utils/runner-helpers.js";
+} from "../types.ts";
+import { createAvailabilityChecker } from "./utils/runner-helpers.ts";
 
 const oxlint = createAvailabilityChecker("oxlint", ".exe");
 

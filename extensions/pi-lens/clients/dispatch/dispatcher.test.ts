@@ -9,8 +9,8 @@ import {
 	getRunnersForKind,
 	listRunners,
 	registerRunner,
-} from "./dispatcher.js";
-import type { RunnerDefinition, RunnerResult } from "./types.js";
+} from "./dispatcher.ts";
+import type { RunnerDefinition, RunnerResult } from "./types.ts";
 
 // --- Test Runners ---
 

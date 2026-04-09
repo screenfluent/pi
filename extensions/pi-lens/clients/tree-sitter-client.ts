@@ -17,8 +17,8 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { EXCLUDED_DIRS } from "./file-utils.js";
-import { TreeSitterQueryLoader, TreeSitterQuery } from "./tree-sitter-query-loader.js";
+import { EXCLUDED_DIRS } from "./file-utils.ts";
+import { TreeSitterQueryLoader, TreeSitterQuery } from "./tree-sitter-query-loader.ts";
 
 // --- Type Declarations (local, no import needed) ---
 
@@ -626,7 +626,7 @@ export class TreeSitterClient {
 		const mapping: Record<string, string[]> = {
 			typescript: [".ts", ".mts", ".cts"],
 			tsx: [".tsx"],
-			javascript: [".js", ".mjs", ".cjs"],
+			javascript: [".ts", ".mjs", ".cjs"],
 			python: [".py"],
 			rust: [".rs"],
 			go: [".go"],

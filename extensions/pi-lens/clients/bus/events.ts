@@ -10,7 +10,7 @@
  */
 
 import { z } from "zod";
-import { BusEvent } from "./bus.js";
+import { BusEvent } from "./bus.ts";
 
 // --- Shared Schemas ---
 

@@ -1,15 +1,15 @@
 import * as nodeFs from "node:fs";
-import { createFileTime } from "./file-time.js";
-import { getFormatService } from "./format-service.js";
-import { resolveLanguageRootForFile } from "./language-profile.js";
-import { logLatency } from "./latency-logger.js";
-import { runPipeline } from "./pipeline.js";
-import type { BiomeClient } from "./biome-client.js";
-import type { CacheManager } from "./cache-manager.js";
-import type { MetricsClient } from "./metrics-client.js";
-import type { RuffClient } from "./ruff-client.js";
-import type { RuntimeCoordinator } from "./runtime-coordinator.js";
-import type { TestRunnerClient } from "./test-runner-client.js";
+import { createFileTime } from "./file-time.ts";
+import { getFormatService } from "./format-service.ts";
+import { resolveLanguageRootForFile } from "./language-profile.ts";
+import { logLatency } from "./latency-logger.ts";
+import { runPipeline } from "./pipeline.ts";
+import type { BiomeClient } from "./biome-client.ts";
+import type { CacheManager } from "./cache-manager.ts";
+import type { MetricsClient } from "./metrics-client.ts";
+import type { RuffClient } from "./ruff-client.ts";
+import type { RuntimeCoordinator } from "./runtime-coordinator.ts";
+import type { TestRunnerClient } from "./test-runner-client.ts";
 
 interface ToolResultEvent {
 	toolName: string;

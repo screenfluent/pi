@@ -5,14 +5,14 @@
  */
 
 import { spawnSync } from "node:child_process";
-import { safeSpawn } from "../../safe-spawn.js";
-import { stripAnsi } from "../../sanitize.js";
+import { safeSpawn } from "../../safe-spawn.ts";
+import { stripAnsi } from "../../sanitize.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 const rustClippyRunner: RunnerDefinition = {
 	id: "rust-clippy",

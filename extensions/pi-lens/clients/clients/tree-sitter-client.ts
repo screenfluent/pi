@@ -17,14 +17,14 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { isExcludedDirName } from "./file-utils.js";
-import { resolvePackagePath } from "./package-root.js";
-import { TreeCache } from "./tree-sitter-cache.js";
-import { TreeSitterNavigator } from "./tree-sitter-navigator.js";
+import { isExcludedDirName } from "./file-utils.ts";
+import { resolvePackagePath } from "./package-root.ts";
+import { TreeCache } from "./tree-sitter-cache.ts";
+import { TreeSitterNavigator } from "./tree-sitter-navigator.ts";
 import {
 	type TreeSitterQuery,
 	TreeSitterQueryLoader,
-} from "./tree-sitter-query-loader.js";
+} from "./tree-sitter-query-loader.ts";
 
 // --- Type Declarations (local, no import needed) ---
 
@@ -1148,7 +1148,7 @@ export class TreeSitterClient {
 		const mapping: Record<string, string[]> = {
 			typescript: [".ts", ".mts", ".cts"],
 			tsx: [".tsx"],
-			javascript: [".js", ".mjs", ".cjs"],
+			javascript: [".ts", ".mjs", ".cjs"],
 			python: [".py"],
 			rust: [".rs"],
 			go: [".go"],

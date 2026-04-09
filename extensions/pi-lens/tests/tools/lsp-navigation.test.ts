@@ -7,11 +7,11 @@ const mocked = vi.hoisted(() => ({
 	service: null as unknown,
 }));
 
-vi.mock("../../clients/lsp/index.js", () => ({
+vi.mock("../../clients/lsp/index.ts", () => ({
 	getLSPService: () => mocked.service,
 }));
 
-import { createLspNavigationTool } from "../../tools/lsp-navigation.js";
+import { createLspNavigationTool } from "../../tools/lsp-navigation.ts";
 
 describe("lsp_navigation tool", () => {
 	beforeEach(() => {

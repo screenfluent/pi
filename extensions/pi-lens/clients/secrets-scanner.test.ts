@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatSecrets, scanForSecrets } from "./secrets-scanner.js";
+import { formatSecrets, scanForSecrets } from "./secrets-scanner.ts";
 
 describe("scanForSecrets", () => {
 	it("should detect Stripe/OpenAI keys (sk-*)", () => {

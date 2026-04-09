@@ -9,23 +9,23 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { resolvePackagePath } from "../../package-root.js";
-import { safeSpawnAsync } from "../../safe-spawn.js";
+import { resolvePackagePath } from "../../package-root.ts";
+import { safeSpawnAsync } from "../../safe-spawn.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
-} from "../types.js";
+} from "../types.ts";
 
 const ESLINT_CONFIGS = [
 	".eslintrc",
-	".eslintrc.js",
+	".eslintrc.ts",
 	".eslintrc.cjs",
 	".eslintrc.json",
 	".eslintrc.yaml",
 	".eslintrc.yml",
-	"eslint.config.js",
+	"eslint.config.ts",
 	"eslint.config.mjs",
 	"eslint.config.cjs",
 ];
@@ -45,7 +45,7 @@ function hasEslintConfig(cwd: string): boolean {
 
 function isJavaScriptFamily(filePath: string): boolean {
 	const ext = path.extname(filePath).toLowerCase();
-	return ext === ".js" || ext === ".jsx" || ext === ".mjs" || ext === ".cjs";
+	return ext === ".ts" || ext === ".jsx" || ext === ".mjs" || ext === ".cjs";
 }
 
 function findEslint(cwd: string): string {

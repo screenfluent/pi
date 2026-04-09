@@ -12,13 +12,13 @@ import {
 	createMessageConnection,
 	StreamMessageReader,
 	StreamMessageWriter,
-} from "vscode-jsonrpc/node.js";
+} from "vscode-jsonrpc/node.ts";
 import type { MessageConnection } from "vscode-jsonrpc";
 import path from "path";
 import { pathToFileURL } from "url";
-import type { LSPProcess } from "./launch.js";
-import { DiagnosticFound } from "../bus/events.js";
-import { uriToPath, normalizeMapKey } from "./path-utils.js";
+import type { LSPProcess } from "./launch.ts";
+import { DiagnosticFound } from "../bus/events.ts";
+import { uriToPath, normalizeMapKey } from "./path-utils.ts";
 
 // --- Types ---
 

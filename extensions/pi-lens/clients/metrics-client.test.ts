@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { MetricsClient } from "./metrics-client.js";
-import { createTempFile, setupTestEnvironment } from "./test-utils.js";
+import { MetricsClient } from "./metrics-client.ts";
+import { createTempFile, setupTestEnvironment } from "./test-utils.ts";
 
 describe("MetricsClient", () => {
 	let client: MetricsClient;

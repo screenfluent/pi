@@ -18,15 +18,15 @@ import {
 	getRunner,
 	getRunnersForKind,
 	registerRunner,
-} from "../../../clients/dispatch/dispatcher.js";
-import type { RunnerGroup } from "../../../clients/dispatch/types.js";
+} from "../../../clients/dispatch/dispatcher.ts";
+import type { RunnerGroup } from "../../../clients/dispatch/types.ts";
 import {
 	createCleanRunner,
 	createConditionalRunner,
 	createFailingRunner,
 	createMockRunner,
 	createWarningRunner,
-} from "../../mocks/runner-factory.js";
+} from "../../mocks/runner-factory.ts";
 
 describe("Dispatch Flow", () => {
 	beforeEach(() => {

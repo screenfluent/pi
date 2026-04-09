@@ -11,7 +11,7 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { safeSpawn } from "./safe-spawn.js";
+import { safeSpawn } from "./safe-spawn.ts";
 
 // --- Types ---
 
@@ -52,7 +52,7 @@ export class KnipClient {
 				"package.json",
 				"knip.json",
 				"knip.ts",
-				"knip.config.js",
+				"knip.config.ts",
 				"knip.config.ts",
 			];
 			if (markers.some((m) => fs.existsSync(path.join(current, m)))) {
@@ -83,7 +83,7 @@ export class KnipClient {
 
 		// Auto-install via pi-lens installer
 		this.log("Knip not found, attempting auto-install...");
-		const { ensureTool } = await import("./installer/index.js");
+		const { ensureTool } = await import("./installer/index.ts");
 		const installedPath = await ensureTool("knip");
 
 		if (installedPath) {

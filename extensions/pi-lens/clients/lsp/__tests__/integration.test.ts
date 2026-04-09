@@ -9,7 +9,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { LSPService, getLSPService, resetLSPService } from "../index.js";
+import { LSPService, getLSPService, resetLSPService } from "../index.ts";
 import { Effect } from "effect";
 
 // Check if we should run real LSP tests
@@ -56,7 +56,7 @@ describe("LSP Integration", () => {
 
 	describe("Effect Integration", () => {
 		it("should run hasLSP effect successfully", async () => {
-			const { hasLSP } = await import("../index.js").then((m) => m.lspEffect(service));
+			const { hasLSP } = await import("../index.ts").then((m) => m.lspEffect(service));
 			
 			const program = hasLSP("/test.ts");
 			const result = await Effect.runPromise(program);
@@ -65,7 +65,7 @@ describe("LSP Integration", () => {
 		});
 
 		it("should run shutdown effect successfully", async () => {
-			const { shutdown } = await import("../index.js").then((m) => m.lspEffect(service));
+			const { shutdown } = await import("../index.ts").then((m) => m.lspEffect(service));
 			
 			const program = shutdown();
 			const result = await Effect.runPromise(program);

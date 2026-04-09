@@ -7,7 +7,7 @@
 
 import * as fs from "node:fs";
 import * as path from "node:path";
-import { resolvePackagePath } from "./package-root.js";
+import { resolvePackagePath } from "./package-root.ts";
 
 export interface TreeSitterQuery {
 	id: string;
