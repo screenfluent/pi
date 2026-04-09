@@ -106,7 +106,7 @@ const spellcheckRunner: RunnerDefinition = {
 		// --exclude <pattern>: Could be used to exclude code blocks if needed
 		const args = ["--format", "json", ctx.filePath];
 
-		const result = safeSpawn(typos.getCommand()!, args, {
+		const result = safeSpawn(typos.getCommand(ctx.cwd || process.cwd())!, args, {
 			timeout: 15000,
 		});
 

@@ -4,6 +4,8 @@ id: empty-catch
 name: Empty Catch Block
 severity: error
 category: reliability
+defect_class: silent-error
+inline_tier: blocking
 language: typescript
 
 message: "Empty catch block — properly handle or log the error"

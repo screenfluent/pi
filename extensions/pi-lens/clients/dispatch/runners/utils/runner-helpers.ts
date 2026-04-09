@@ -41,9 +41,7 @@ export function createVenvFinder(
 		for (const venvPath of venvPaths) {
 			const fullPath = path.join(cwd, venvPath);
 			if (fs.existsSync(fullPath)) {
-				return quoteWindows && windowsExt
-					? `"${fullPath}"`
-					: fullPath;
+				return quoteWindows && windowsExt ? `"${fullPath}"` : fullPath;
 			}
 		}
 
@@ -70,19 +68,27 @@ export function createAvailabilityChecker(
 	windowsExt = "",
 ): {
 	isAvailable: (cwd?: string) => boolean;
-	getCommand: () => string | null;
+	getCommand: (cwd?: string) => string | null;
 } {
-	const cache: AvailabilityCache = {
-		available: null,
-		command: null,
-	};
+	const cacheByCwd = new Map<string, AvailabilityCache>();
 
 	const findCommand = createVenvFinder(command, windowsExt, true);
 
+	function getCache(cwd: string): AvailabilityCache {
+		const key = path.resolve(cwd || process.cwd());
+		const existing = cacheByCwd.get(key);
+		if (existing) return existing;
+		const created: AvailabilityCache = { available: null, command: null };
+		cacheByCwd.set(key, created);
+		return created;
+	}
+
 	function isAvailable(cwd?: string): boolean {
+		const resolvedCwd = cwd || process.cwd();
+		const cache = getCache(resolvedCwd);
 		if (cache.available !== null) return cache.available;
 
-		const cmd = findCommand(cwd || process.cwd());
+		const cmd = findCommand(resolvedCwd);
 		const result = safeSpawn(cmd, ["--version"], {
 			timeout: 5000,
 		});
@@ -94,7 +100,8 @@ export function createAvailabilityChecker(
 		return cache.available;
 	}
 
-	function getCommand(): string | null {
+	function getCommand(cwd?: string): string | null {
+		const cache = getCache(cwd || process.cwd());
 		return cache.command;
 	}
 
@@ -142,19 +149,89 @@ export function createConfigFinder(
 
 // Shared sg availability cache across all slop runners
 let sgAvailable: boolean | null = null;
+let sgCmd: string | null = null;
+let sgCmdArgs: string[] = [];
 
 /**
- * Check if ast-grep CLI is available (shared cache)
+ * Check if ast-grep CLI (sg) is available.
+ * Prefers local node_modules/.bin/sg, then global sg, then npx --no sg (cache-only).
  */
 export function isSgAvailable(): boolean {
 	if (sgAvailable !== null) return sgAvailable;
 
-	const check = safeSpawn("npx", ["sg", "--version"], {
+	// 1. Local node_modules/.bin/sg
+	const isWin = process.platform === "win32";
+	const localSg = path.join(
+		process.cwd(),
+		"node_modules",
+		".bin",
+		isWin ? "sg.cmd" : "sg",
+	);
+	if (fs.existsSync(localSg)) {
+		const check = safeSpawn(localSg, ["--version"], { timeout: 5000 });
+		if (!check.error && check.status === 0) {
+			sgCmd = localSg;
+			sgCmdArgs = [];
+			sgAvailable = true;
+			return true;
+		}
+	}
+
+	// 2. Global sg
+	const globalCheck = safeSpawn("sg", ["--version"], { timeout: 5000 });
+	if (!globalCheck.error && globalCheck.status === 0) {
+		sgCmd = "sg";
+		sgCmdArgs = [];
+		sgAvailable = true;
+		return true;
+	}
+
+	// 3. npx --no (cache-only, no silent download)
+	const npxCheck = safeSpawn("npx", ["--no", "sg", "--version"], {
 		timeout: 5000,
 	});
-
-	sgAvailable = !check.error && check.status === 0;
+	sgAvailable = !npxCheck.error && npxCheck.status === 0;
+	if (sgAvailable) {
+		sgCmd = "npx";
+		sgCmdArgs = ["--no"];
+	}
 	return sgAvailable;
+}
+
+export function getSgCommand(): { cmd: string; args: string[] } {
+	return { cmd: sgCmd ?? "npx", args: sgCmdArgs.length ? sgCmdArgs : ["--no"] };
+}
+
+// =============================================================================
+// LOCAL-FIRST BINARY RESOLUTION
+// =============================================================================
+
+/**
+ * Find a tool binary preferring local node_modules/.bin over global PATH.
+ * Only falls back to npx as a last resort (avoids silent network downloads).
+ *
+ * Returns: { cmd, args } where args may include ["npx", toolName] preamble.
+ */
+export function resolveLocalFirst(
+	toolName: string,
+	cwd: string,
+	windowsExt = ".cmd",
+): { cmd: string; args: string[] } {
+	const isWin = process.platform === "win32";
+	const binName = isWin ? `${toolName}${windowsExt}` : toolName;
+
+	// 1. Local node_modules/.bin (project-installed)
+	const local = path.join(cwd, "node_modules", ".bin", binName);
+	if (fs.existsSync(local)) return { cmd: local, args: [] };
+
+	// 2. Global PATH (already installed system-wide)
+	const globalCheck = safeSpawn(toolName, ["--version"], { timeout: 3000 });
+	if (!globalCheck.error && globalCheck.status === 0) {
+		return { cmd: toolName, args: [] };
+	}
+
+	// 3. npx fallback — only for already-cached packages (no silent download)
+	return { cmd: "npx", args: ["--no", toolName] };
 }
 
 // =============================================================================
@@ -164,4 +241,4 @@ export function isSgAvailable(): boolean {
 export const pyright = createAvailabilityChecker("pyright", ".exe");
 export const ruff = createAvailabilityChecker("ruff", ".exe");
 export const biome = createAvailabilityChecker("biome");
-export const sg = { isAvailable: isSgAvailable, getCommand: () => "npx" };
+export const sg = { isAvailable: isSgAvailable, getCommand: getSgCommand };

@@ -4,6 +4,8 @@ id: mutable-default-arg
 name: Mutable Default Argument
 severity: error
 category: reliability
+defect_class: correctness
+inline_tier: blocking
 language: python
 
 message: "Mutable default argument — list/dict/set as default value"

@@ -14,7 +14,11 @@ import * as nodeFs from "node:fs";
 import * as path from "node:path";
 import type { BiomeClient } from "./biome-client.ts";
 import type { ComplexityClient } from "./complexity-client.ts";
-import { EXCLUDED_DIRS } from "./file-utils.ts";
+import {
+	getSgCommand,
+	isSgAvailable,
+} from "./dispatch/runners/utils/runner-helpers.ts";
+import { isExcludedDirName } from "./file-utils.ts";
 import type { JscpdClient } from "./jscpd-client.ts";
 import type { KnipClient } from "./knip-client.ts";
 import { safeSpawn } from "./safe-spawn.ts";
@@ -119,17 +123,13 @@ export function scanAstGrep(
 	isTsProject: boolean,
 	configPath: string,
 ): AstIssue[] {
-	const hasSg =
-		nodeFs.existsSync(path.join(targetPath, "node_modules", ".bin", "sg")) ||
-		safeSpawn("npx", ["sg", "--version"], {
-			timeout: 5000,
-		}).status === 0;
+	if (!isSgAvailable()) return [];
 
-	if (!hasSg) return [];
-
+	const { cmd: sgCmd, args: sgPre } = getSgCommand();
 	const result = safeSpawn(
-		"npx",
+		sgCmd,
 		[
+			...sgPre,
 			"sg",
 			"scan",
 			"--config",
@@ -249,7 +249,7 @@ export function scanSlop(
 		for (const entry of nodeFs.readdirSync(dir, { withFileTypes: true })) {
 			const fullPath = path.join(dir, entry.name);
 			if (entry.isDirectory()) {
-				if (EXCLUDED_DIRS.includes(entry.name)) continue;
+				if (isExcludedDirName(entry.name)) continue;
 				scanDir(fullPath);
 			} else if (complexity.isSupportedFile(fullPath)) {
 				const metrics = complexity.analyzeFile(fullPath);

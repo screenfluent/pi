@@ -1,10 +1,5 @@
 /**
- * Shared formatting utilities for dispatch system
- * 
- * Consolidated from:
- * - clients/dispatch/dispatcher.ts
- * - clients/dispatch/bus-dispatcher.ts
- * - clients/services/effect-integration.ts
+ * Shared formatting utilities for the dispatch system.
  */
 
 import type { Diagnostic, OutputSemantic } from "../types.ts";
@@ -24,7 +19,8 @@ export const EMOJI: Record<string, string> = {
 export function formatDiagnostic(d: Diagnostic): string {
 	const line = d.line ? `L${d.line}: ` : "";
 	const indented = d.message.split("\n").join("\n  ");
-	return `  ${line}${indented}`;
+	const fix = d.fixSuggestion ? `\n    💡 Fix: ${d.fixSuggestion}` : "";
+	return `  ${line}${indented}${fix}`;
 }
 
 /**

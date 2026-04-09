@@ -9,6 +9,7 @@
  * - File size limits
  */
 
+import * as path from "node:path";
 import { ArchitectClient } from "../../architect-client.ts";
 import type {
 	Diagnostic,
@@ -18,6 +19,24 @@ import type {
 } from "../types.ts";
 import { readFileContent } from "./utils.ts";
 
+// Module-level singleton — loadConfig once per cwd, not on every file write
+let _client: ArchitectClient | null = null;
+let _loadedCwd: string | null = null;
+
+function normalizeCwd(cwd: string): string {
+	const resolved = path.resolve(cwd);
+	return process.platform === "win32" ? resolved.toLowerCase() : resolved;
+}
+
+function getClient(cwd: string): ArchitectClient {
+	const normalized = normalizeCwd(cwd);
+	if (_client && _loadedCwd === normalized) return _client;
+	_client = new ArchitectClient();
+	_client.loadConfig(cwd);
+	_loadedCwd = normalized;
+	return _client;
+}
+
 const architectRunner: RunnerDefinition = {
 	id: "architect",
 	appliesTo: ["jsts", "python", "go", "rust", "cxx", "shell", "cmake"],
@@ -26,15 +45,14 @@ const architectRunner: RunnerDefinition = {
 	skipTestFiles: true, // Skip test files - rules can be noisy there
 
 	async run(ctx: DispatchContext): Promise<RunnerResult> {
-		const relPath = ctx.filePath.replace(ctx.cwd, "").replace(/\\/g, "/");
+		const relPath = path.relative(ctx.cwd, ctx.filePath).replace(/\\/g, "/");
 		const content = readFileContent(ctx.filePath);
 
 		if (!content) {
 			return { status: "skipped", diagnostics: [], semantic: "none" };
 		}
 
-		const architectClient = new ArchitectClient();
-		architectClient.loadConfig(ctx.cwd);
+		const architectClient = getClient(ctx.cwd);
 
 		if (!architectClient.hasConfig()) {
 			return { status: "skipped", diagnostics: [], semantic: "none" };
@@ -47,16 +65,18 @@ const architectRunner: RunnerDefinition = {
 		for (const v of violations) {
 			// Build message with inline fix guidance
 			let message = v.message;
-			let fixSuggestion: string | undefined = v.fix;
-			
+			const fixSuggestion: string | undefined = v.fix;
+
 			if (v.fix) {
-				const fixPreview = v.fix.length > 60 ? `${v.fix.substring(0, 60)}...` : v.fix;
+				const fixPreview =
+					v.fix.length > 60 ? `${v.fix.substring(0, 60)}...` : v.fix;
 				message += `\n💡 Suggested fix: ${fixPreview}`;
 			} else if (v.note) {
-				const notePreview = v.note.length > 80 ? `${v.note.substring(0, 80)}...` : v.note;
+				const notePreview =
+					v.note.length > 80 ? `${v.note.substring(0, 80)}...` : v.note;
 				message += `\n📝 ${notePreview}`;
 			}
-			
+
 			diagnostics.push({
 				id: `architect-${v.line || 0}-${v.pattern}`,
 				message,

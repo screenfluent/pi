@@ -1,7 +1,7 @@
 id: no-constant-condition
 language: TypeScript
 message: "Unexpected constant condition"
-severity: warning
+severity: error
 note: |
   A constant expression (for example, a literal) as a test condition
   might be a typo or development trigger for a specific behavior.

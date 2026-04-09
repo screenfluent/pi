@@ -19,6 +19,7 @@ import type {
 	RuleDescription,
 	SgMatch,
 } from "./ast-grep-types.ts";
+import { resolvePackagePath } from "./package-root.ts";
 import { SgRunner } from "./sg-runner.ts";
 
 const _getExtensionDir = () => {
@@ -38,7 +39,12 @@ export class AstGrepClient {
 	private runner: SgRunner;
 
 	constructor(ruleDir?: string, verbose = false) {
-		this.ruleDir = ruleDir || path.join(process.cwd(), "rules");
+		const projectRuleDir = path.join(process.cwd(), "rules");
+		this.ruleDir =
+			ruleDir ||
+			(fs.existsSync(projectRuleDir)
+				? projectRuleDir
+				: resolvePackagePath(import.meta.url, "rules"));
 		this.log = verbose
 			? (msg: string) => console.error(`[ast-grep] ${msg}`)
 			: () => {};
@@ -47,7 +53,15 @@ export class AstGrepClient {
 	}
 
 	/**
-	 * Check if ast-grep CLI is available
+	 * Check if ast-grep CLI is available, auto-install if not
+	 */
+	async ensureAvailable(): Promise<boolean> {
+		return this.runner.ensureAvailable();
+	}
+
+	/**
+	 * Check if ast-grep CLI is available (legacy sync method)
+	 * Prefer ensureAvailable() for auto-install behavior
 	 */
 	isAvailable(): boolean {
 		if (this.available !== null) return this.available;
@@ -88,21 +102,43 @@ export class AstGrepClient {
 		paths: string[],
 		apply = false,
 	): Promise<{ matches: AstGrepMatch[]; applied: boolean; error?: string }> {
-		const args = [
+		const baseArgs = ["run", "-p", pattern, "-r", rewrite, "--lang", lang];
+
+		if (!apply) {
+			// Dry-run: --json=compact shows what would change without writing
+			const result = await this.runner.exec([
+				...baseArgs,
+				"--json=compact",
+				...paths,
+			]);
+			return { matches: result.matches, applied: false, error: result.error };
+		}
+
+		// Apply: --update-all and --json are MUTUALLY EXCLUSIVE in sg.
+		// Run twice:
+		//   1. --update-all to actually write the files
+		//   2. --json=compact (without rewrite) to collect matches for display
+		const applyResult = await this.runner.exec([
+			...baseArgs,
+			"--update-all",
+			...paths,
+		]);
+		if (applyResult.error) {
+			return { matches: [], applied: false, error: applyResult.error };
+		}
+
+		// Search for what was changed (pattern no longer matches after rewrite,
+		// so search for the rewrite pattern to show what was applied)
+		const searchResult = await this.runner.exec([
 			"run",
 			"-p",
-			pattern,
-			"-r",
 			rewrite,
 			"--lang",
 			lang,
 			"--json=compact",
-		];
-		if (apply) args.push("--update-all");
-		args.push(...paths);
-
-		const result = await this.runner.exec(args);
-		return { matches: result.matches, applied: apply, error: result.error };
+			...paths,
+		]);
+		return { matches: searchResult.matches, applied: true, error: undefined };
 	}
 
 	/**

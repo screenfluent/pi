@@ -6,22 +6,25 @@
  *
  * Key features:
  * - Auto-detects formatters based on project config
- * - Runs multiple formatters concurrently via Effect.all
+ * - Runs multiple formatters concurrently with concurrency limits
  * - FileTime integration for safety
  * - Multiple formatters per file (e.g., biome + prettier both run)
  */
 
-import { Effect, pipe } from "effect";
-import * as path from "path";
-import * as fs from "fs/promises";
-import {
-	getFormattersForFile,
-	formatFile,
-	FormatterInfo,
-	FormatterResult,
-	clearFormatterCache,
-} from "./formatters.ts";
+import * as path from "node:path";
 import { FileTime } from "./file-time.ts";
+import {
+	clearFormatterRuntimeState,
+	type FormatterInfo,
+	type FormatterResult,
+	formatFile,
+	getFormattersForFile,
+} from "./formatters.ts";
+
+// --- Configuration ---
+
+/** Maximum concurrent formatters to prevent resource contention */
+const DEFAULT_FORMATTER_CONCURRENCY = 2;
 
 // --- Types ---
 
@@ -57,9 +60,12 @@ export class FormatService {
 
 	/**
 	 * Format a file with all detected formatters
-	 * Runs formatters concurrently via Effect-TS
+	 * Runs formatters with limited concurrency to prevent resource contention
 	 */
-	async formatFile(filePath: string, options: FormatOptions = {}): Promise<FormatSummary> {
+	async formatFile(
+		filePath: string,
+		options: FormatOptions = {},
+	): Promise<FormatSummary> {
 		const absolutePath = path.resolve(filePath);
 		const cwd = path.dirname(absolutePath);
 
@@ -75,7 +81,9 @@ export class FormatService {
 
 		// Check if file was modified externally (safety check)
 		if (this.fileTime.hasChanged(absolutePath)) {
-			console.warn(`[format] File ${absolutePath} modified externally, skipping format`);
+			console.warn(
+				`[format] File ${absolutePath} modified externally, skipping format`,
+			);
 			return {
 				filePath: absolutePath,
 				formatters: [],
@@ -98,15 +106,18 @@ export class FormatService {
 			};
 		}
 
-		// Run all formatters concurrently via Effect-TS
-		const results = await this.runFormattersConcurrently(absolutePath, formatters);
+		// Run formatters with limited concurrency
+		const results = await this.runFormattersWithConcurrency(
+			absolutePath,
+			formatters,
+		);
 
 		// Record new file state after formatting
 		this.fileTime.read(absolutePath);
 
 		// Build summary
-		const anyChanged = results.some(r => r.changed);
-		const allSucceeded = results.every(r => r.success);
+		const anyChanged = results.some((r) => r.changed);
+		const allSucceeded = results.every((r) => r.success);
 
 		return {
 			filePath: absolutePath,
@@ -122,53 +133,59 @@ export class FormatService {
 	}
 
 	/**
-	 * Run formatters concurrently using Effect-TS
+	 * Run formatters sequentially to avoid concurrent writes to the same file.
 	 */
-	private async runFormattersConcurrently(
+	private async runFormattersWithConcurrency(
 		filePath: string,
-		formatters: FormatterInfo[]
+		formatters: FormatterInfo[],
+		_concurrency = DEFAULT_FORMATTER_CONCURRENCY,
 	): Promise<FormatterResult[]> {
-		// Create Effect for each formatter
-		const effects = formatters.map(formatter =>
-			Effect.tryPromise({
-				try: () => formatFile(filePath, formatter),
-				catch: (error): FormatterResult => ({
+		const results: FormatterResult[] = [];
+
+		for (const formatter of formatters) {
+			try {
+				const timeoutMs = 30000;
+				const timeoutPromise = new Promise<FormatterResult>((_, reject) => {
+					setTimeout(
+						() =>
+							reject(
+								new Error(
+									`Formatter ${formatter.name} timed out after ${timeoutMs}ms`,
+								),
+							),
+						timeoutMs,
+					);
+				});
+
+				const result = await Promise.race([
+					formatFile(filePath, formatter),
+					timeoutPromise,
+				]);
+				results.push(result);
+			} catch (error) {
+				results.push({
 					success: false,
 					changed: false,
 					error: error instanceof Error ? error.message : String(error),
-				}),
-			})
-		);
+				});
+			}
+		}
 
-		// Run all concurrently with Effect.all
-		const program = pipe(
-			Effect.all(effects, { concurrency: "unbounded" }),
-			Effect.timeout(30000), // 30s total timeout for all formatters
-			Effect.catchAll((error): Effect.Effect<FormatterResult[]> => {
-				console.error("[format] Concurrent formatting failed:", error);
-				return Effect.succeed(
-					formatters.map(() => ({
-						success: false,
-						changed: false,
-						error: "Timeout or concurrent execution failed",
-					}))
-				);
-			})
-		);
-
-		return Effect.runPromise(program);
+		return results;
 	}
 
 	/**
 	 * Get formatters by name (for explicit formatter selection)
 	 */
 	private async getFormattersByName(names: string[]): Promise<FormatterInfo[]> {
-		const { listAllFormatters, ...formatters } = await import("./formatters.ts");
+		const { listAllFormatters, ...formatters } = await import(
+			"./formatters.ts"
+		);
 		const allNames = listAllFormatters();
 
 		return names
-			.filter(name => allNames.includes(name))
-			.map(name => {
+			.filter((name) => allNames.includes(name))
+			.map((name) => {
 				// Access formatter by name from the exports
 				const key = `${name}Formatter` as keyof typeof formatters;
 				return formatters[key] as FormatterInfo;
@@ -202,7 +219,7 @@ export class FormatService {
 	 * Clear detection cache
 	 */
 	clearCache(): void {
-		clearFormatterCache();
+		clearFormatterRuntimeState();
 	}
 }
 
@@ -211,13 +228,16 @@ export class FormatService {
 let globalFormatService: FormatService | null = null;
 let currentSessionID: string | null = null;
 
-export function getFormatService(sessionID?: string, enabled: boolean = true): FormatService {
+export function getFormatService(
+	sessionID?: string,
+	enabled: boolean = true,
+): FormatService {
 	// Create new instance if:
 	// 1. No service exists yet
 	// 2. Session ID changed (different session)
-	const shouldCreateNew = !globalFormatService || 
-		(sessionID && sessionID !== currentSessionID);
-	
+	const shouldCreateNew =
+		!globalFormatService || (sessionID && sessionID !== currentSessionID);
+
 	if (shouldCreateNew) {
 		globalFormatService = new FormatService(sessionID ?? "default", enabled);
 		currentSessionID = sessionID ?? "default";
@@ -226,6 +246,18 @@ export function getFormatService(sessionID?: string, enabled: boolean = true): F
 }
 
 export function resetFormatService(): void {
+	clearFormatterRuntimeState();
 	globalFormatService = null;
 	currentSessionID = null;
 }
+
+/**
+ * Reset format service and clear all file tracking state.
+ * Use this in tests to ensure complete isolation.
+ */
+export function clearFormatServiceAndFileState(): void {
+	resetFormatService();
+}
+
+// Re-export for convenience
+export { clearAllSessions } from "./file-time.ts";

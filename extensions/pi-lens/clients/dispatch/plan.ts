@@ -1,150 +1,193 @@
-/**
- * Tool execution plan for pi-lens
- *
- * Defines which tools run for each file kind and in what order.
- * This is the declarative alternative to the if/else chains in index.ts.
- *
- * Modes:
- * - "all": Run all runners in the group
- * - "fallback": Run first available runner
- * - "first-success": Run until one succeeds
- */
-
 import type { FileKind } from "../file-kinds.ts";
-import type { ToolPlan } from "./types.ts";
+import { getPrimaryDispatchGroup } from "../language-policy.ts";
+import type { RunnerGroup, ToolPlan } from "./types.ts";
 
-/**
- * Tool plans organized by purpose
- */
-export const TOOL_PLANS: Record<string, ToolPlan> = {
-	/**
-	 * Linting tools for JS/TS files
-	 */
+type CapabilityDimension =
+	| "types"
+	| "security"
+	| "smells"
+	| "format"
+	| "lint"
+	| "architecture"
+	| "docs";
+
+interface CapabilityMatrixEntry {
+	name: string;
+	capabilities: CapabilityDimension[];
+	writeGroups: RunnerGroup[];
+	fullOnlyGroups?: RunnerGroup[];
+}
+
+function primary(kind: FileKind): RunnerGroup {
+	const group = getPrimaryDispatchGroup(kind, true);
+	if (!group) {
+		throw new Error(`Missing primary dispatch group for ${kind}`);
+	}
+	return group;
+}
+
+export const LANGUAGE_CAPABILITY_MATRIX: Record<FileKind, CapabilityMatrixEntry> = {
 	jsts: {
 		name: "JavaScript/TypeScript Linting",
-		groups: [
-			// TypeScript LSP always runs first - blocks on errors
-			{ mode: "all", runnerIds: ["ts-lsp"], filterKinds: ["jsts"] },
-			// Then biome or oxlint for fast linting (user preference)
-			{ mode: "fallback", runnerIds: ["biome-lint", "oxlint"] },
-			// Fast structural analysis via NAPI (weight >= 4 is blocking)
-			{ mode: "all", runnerIds: ["ast-grep-napi"] },
-			// Type safety checks
-			{ mode: "fallback", runnerIds: ["type-safety"] },
-			// Comprehensive structural analysis via CLI (severity: error is blocking)
-			{ mode: "fallback", runnerIds: ["ast-grep"] },
-			// Architectural rules
-			{ mode: "fallback", runnerIds: ["architect"] },
+		capabilities: ["types", "security", "smells", "format", "lint", "architecture"],
+		writeGroups: [
+			primary("jsts"),
+			{ mode: "all", runnerIds: ["biome-check-json"], filterKinds: ["jsts"] },
+			{ mode: "all", runnerIds: ["tree-sitter"], filterKinds: ["jsts"] },
+			{ mode: "all", runnerIds: ["ast-grep-napi"], filterKinds: ["jsts"] },
+			{ mode: "fallback", runnerIds: ["type-safety"], filterKinds: ["jsts"] },
+			{ mode: "fallback", runnerIds: ["similarity"], filterKinds: ["jsts"] },
+			{ mode: "fallback", runnerIds: ["eslint"], filterKinds: ["jsts"] },
+			{ mode: "fallback", runnerIds: ["architect"], filterKinds: ["jsts"] },
+		],
+		fullOnlyGroups: [
+			{ mode: "fallback", runnerIds: ["biome-lint", "oxlint"], filterKinds: ["jsts"] },
 		],
 	},
-
-	/**
-	 * Python linting tools
-	 */
 	python: {
 		name: "Python Linting",
-		groups: [
-			// Ruff handles both formatting and linting
-			{ mode: "fallback", runnerIds: ["ruff-lint"] },
-			// Architectural rules
-			{ mode: "fallback", runnerIds: ["architect"] },
+		capabilities: ["types", "lint", "architecture", "smells"],
+		writeGroups: [
+			primary("python"),
+			{ mode: "fallback", runnerIds: ["ruff-lint"], filterKinds: ["python"] },
+			{ mode: "fallback", runnerIds: ["architect"], filterKinds: ["python"] },
+		],
+		fullOnlyGroups: [
+			{ mode: "fallback", runnerIds: ["python-slop"], filterKinds: ["python"] },
 		],
 	},
-
-	/**
-	 * Go linting tools
-	 */
 	go: {
 		name: "Go Linting",
-		groups: [
-			// Go vet
-			{ mode: "fallback", runnerIds: ["go-vet"] },
-			// Architectural rules
-			{ mode: "fallback", runnerIds: ["architect"] },
+		capabilities: ["types", "lint", "smells"],
+		writeGroups: [
+			primary("go"),
+			{ mode: "fallback", runnerIds: ["go-vet"], filterKinds: ["go"] },
+			{ mode: "fallback", runnerIds: ["golangci-lint"], filterKinds: ["go"] },
+			{ mode: "all", runnerIds: ["tree-sitter"], filterKinds: ["go"] },
 		],
 	},
-
-	/**
-	 * Rust linting tools
-	 */
 	rust: {
 		name: "Rust Linting",
-		groups: [
-			// Cargo clippy
-			{ mode: "fallback", runnerIds: ["rust-clippy"] },
-			// Architectural rules
-			{ mode: "fallback", runnerIds: ["architect"] },
+		capabilities: ["types", "lint", "smells"],
+		writeGroups: [
+			primary("rust"),
+			{ mode: "fallback", runnerIds: ["rust-clippy"], filterKinds: ["rust"] },
+			{ mode: "all", runnerIds: ["tree-sitter"], filterKinds: ["rust"] },
 		],
 	},
-
-	/**
-	 * C/C++ linting tools
-	 */
+	ruby: {
+		name: "Ruby Linting",
+		capabilities: ["types", "lint", "smells"],
+		writeGroups: [
+			primary("ruby"),
+			{ mode: "fallback", runnerIds: ["rubocop"], filterKinds: ["ruby"] },
+			{ mode: "all", runnerIds: ["tree-sitter"], filterKinds: ["ruby"] },
+		],
+	},
 	cxx: {
 		name: "C/C++ Linting",
-		groups: [
-			// Architectural rules
-			{ mode: "fallback", runnerIds: ["architect"] },
-		],
+		capabilities: ["types", "lint"],
+		writeGroups: [primary("cxx")],
 	},
-
-	/**
-	 * JSON/JSONC files
-	 */
-	json: {
-		name: "JSON Processing",
-		groups: [
-			// Biome handles JSON well
-			{ mode: "fallback", runnerIds: ["biome-lint"] },
-		],
-	},
-
-	/**
-	 * Markdown files
-	 */
-	markdown: {
-		name: "Markdown Processing",
-		groups: [
-			// Spellcheck for typos
-			{ mode: "fallback", runnerIds: ["spellcheck"] },
-		],
-	},
-
-	/**
-	 * Shell scripts
-	 */
-	shell: {
-		name: "Shell Script Linting",
-		groups: [
-			// Shellcheck for bash/sh/zsh linting
-			{ mode: "fallback", runnerIds: ["shellcheck"] },
-			// Architectural rules
-			{ mode: "fallback", runnerIds: ["architect"] },
-		],
-	},
-
-	/**
-	 * CMake files
-	 */
 	cmake: {
 		name: "CMake Processing",
-		groups: [
-			// Architectural rules
-			{ mode: "fallback", runnerIds: ["architect"] },
-		],
+		capabilities: ["lint"],
+		writeGroups: [primary("cmake")],
+	},
+	shell: {
+		name: "Shell Script Linting",
+		capabilities: ["lint", "security"],
+		writeGroups: [primary("shell")],
+	},
+	json: {
+		name: "JSON Processing",
+		capabilities: ["format"],
+		writeGroups: [primary("json")],
+	},
+	markdown: {
+		name: "Markdown Processing",
+		capabilities: ["docs"],
+		writeGroups: [primary("markdown")],
+	},
+	css: {
+		name: "CSS Processing",
+		capabilities: ["format", "lint"],
+		writeGroups: [primary("css")],
+	},
+	yaml: {
+		name: "YAML Processing",
+		capabilities: ["format", "lint"],
+		writeGroups: [primary("yaml")],
+	},
+	sql: {
+		name: "SQL Processing",
+		capabilities: ["format", "lint"],
+		writeGroups: [primary("sql")],
 	},
 };
 
-/**
- * Get the tool plan for a specific file kind
- */
+function toWritePlan(entry: CapabilityMatrixEntry): ToolPlan {
+	return {
+		name: entry.name,
+		groups: [...entry.writeGroups],
+	};
+}
+
+function toFullPlan(kind: FileKind, entry: CapabilityMatrixEntry): ToolPlan {
+	if (kind === "jsts") {
+		const primaryGroup = primary("jsts");
+		return {
+			name: "JavaScript/TypeScript Full Lint",
+			groups: [
+				primaryGroup,
+				{ mode: "all", runnerIds: ["tree-sitter"], filterKinds: ["jsts"] },
+				{ mode: "all", runnerIds: ["ast-grep-napi"], filterKinds: ["jsts"] },
+				...(entry.fullOnlyGroups ?? []),
+				{ mode: "fallback", runnerIds: ["type-safety"], filterKinds: ["jsts"] },
+				{ mode: "fallback", runnerIds: ["similarity"], filterKinds: ["jsts"] },
+				{ mode: "fallback", runnerIds: ["architect"], filterKinds: ["jsts"] },
+				{ mode: "fallback", runnerIds: ["eslint"], filterKinds: ["jsts"] },
+			],
+		};
+	}
+
+	if (kind === "python") {
+		const primaryGroup = primary("python");
+		return {
+			name: "Python Full Lint",
+			groups: [
+				primaryGroup,
+				{ mode: "fallback", runnerIds: ["ruff-lint"], filterKinds: ["python"] },
+				...(entry.fullOnlyGroups ?? []),
+				{ mode: "fallback", runnerIds: ["architect"], filterKinds: ["python"] },
+			],
+		};
+	}
+
+	return {
+		name: entry.name,
+		groups: [...entry.writeGroups, ...(entry.fullOnlyGroups ?? [])],
+	};
+}
+
+export const TOOL_PLANS: Record<string, ToolPlan> = Object.fromEntries(
+	Object.entries(LANGUAGE_CAPABILITY_MATRIX).map(([kind, entry]) => [
+		kind,
+		toWritePlan(entry),
+	]),
+) as Record<string, ToolPlan>;
+
 export function getToolPlan(kind: FileKind): ToolPlan | undefined {
 	return TOOL_PLANS[kind];
 }
 
-/**
- * Get all registered tool plans
- */
 export function getAllToolPlans(): Record<string, ToolPlan> {
 	return TOOL_PLANS;
 }
+
+export const FULL_LINT_PLANS: Record<string, ToolPlan> = Object.fromEntries(
+	Object.entries(LANGUAGE_CAPABILITY_MATRIX).map(([kind, entry]) => [
+		kind,
+		toFullPlan(kind as FileKind, entry),
+	]),
+) as Record<string, ToolPlan>;

@@ -6,11 +6,107 @@
  */
 
 import { detectFileKind } from "../file-kinds.ts";
-import { createBaselineStore, createDispatchContext } from "./dispatcher.ts";
-import type { PiAgentAPI } from "./types.ts";
+import type { FileKind } from "../file-kinds.ts";
+import {
+	getLspCapableKinds,
+	getPrimaryDispatchGroup,
+} from "../language-policy.ts";
+import {
+	clearLatencyReports,
+	clearCoverageNoticeState,
+	createBaselineStore,
+	createDispatchContext,
+	type DispatchLatencyReport,
+	dispatchForFile,
+	formatLatencyReport,
+	getLatencyReports,
+	getRunnersForKind,
+	type RunnerLatency,
+} from "./dispatcher.ts";
+import { TOOL_PLANS } from "./plan.ts";
+import type {
+	BaselineStore,
+	DispatchResult,
+	ModifiedRange,
+	PiAgentAPI,
+	RunnerGroup,
+} from "./types.ts";
+
+export type { DispatchLatencyReport, RunnerLatency };
+// Re-export latency tracking types and functions
+export { clearLatencyReports, formatLatencyReport, getLatencyReports };
 
 // Import runners to register them
 import "./runners/index.ts";
+
+// --- Persistent Baseline Store ---
+// Survives across dispatchLint calls within a session.
+// Without this, delta mode is a no-op: every call creates a fresh empty
+// store, so baselines.get() always returns undefined and every issue
+// looks "new" every time.
+const sessionBaselines: BaselineStore = createBaselineStore();
+const LSP_CAPABLE_KINDS = new Set<FileKind>(getLspCapableKinds());
+
+function withPrimaryPolicyGroup(
+	kind: keyof typeof TOOL_PLANS,
+	groups: RunnerGroup[],
+	pi: PiAgentAPI,
+): RunnerGroup[] {
+	const lspEnabled = !!pi.getFlag("lens-lsp") && !pi.getFlag("no-lsp");
+	const normalizedGroups = lspEnabled
+		? groups
+		: groups
+				.map((group) => {
+					const runnerIds = group.runnerIds.filter(
+						(id) => id !== "lsp" && id !== "ts-lsp",
+					);
+					if (runnerIds.length === 0) return null;
+					return {
+						...group,
+						runnerIds,
+					};
+				})
+				.filter((group): group is RunnerGroup => group !== null);
+
+	const primary = getPrimaryDispatchGroup(kind as FileKind, lspEnabled);
+	if (!primary) return normalizedGroups;
+
+	const alreadyHasPrimary = normalizedGroups.some((group) => {
+		if (group.mode !== primary.mode) return false;
+		if (group.runnerIds.length !== primary.runnerIds.length) return false;
+		return group.runnerIds.every((id, index) => primary.runnerIds[index] === id);
+	});
+	if (alreadyHasPrimary) return normalizedGroups;
+
+	return [primary, ...normalizedGroups];
+}
+
+export function getDispatchGroupsForKind(
+	kind: keyof typeof TOOL_PLANS,
+	pi: PiAgentAPI,
+): RunnerGroup[] {
+	const plan = TOOL_PLANS[kind];
+	if (!plan) {
+		if (
+			pi.getFlag("lens-lsp") &&
+			!pi.getFlag("no-lsp") &&
+			LSP_CAPABLE_KINDS.has(kind as FileKind)
+		) {
+			return [{ mode: "all", runnerIds: ["lsp"], filterKinds: [kind as FileKind] }];
+		}
+		return [];
+	}
+	return withPrimaryPolicyGroup(kind, plan.groups, pi);
+}
+
+/**
+ * Reset baselines — call on session_start so a new session
+ * starts with a clean slate.
+ */
+export function resetDispatchBaselines(): void {
+	sessionBaselines.clear();
+	clearCoverageNoticeState();
+}
 
 /**
  * Run linting for a file using the declarative dispatch system
@@ -24,22 +120,77 @@ export async function dispatchLint(
 	filePath: string,
 	cwd: string,
 	pi: PiAgentAPI,
+	modifiedRanges?: ModifiedRange[],
 ): Promise<string> {
-	const ctx = createDispatchContext(filePath, cwd, pi);
-
-	// Import dispatchForFile dynamically to avoid circular deps
-	const { dispatchForFile } = await import("./dispatcher.ts");
-	const { getRunnersForKind } = await import("./dispatcher.ts");
-	const { TOOL_PLANS } = await import("./plan.ts");
+	// By default, only run BLOCKING rules for fast feedback on file write
+	// Uses persistent sessionBaselines so delta mode actually filters
+	// pre-existing issues after the first write.
+	const ctx = createDispatchContext(
+		filePath,
+		cwd,
+		pi,
+		sessionBaselines,
+		true,
+		modifiedRanges,
+	);
 
 	const kind = ctx.kind;
 	if (!kind) return "";
 
-	const plan = TOOL_PLANS[kind];
-	if (!plan) return "";
+	const groups = getDispatchGroupsForKind(kind, pi);
+	if (groups.length === 0) return "";
 
-	const result = await dispatchForFile(ctx, plan.groups);
+	const result = await dispatchForFile(ctx, groups);
 	return result.output;
+}
+
+/**
+ * Run linting and return full result (including diagnostics)
+ */
+export async function dispatchLintWithResult(
+	filePath: string,
+	cwd: string,
+	pi: PiAgentAPI,
+	modifiedRanges?: ModifiedRange[],
+): Promise<DispatchResult> {
+	const ctx = createDispatchContext(
+		filePath,
+		cwd,
+		pi,
+		sessionBaselines,
+		true,
+		modifiedRanges,
+	);
+
+	const kind = ctx.kind;
+	if (!kind) {
+		return {
+			diagnostics: [],
+			blockers: [],
+			warnings: [],
+			baselineWarningCount: 0,
+			fixed: [],
+			resolvedCount: 0,
+			output: "",
+			hasBlockers: false,
+		};
+	}
+
+	const groups = getDispatchGroupsForKind(kind, pi);
+	if (groups.length === 0) {
+		return {
+			diagnostics: [],
+			blockers: [],
+			warnings: [],
+			baselineWarningCount: 0,
+			fixed: [],
+			resolvedCount: 0,
+			output: "",
+			hasBlockers: false,
+		};
+	}
+
+	return dispatchForFile(ctx, groups);
 }
 
 /**
@@ -65,7 +216,6 @@ export async function getAvailableRunners(filePath: string): Promise<string[]> {
 	const kind = detectFileKind(filePath);
 	if (!kind) return [];
 
-	const { getRunnersForKind } = await import("./dispatcher.ts");
 	const runners = getRunnersForKind(kind);
 	return runners.map((r) => r.id);
 }

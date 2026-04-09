@@ -1,10 +1,10 @@
 /**
  * LSP Configuration for pi-lens
- * 
+ *
  * Allows users to define custom LSP servers via configuration.
- * 
+ *
  * Config file: .pi-lens/lsp.json
- * 
+ *
  * Example:
  * {
  *   "servers": {
@@ -19,11 +19,15 @@
  * }
  */
 
-import fs from "fs/promises";
-import path from "path";
-import { fileURLToPath } from "url";
-import { LSP_SERVERS, type LSPServerInfo, createRootDetector } from "./server.ts";
+import fs from "node:fs/promises";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import { launchLSP } from "./launch.ts";
+import {
+	createRootDetector,
+	LSP_SERVERS,
+	type LSPServerInfo,
+} from "./server.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -45,11 +49,7 @@ export interface LSPConfig {
 
 // --- Config Loading ---
 
-const CONFIG_PATHS = [
-	".pi-lens/lsp.json",
-	".pi-lens.json",
-	"pi-lsp.json",
-];
+const CONFIG_PATHS = [".pi-lens/lsp.json", ".pi-lens.json", "pi-lsp.json"];
 
 /**
  * Load LSP configuration from file
@@ -74,16 +74,19 @@ export async function loadLSPConfig(cwd: string): Promise<LSPConfig> {
 /**
  * Create LSPServerInfo from user configuration
  */
-export function createCustomServer(config: CustomServerConfig, id: string): LSPServerInfo {
+export function createCustomServer(
+	config: CustomServerConfig,
+	id: string,
+): LSPServerInfo {
 	return {
 		id,
 		name: config.name,
 		extensions: config.extensions,
-		root: config.rootMarkers 
+		root: config.rootMarkers
 			? createRootDetector(config.rootMarkers)
 			: async () => process.cwd(),
 		async spawn(root) {
-			const proc = launchLSP(config.command, config.args ?? ["--stdio"], {
+			const proc = await launchLSP(config.command, config.args ?? ["--stdio"], {
 				cwd: root,
 				env: config.env ? { ...process.env, ...config.env } : process.env,
 			});
@@ -102,18 +105,20 @@ let disabledServerIds: Set<string> = new Set();
  */
 export async function initLSPConfig(cwd: string): Promise<void> {
 	const config = await loadLSPConfig(cwd);
-	
+
 	// Clear previous custom servers
 	customServers = [];
 	disabledServerIds = new Set(config.disabledServers ?? []);
-	
+
 	// Register custom servers from config
 	if (config.servers) {
 		for (const [id, serverConfig] of Object.entries(config.servers)) {
 			try {
 				const server = createCustomServer(serverConfig, id);
 				customServers.push(server);
-				console.error(`[lsp-config] Registered custom server: ${id} (${serverConfig.name})`);
+				console.error(
+					`[lsp-config] Registered custom server: ${id} (${serverConfig.name})`,
+				);
 			} catch (err) {
 				console.error(`[lsp-config] Failed to register server ${id}:`, err);
 			}
@@ -126,7 +131,7 @@ export async function initLSPConfig(cwd: string): Promise<void> {
  */
 export function getAllServers(): LSPServerInfo[] {
 	const all = [...LSP_SERVERS, ...customServers];
-	return all.filter(s => !disabledServerIds.has(s.id));
+	return all.filter((s) => !disabledServerIds.has(s.id));
 }
 
 /**
@@ -137,8 +142,6 @@ export function isServerDisabled(serverId: string): boolean {
 }
 
 // --- Override getServersForFile to include custom servers
-
-import { getServersForFile as getBuiltinServersForFile } from "./server.ts";
 
 export function getServersForFileWithConfig(filePath: string): LSPServerInfo[] {
 	const ext = path.extname(filePath).toLowerCase();

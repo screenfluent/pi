@@ -12,6 +12,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { minimatch } from "minimatch";
+import { resolvePackagePath } from "./package-root.ts";
 
 // --- Types ---
 
@@ -91,6 +92,8 @@ export class ArchitectClient {
 			// Try multiple possible locations for the default config
 			const possibleDefaultPaths = [
 				path.join(projectRoot, "default-architect.yaml"),
+				path.join(projectRoot, ".pi-lens", "default-architect.yaml"),
+				resolvePackagePath(import.meta.url, "default-architect.yaml"),
 				path.join(projectRoot, "..", "default-architect.yaml"),
 				path.join(process.cwd(), "default-architect.yaml"),
 			];
@@ -170,7 +173,15 @@ export class ArchitectClient {
 
 			for (const check of rule.must_not) {
 				// We use 'g' to find all occurrences and correctly report line numbers
-				const regex = new RegExp(check.pattern, "gi");
+				let regex: RegExp;
+				try {
+					regex = new RegExp(check.pattern, "gim");
+				} catch (error) {
+					this.log(
+						`Invalid architect regex '${check.pattern}' for rule '${rule.pattern}': ${error}`,
+					);
+					continue;
+				}
 				let match: RegExpExecArray | null;
 
 				// biome-ignore lint/suspicious/noAssignInExpressions: RegExp.exec iteration
@@ -286,7 +297,9 @@ export class ArchitectClient {
 				) {
 					// Extract everything after "pattern:" and unquote
 					const raw = trimmed.replace(/^-?\s*pattern:\s*/, "").trim();
-					const unquoted = raw.replace(/^["']|["']$/g, "");
+					let unquoted = raw.replace(/^["']|["']$/g, "");
+					// Single-quoted YAML: '' is an escaped single-quote
+					if (raw.startsWith("'")) unquoted = unquoted.split("''").join("'");
 					if (unquoted) {
 						violation = { pattern: unquoted, message: "" };
 					}

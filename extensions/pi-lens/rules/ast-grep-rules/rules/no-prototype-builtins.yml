@@ -1,7 +1,7 @@
 id: no-prototype-builtins
 language: TypeScript
 message: "Use Object.hasOwn() or Object.prototype.hasOwnProperty.call() instead of calling methods directly on the object"
-severity: warning
+severity: error
 note: |
   Objects created with Object.create(null) have no prototype and will throw
   TypeError when calling .hasOwnProperty() directly. Use Object.hasOwn()

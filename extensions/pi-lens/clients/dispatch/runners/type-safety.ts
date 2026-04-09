@@ -51,7 +51,11 @@ const typeSafetyRunner: RunnerDefinition = {
 		return {
 			status: hasErrors ? "failed" : "succeeded",
 			diagnostics,
-			semantic: hasErrors ? "blocking" : "warning",
+			semantic: hasErrors
+				? "blocking"
+				: diagnostics.length > 0
+					? "warning"
+					: "none",
 		};
 	},
 };

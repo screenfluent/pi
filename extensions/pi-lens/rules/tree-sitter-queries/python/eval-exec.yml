@@ -4,6 +4,8 @@ id: eval-exec
 name: Eval/Exec Usage
 severity: error
 category: security
+defect_class: injection
+inline_tier: blocking
 language: python
 
 message: "{{FUNC}}() detected — security risk, code injection vulnerability"

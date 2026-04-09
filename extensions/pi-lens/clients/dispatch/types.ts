@@ -5,13 +5,19 @@
  * - BLOCKING: Errors that stop the agent (architect, ts-lsp errors)
  * - WARNING: Non-blocking issues (biome warnings, type-safety)
  * - FIXABLE: Issues with auto-fix available
- * - SILENT: Metrics tracked but not shown (complexity, TDR)
+ * - SILENT: Metrics tracked but not shown (complexity)
  * - INFORMATIONAL: Shown in session summary only
  *
  * The dispatcher must handle these semantics consistently.
  */
 
 import type { FileKind } from "../file-kinds.ts";
+import type { DefectClass } from "./diagnostic-taxonomy.ts";
+
+export interface ModifiedRange {
+	start: number;
+	end: number;
+}
 
 // --- API Interface ---
 
@@ -55,6 +61,8 @@ export interface Diagnostic {
 	tool: string;
 	/** Rule/category */
 	rule?: string;
+	/** Normalized defect class for overlap arbitration */
+	defectClass?: DefectClass;
 	/** Whether auto-fix is available */
 	fixable?: boolean;
 	/** Auto-fix command/suggestion */
@@ -62,14 +70,18 @@ export interface Diagnostic {
 }
 
 export interface DispatchResult {
-	/** All diagnostics found */
+	/** All diagnostics found (delta-filtered for this run) */
 	diagnostics: Diagnostic[];
-	/** Blockers that must be fixed */
+	/** Blockers that must be fixed (delta-filtered) */
 	blockers: Diagnostic[];
-	/** Warnings to address */
+	/** Warnings to address (delta-filtered — only NEW warnings this run) */
 	warnings: Diagnostic[];
+	/** Total warnings in baseline BEFORE this run (for cumulative count display) */
+	baselineWarningCount: number;
 	/** Issues that were auto-fixed */
 	fixed: Diagnostic[];
+	/** Count of previously-seen diagnostics that were resolved this run */
+	resolvedCount: number;
 	/** Formatted output for display */
 	output: string;
 	/** Whether any blockers were found */
@@ -124,6 +136,9 @@ export interface DispatchContext {
 	readonly autofix: boolean;
 	readonly deltaMode: boolean;
 	readonly baselines: BaselineStore;
+	/** Only run blocking rules (severity: error) - used for fast feedback on file write */
+	readonly blockingOnly?: boolean;
+	readonly modifiedRanges?: ModifiedRange[];
 
 	hasTool(command: string): Promise<boolean>;
 	log(message: string): void;

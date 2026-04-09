@@ -8,10 +8,10 @@
  * Docs: https://github.com/kucherenko/jscpd
  */
 
-import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as os from "node:os";
 import * as path from "node:path";
+import { getExcludedDirGlobs, isExcludedDirName } from "./file-utils.ts";
 import { safeSpawn } from "./safe-spawn.ts";
 
 // --- Types ---
@@ -43,6 +43,78 @@ export class JscpdClient {
 		this.log = verbose ? (msg) => console.error(`[jscpd] ${msg}`) : () => {};
 	}
 
+	/**
+	 * Fast recursive source file presence check.
+	 * Avoids running jscpd when repo has no relevant source files.
+	 */
+	private hasSourceFilesRecursive(rootDir: string): boolean {
+		const stack = [rootDir];
+		let visited = 0;
+		const MAX_ENTRIES = 6000;
+
+		while (stack.length > 0 && visited < MAX_ENTRIES) {
+			const dir = stack.pop();
+			if (!dir) continue;
+
+			let entries: fs.Dirent[];
+			try {
+				entries = fs.readdirSync(dir, { withFileTypes: true });
+			} catch {
+				continue;
+			}
+
+			for (const entry of entries) {
+				visited += 1;
+				if (entry.isSymbolicLink()) continue;
+				if (entry.isDirectory()) {
+					if (isExcludedDirName(entry.name)) continue;
+					stack.push(path.join(dir, entry.name));
+					continue;
+				}
+				if (!entry.isFile()) continue;
+				if (/\.(ts|tsx|js|jsx|mjs|cjs)$/.test(entry.name)) {
+					if (entry.name.endsWith(".d.ts")) continue;
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if jscpd is available, auto-install if not
+	 */
+	async ensureAvailable(): Promise<boolean> {
+		// Fast path: already checked
+		if (this.available !== null) return this.available;
+
+		// Check if available in PATH
+		const result = safeSpawn("jscpd", ["--version"], {
+			timeout: 5000,
+		});
+		this.available = !result.error && result.status === 0;
+
+		if (this.available) {
+			return true;
+		}
+
+		// Auto-install via pi-lens installer
+		const { ensureTool } = await import("./installer/index.ts");
+		const installedPath = await ensureTool("jscpd");
+
+		if (installedPath) {
+			this.available = true;
+			return true;
+		}
+
+		return false;
+	}
+
+	/**
+	 * Check if jscpd is available (legacy sync method)
+	 * Prefer ensureAvailable() for auto-install behavior
+	 */
 	isAvailable(): boolean {
 		if (this.available !== null) return this.available;
 		const result = safeSpawn("npx", ["jscpd", "--version"], {
@@ -57,7 +129,12 @@ export class JscpdClient {
 	 * Uses a temp output dir to capture JSON report.
 	 * @param isTsProject - If true, excludes .js files (they're compiled artifacts in TS projects)
 	 */
-	scan(cwd: string, minLines = 5, minTokens = 50, isTsProject = false): JscpdResult {
+	scan(
+		cwd: string,
+		minLines = 5,
+		minTokens = 50,
+		isTsProject = false,
+	): JscpdResult {
 		// Return early for non-existent or empty directories
 		if (!fs.existsSync(cwd)) {
 			return {
@@ -68,10 +145,7 @@ export class JscpdClient {
 				percentage: 0,
 			};
 		}
-		const entries = fs.readdirSync(cwd);
-		const hasSourceFiles = entries.some(
-			(e) => /\.(ts|tsx|js|jsx)$/.test(e) && !e.endsWith(".d.ts"),
-		);
+		const hasSourceFiles = this.hasSourceFilesRecursive(cwd);
 		if (!hasSourceFiles) {
 			return {
 				success: true,
@@ -95,11 +169,26 @@ export class JscpdClient {
 		const outDir = path.join(os.tmpdir(), `pi-lens-jscpd-${Date.now()}`);
 		fs.mkdirSync(outDir, { recursive: true });
 
-		// Build ignore pattern - exclude .js in TS projects (compiled artifacts)
-		const baseIgnores = "**/node_modules/**,**/dist/**,**/build/**,**/.git/**,**/.pi-lens/**,**/*.md,**/*.txt,**/*.json,**/*.yaml,**/*.yml,**/*.toml,**/*.lock,**/*.test.*,**/*.spec.*,**/*.poc.test.*,**/__tests__/**,**/tests/**";
-		const ignorePattern = isTsProject
-			? `${baseIgnores},**/*.js,**/*.jsx`
-			: baseIgnores;
+		// Build ignore pattern from shared exclusions + scanner-specific patterns.
+		const baseIgnores = [
+			...getExcludedDirGlobs(),
+			"**/*.md",
+			"**/*.txt",
+			"**/*.json",
+			"**/*.yaml",
+			"**/*.yml",
+			"**/*.toml",
+			"**/*.lock",
+			"**/*.test.*",
+			"**/*.spec.*",
+			"**/*.poc.test.*",
+			"**/__tests__/**",
+			"**/tests/**",
+		];
+		if (isTsProject) {
+			baseIgnores.push("**/*.ts", "**/*.jsx");
+		}
+		const ignorePattern = baseIgnores.join(",");
 
 		try {
 			safeSpawn(

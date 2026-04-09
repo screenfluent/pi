@@ -1,6 +1,6 @@
 id: no-compare-neg-zero
 message: Disallow comparing against -0
-severity: warning
+severity: error
 language: TypeScript
 rule:
   all:

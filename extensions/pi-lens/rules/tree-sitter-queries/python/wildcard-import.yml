@@ -4,6 +4,8 @@ id: wildcard-import
 name: Wildcard Import
 severity: warning
 category: readability
+defect_class: safety
+inline_tier: warning
 language: python
 
 message: "Wildcard import — pollutes namespace, hard to track origin"

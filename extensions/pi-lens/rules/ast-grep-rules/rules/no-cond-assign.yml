@@ -1,6 +1,6 @@
 id: no-cond-assign
 message: Expected a conditional expression and instead saw an assignment.
-severity: warning
+severity: error
 language: TypeScript
 rule:
   all:

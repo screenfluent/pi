@@ -20,7 +20,7 @@ export interface LoopConfig {
 	name: string;
 	/** Maximum iterations before stopping */
 	maxIterations: number;
-	/** Command to run for each iteration (e.g., "/lens-booboo-fix --loop") */
+	/** Command to run for each iteration */
 	command: string;
 	/** Patterns that indicate the loop should exit (e.g., "no more fixable issues") */
 	exitPatterns: RegExp[];

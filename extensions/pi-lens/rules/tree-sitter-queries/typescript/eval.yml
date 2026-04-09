@@ -4,6 +4,8 @@ id: no-eval
 name: Eval Usage
 severity: error
 category: security
+defect_class: injection
+inline_tier: blocking
 language: typescript
 
 message: "eval() detected — security risk, never use eval"

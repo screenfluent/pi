@@ -35,6 +35,7 @@ export interface SimilarityMatch {
 	targetLocation: string; // "utils/date.ts:42"
 	similarity: number; // 0-100%
 	signature: string; // Target function signature
+	targetTransitionCount: number;
 }
 
 export interface ProjectIndex {
@@ -310,6 +311,7 @@ export function findSimilarFunctions(
 				targetLocation: `${entry.filePath}:1`, // TODO: get actual line
 				similarity,
 				signature: entry.signature,
+				targetTransitionCount: entry.transitionCount,
 			});
 		}
 	}

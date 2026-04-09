@@ -4,27 +4,14 @@
  * Requires: @biomejs/biome (npm install -D @biomejs/biome)
  */
 
-import { safeSpawn } from "../../safe-spawn.ts";
-import { createBiomeParser } from "./utils/diagnostic-parsers.ts";
+import { safeSpawnAsync } from "../../safe-spawn.ts";
 import type {
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
 } from "../types.ts";
-
-// Cache biome availability check
-let biomeAvailable: boolean | null = null;
-
-function isBiomeAvailable(): boolean {
-	if (biomeAvailable !== null) return biomeAvailable;
-
-	// Check if biome CLI is available (do NOT auto-install via npx)
-	const check = safeSpawn("biome", ["--version"], {
-		timeout: 5000,
-	});
-	biomeAvailable = !check.error && check.status === 0;
-	return biomeAvailable;
-}
+import { createBiomeParser } from "./utils/diagnostic-parsers.ts";
+import { biome } from "./utils/runner-helpers.ts";
 
 const biomeRunner: RunnerDefinition = {
 	id: "biome-lint",
@@ -33,20 +20,40 @@ const biomeRunner: RunnerDefinition = {
 	enabledByDefault: true,
 
 	async run(ctx: DispatchContext): Promise<RunnerResult> {
-		// Skip if biome is not installed
-		if (!isBiomeAvailable()) {
-			return { status: "skipped", diagnostics: [], semantic: "none" };
+		const cwd = ctx.cwd || process.cwd();
+		// Check if biome is available (via PATH, venv, or npx)
+		let cmd: string | null = null;
+		let useNpx = false;
+
+		if (biome.isAvailable(cwd)) {
+			cmd = biome.getCommand(cwd);
 		}
 
-		// IMPORTANT: Never use --write in dispatch runner to prevent infinite loops.
-		// Writing to the file would trigger another tool_result event, which would
-		// call dispatchLint again, creating a feedback loop.
-		// Use /lens-format command for explicit formatting, or autofix flags on
-		// the write/edit tools directly.
-		const args = ["check", ctx.filePath];
+		if (!cmd) {
+			// Try npx as fallback
+			const npxCheck = await safeSpawnAsync("npx", ["biome", "--version"], {
+				timeout: 5000,
+				cwd,
+			});
+			if (!npxCheck.error && npxCheck.status === 0) {
+				cmd = "npx";
+				useNpx = true;
+			} else {
+				return { status: "skipped", diagnostics: [], semantic: "none" };
+			}
+		}
 
-		const result = safeSpawn("biome", args, {
+		// No --write here: dispatch runners report issues for agent understanding,
+		// not silent correction. Auto-format (biome --write) already runs in the
+		// format phase before dispatch, handling all safe style transforms.
+		// Silently rewriting here would leave the agent's context window stale.
+		const args = useNpx
+			? ["biome", "check", ctx.filePath]
+			: ["check", ctx.filePath];
+
+		const result = await safeSpawnAsync(cmd, args, {
 			timeout: 30000,
+			cwd,
 		});
 
 		const output = result.stdout + result.stderr;

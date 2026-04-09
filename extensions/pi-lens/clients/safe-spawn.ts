@@ -1,16 +1,20 @@
 /**
  * Safe cross-platform spawn utilities
  *
- * Wraps child_process.spawnSync to handle Windows execution safely
- * without triggering deprecation warnings.
+ * Provides both sync (deprecated) and async versions for gradual migration.
  *
- * Strategy:
- * - Unix: Use shell: false with normal args
- * - Windows: Manually construct command string to avoid deprecation warning,
- *   then use shell: true with no args array
+ * Async version features:
+ * - Non-blocking execution
+ * - Proper process cleanup on timeout (no zombies)
+ * - Batch execution with concurrency limits
+ * - AbortSignal support for cancellation
+ *
+ * Migration guide:
+ * - Change: safeSpawn(cmd, args, opts)
+ * - To: await safeSpawnAsync(cmd, args, opts)
  */
 
-import { spawnSync, type SpawnOptions } from "node:child_process";
+import { type SpawnOptions, spawn, spawnSync } from "node:child_process";
 
 export interface SpawnResult {
 	stdout: string;
@@ -23,32 +27,210 @@ export interface SafeSpawnOptions {
 	timeout?: number;
 	cwd?: string;
 	env?: NodeJS.ProcessEnv;
+	signal?: AbortSignal;
 }
+
+// ============================================================================
+// ASYNC VERSION (Recommended - Non-blocking)
+// ============================================================================
+
+/**
+ * Async spawn with timeout and proper process cleanup.
+ *
+ * Unlike spawnSync, this:
+ * - Doesn't block the event loop
+ * - Kills the process on timeout (preventing zombies)
+ * - Supports cancellation via AbortSignal
+ *
+ * @example
+ * const result = await safeSpawnAsync("npm", ["test"], { timeout: 30000 });
+ * if (result.error) console.error("Failed:", result.error);
+ */
+export async function safeSpawnAsync(
+	command: string,
+	args: string[],
+	options?: SafeSpawnOptions,
+): Promise<SpawnResult> {
+	const timeout = options?.timeout ?? 30000;
+	const abortSignal = options?.signal;
+
+	return new Promise((resolve) => {
+		// Check for early abort
+		if (abortSignal?.aborted) {
+			resolve({
+				stdout: "",
+				stderr: "",
+				status: null,
+				error: new Error("Spawn aborted before start"),
+			});
+			return;
+		}
+
+		let stdout = "";
+		let stderr = "";
+		let timedOut = false;
+		let killed = false;
+
+		// Spawn the process (non-blocking)
+		// On Windows, use shell mode for .cmd files (like pyright, biome)
+		const isWindows = process.platform === "win32";
+		const child = spawn(command, args, {
+			cwd: options?.cwd,
+			env: { ...process.env, ...options?.env },
+			windowsHide: true,
+			shell: isWindows,
+		});
+
+		// Handle abort signal
+		const onAbort = () => {
+			if (!killed && !child.killed) {
+				killed = true;
+				child.kill("SIGTERM");
+				// Force kill after 1s if still running
+				setTimeout(() => {
+					if (!child.killed) {
+						child.kill("SIGKILL");
+					}
+				}, 1000);
+			}
+		};
+		abortSignal?.addEventListener("abort", onAbort, { once: true });
+
+		// Collect output
+		child.stdout?.setEncoding("utf-8");
+		child.stderr?.setEncoding("utf-8");
+		child.stdout?.on("data", (data) => (stdout += data));
+		child.stderr?.on("data", (data) => (stderr += data));
+
+		// Timeout handling - KILL the process, don't just abandon it
+		const timeoutId = setTimeout(() => {
+			timedOut = true;
+			if (!killed && !child.killed) {
+				killed = true;
+				child.kill("SIGTERM");
+				// Force kill after 1s grace period
+				setTimeout(() => {
+					if (!child.killed) {
+						child.kill("SIGKILL");
+					}
+				}, 1000);
+			}
+		}, timeout);
+
+		// Process completion
+		child.on("close", (code, signal) => {
+			clearTimeout(timeoutId);
+			abortSignal?.removeEventListener("abort", onAbort);
+
+			if (timedOut) {
+				resolve({
+					stdout,
+					stderr,
+					status: null,
+					error: new Error(
+						`Process timed out after ${timeout}ms (killed with ${signal || "SIGTERM"})`,
+					),
+				});
+			} else if (signal) {
+				resolve({
+					stdout,
+					stderr,
+					status: null,
+					error: new Error(`Process killed by signal: ${signal}`),
+				});
+			} else {
+				resolve({ stdout, stderr, status: code });
+			}
+		});
+
+		child.on("error", (err) => {
+			clearTimeout(timeoutId);
+			abortSignal?.removeEventListener("abort", onAbort);
+			resolve({ stdout, stderr, status: null, error: err });
+		});
+	});
+}
+
+/**
+ * Run multiple commands concurrently with limited concurrency.
+ *
+ * This prevents resource contention when running many linters.
+ * Uses async spawn with concurrency limiting built-in.
+ *
+ * @example
+ * const results = await safeSpawnBatch([
+ *   { command: "biome", args: ["check", "file.ts"] },
+ *   { command: "ruff", args: ["check", "file.py"] },
+ * ], 3); // Max 3 concurrent
+ */
+export async function safeSpawnBatch(
+	commands: Array<{
+		command: string;
+		args: string[];
+		options?: SafeSpawnOptions;
+	}>,
+	concurrency = 3,
+): Promise<SpawnResult[]> {
+	const results: SpawnResult[] = [];
+
+	// Process in batches to limit concurrent processes
+	for (let i = 0; i < commands.length; i += concurrency) {
+		const batch = commands.slice(i, i + concurrency);
+		const batchResults = await Promise.all(
+			batch.map(({ command, args, options }) =>
+				safeSpawnAsync(command, args, options),
+			),
+		);
+		results.push(...batchResults);
+	}
+
+	return results;
+}
+
+/**
+ * Check if a command is available in PATH (async version)
+ */
+export async function isCommandAvailableAsync(
+	command: string,
+): Promise<boolean> {
+	const finder = process.platform === "win32" ? "where" : "which";
+	const result = await safeSpawnAsync(finder, [command], { timeout: 5000 });
+	return result.status === 0 && !result.error;
+}
+
+/**
+ * Find the full path to a command (async version)
+ */
+export async function findCommandAsync(
+	command: string,
+): Promise<string | null> {
+	const finder = process.platform === "win32" ? "where" : "which";
+	const result = await safeSpawnAsync(finder, [command], { timeout: 5000 });
+
+	if (result.status !== 0 || result.error) return null;
+
+	// Take first line (first match)
+	return result.stdout.trim().split("\n")[0] || null;
+}
+
+// ============================================================================
+// SYNC VERSION (Deprecated - Blocking, for backward compatibility)
+// ============================================================================
 
 /**
  * Escape an argument for Windows shell execution.
  * Handles spaces, quotes, $variables, and special characters.
  */
 function escapeWindowsArg(arg: string): string {
-	// Check if this looks like an ast-grep pattern with meta-variables ($NAME)
-	// In Git Bash/MSYS2 on Windows, $VAR gets expanded by the shell
-	// We need to use single quotes to prevent expansion
 	if (arg.includes("$")) {
-		// Use single quotes for arguments with $variables
-		// Escape single quotes within the argument
 		return `'${arg.replace(/'/g, "'\\''")}'`;
 	}
-
-	// If no special characters, return as-is
-	if (!/[\s\"]/.test(arg)) return arg;
-
-	// Escape quotes by doubling them
-	return `"${arg.replace(/"/g, "\"\"")}"`;
+	if (!/[\s"]/.test(arg)) return arg;
+	return `"${arg.replace(/"/g, '""')}"`;
 }
 
 /**
  * Construct a command string for Windows shell execution.
- * This avoids the deprecation warning by not passing an args array.
  */
 function buildWindowsCommand(command: string, args: string[]): string {
 	const escapedArgs = args.map(escapeWindowsArg).join(" ");
@@ -56,11 +238,12 @@ function buildWindowsCommand(command: string, args: string[]): string {
 }
 
 /**
- * Safely spawn a process cross-platform without shell deprecation warnings.
+ * ⚠️ DEPRECATED: Use safeSpawnAsync instead.
  *
- * On Windows: Uses shell: true but constructs the command string manually
- * to avoid the deprecation warning about unescaped args.
- * On Unix: Uses shell: false for normal execution.
+ * This blocks the entire Node.js event loop until the process exits.
+ * If the process hangs, pi will freeze.
+ *
+ * Kept for backward compatibility during migration.
  */
 export function safeSpawn(
 	command: string,
@@ -68,8 +251,6 @@ export function safeSpawn(
 	options?: SafeSpawnOptions,
 ): SpawnResult {
 	if (process.platform === "win32") {
-		// On Windows, construct the full command string and use shell: true
-		// without an args array. This avoids the deprecation warning.
 		const fullCommand = buildWindowsCommand(command, args);
 		const result = spawnSync(fullCommand, {
 			...(options as SpawnOptions),
@@ -86,7 +267,6 @@ export function safeSpawn(
 		};
 	}
 
-	// On Unix, use shell: false (the default) with normal args
 	const result = spawnSync(command, args, {
 		...(options as SpawnOptions),
 		encoding: "utf-8",
@@ -103,7 +283,8 @@ export function safeSpawn(
 }
 
 /**
- * Check if a command is available in PATH
+ * Check if a command is available in PATH (sync version - deprecated)
+ * @deprecated Use isCommandAvailableAsync
  */
 export function isCommandAvailable(command: string): boolean {
 	const result = safeSpawn(
@@ -115,7 +296,8 @@ export function isCommandAvailable(command: string): boolean {
 }
 
 /**
- * Find the full path to a command (npx, node, etc.)
+ * Find the full path to a command (sync version - deprecated)
+ * @deprecated Use findCommandAsync
  */
 export function findCommand(command: string): string | null {
 	const finder = process.platform === "win32" ? "where" : "which";
@@ -123,6 +305,5 @@ export function findCommand(command: string): string | null {
 
 	if (result.status !== 0) return null;
 
-	// Take first line (first match)
 	return result.stdout.trim().split("\n")[0] || null;
 }

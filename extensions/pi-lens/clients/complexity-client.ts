@@ -1,5 +1,5 @@
 /**
- * Complexity Metrics Client for pi-lens
+ * Complexity Metrics Client for pi-lens (cache test)
  *
  * Calculates AST-based code complexity metrics for TypeScript/JavaScript files.
  * Uses the TypeScript compiler API for parsing.
@@ -331,10 +331,12 @@ export class ComplexityClient {
 			);
 		}
 
-		// Code entropy (in bits, >3.5 = risky AI-induced complexity)
-		if (metrics.codeEntropy > 3.5) {
+		// Code entropy (in bits, >5.5 = risky AI-induced complexity)
+		// Threshold increased from 3.5 to 5.5 to reduce false positives in tooling codebases
+		// where diverse method/variable names are naturally expected
+		if (metrics.codeEntropy > 5.5) {
 			parts.push(
-				`  Entropy: ${metrics.codeEntropy.toFixed(1)} bits (>3.5 — risky AI-induced complexity)`,
+				`  Entropy: ${metrics.codeEntropy.toFixed(1)} bits (>5.5 — risky AI-induced complexity)`,
 			);
 		}
 
@@ -480,8 +482,8 @@ export class ComplexityClient {
 			);
 		}
 
-		// Entropy > 5.0 is high (was > 3.5, too sensitive)
-		if (metrics.codeEntropy > 5.0) {
+		// Entropy > 5.5 is high (was > 3.5 → 5.0, still too sensitive for tooling codebases)
+		if (metrics.codeEntropy > 5.5) {
 			warnings.push(
 				`High entropy (${metrics.codeEntropy.toFixed(1)} bits) — follow project conventions`,
 			);
@@ -807,7 +809,8 @@ export class ComplexityClient {
 	/**
 	 * Calculate Shannon entropy of code tokens (in bits)
 	 * Uses log2 for entropy measured in bits
-	 * Threshold: >3.5 bits indicates risky AI-induced complexity
+	 * Threshold: >5.5 bits indicates risky AI-induced complexity
+	 * (Increased from 3.5 to reduce false positives in tooling codebases)
 	 */
 	private calculateCodeEntropy(sourceText: string): number {
 		// Tokenize by splitting on whitespace and common delimiters

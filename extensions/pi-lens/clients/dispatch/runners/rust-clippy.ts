@@ -4,9 +4,11 @@
  * Runs `cargo clippy` for Rust files to catch common mistakes.
  */
 
-import { spawnSync } from "node:child_process";
-import { safeSpawn } from "../../safe-spawn.ts";
+import { existsSync } from "node:fs";
+import { dirname, join } from "node:path";
+import { safeSpawnAsync } from "../../safe-spawn.ts";
 import { stripAnsi } from "../../sanitize.ts";
+import { tryLazyInstall } from "./utils/lazy-installer.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
@@ -22,12 +24,27 @@ const rustClippyRunner: RunnerDefinition = {
 
 	async run(ctx: DispatchContext): Promise<RunnerResult> {
 		// Check if cargo is available
-		const check = safeSpawn("cargo", ["--version"], {
+		const check = await safeSpawnAsync("cargo", ["--version"], {
 			timeout: 5000,
 		});
 
 		if (check.error || check.status !== 0) {
 			return { status: "skipped", diagnostics: [], semantic: "none" };
+		}
+
+		const clippyCheck = await safeSpawnAsync("cargo", ["clippy", "--version"], {
+			timeout: 8000,
+			cwd: ctx.cwd,
+		});
+		if (clippyCheck.error || clippyCheck.status !== 0) {
+			await tryLazyInstall("rust-clippy", ctx.cwd);
+			const retry = await safeSpawnAsync("cargo", ["clippy", "--version"], {
+				timeout: 8000,
+				cwd: ctx.cwd,
+			});
+			if (retry.error || retry.status !== 0) {
+				return { status: "skipped", diagnostics: [], semantic: "none" };
+			}
 		}
 
 		// Find the package root (where Cargo.toml is)
@@ -37,7 +54,7 @@ const rustClippyRunner: RunnerDefinition = {
 		}
 
 		// Run cargo clippy on the package
-		const result = safeSpawn(
+		const result = await safeSpawnAsync(
 			"cargo",
 			["clippy", "--message-format=json", "-q"],
 			{
@@ -65,18 +82,16 @@ const rustClippyRunner: RunnerDefinition = {
 			};
 		}
 
+		const hasErrors = diagnostics.some((d) => d.semantic === "blocking");
 		return {
-			status: "failed",
+			status: hasErrors ? "failed" : "succeeded",
 			diagnostics,
-			semantic: "warning",
+			semantic: hasErrors ? "blocking" : "warning",
 		};
 	},
 };
 
 function findCargoToml(filePath: string): string | undefined {
-	const { dirname, join } = require("node:path");
-	const { existsSync } = require("node:fs");
-
 	let dir = dirname(filePath);
 	while (dir !== "/" && dir !== ".") {
 		const cargoPath = join(dir, "Cargo.toml");

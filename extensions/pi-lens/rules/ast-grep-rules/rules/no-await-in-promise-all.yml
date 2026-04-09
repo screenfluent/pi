@@ -1,7 +1,7 @@
 id: no-await-in-promise-all
 language: TypeScript
 message: "Avoid await inside Promise.all — use Promise.all with an array of promises instead"
-severity: warning
+severity: error
 note: |
   Using await inside Promise.all forces sequential execution instead of
   parallel. Map to an array of promises and pass to Promise.all.

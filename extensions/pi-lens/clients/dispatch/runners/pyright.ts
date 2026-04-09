@@ -7,14 +7,16 @@
  * Requires: pyright (pip install pyright or npm install -g pyright)
  */
 
-import { safeSpawn } from "../../safe-spawn.ts";
-import { createAvailabilityChecker } from "./utils/runner-helpers.ts";
+import { ensureTool } from "../../installer/index.ts";
+import { getLSPService } from "../../lsp/index.ts";
+import { safeSpawnAsync } from "../../safe-spawn.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
 } from "../types.ts";
+import { createAvailabilityChecker } from "./utils/runner-helpers.ts";
 
 const pyright = createAvailabilityChecker("pyright", ".exe");
 
@@ -25,13 +27,44 @@ const pyrightRunner: RunnerDefinition = {
 	enabledByDefault: true,
 
 	async run(ctx: DispatchContext): Promise<RunnerResult> {
-		// Skip if pyright is not installed
-		if (!pyright.isAvailable(ctx.cwd || process.cwd())) {
+		// Always allow pyright CLI fallback even when LSP is enabled.
+		// LSP can be present but still fail transiently for a file; in that case,
+		// pyright provides a resilient second signal path.
+		if (ctx.pi.getFlag("lens-lsp") && !ctx.pi.getFlag("no-lsp")) {
+			const lspService = getLSPService();
+			await lspService.getClientForFile(ctx.filePath);
+		}
+
+		const cwd = ctx.cwd || process.cwd();
+
+		// Get pyright command - try multiple strategies
+		let cmd: string | null = null;
+
+		// Strategy 1: Check cached availability (fast path)
+		if (pyright.isAvailable(cwd)) {
+			cmd = pyright.getCommand(cwd);
+		}
+
+		// Strategy 2: Try to find pyright via ensureTool (installs if needed)
+		if (!cmd) {
+			const installedPath = await ensureTool("pyright");
+			if (installedPath) cmd = installedPath;
+		}
+
+		// Strategy 3: Direct PATH check (handles module cache staleness)
+		if (!cmd) {
+			const { findCommandAsync } = await import("../../safe-spawn.ts");
+			const foundCmd: string | null = await findCommandAsync("pyright");
+			if (foundCmd) cmd = foundCmd;
+		}
+
+		// If still no pyright, skip this runner
+		if (!cmd) {
 			return { status: "skipped", diagnostics: [], semantic: "none" };
 		}
 
-		// Run pyright with JSON output (use venv-local or global command)
-		const result = safeSpawn(pyright.getCommand()!, ["--outputjson", ctx.filePath], {
+		// Run pyright with JSON output
+		const result = await safeSpawnAsync(cmd, ["--outputjson", ctx.filePath], {
 			timeout: 60000,
 		});
 
@@ -58,7 +91,11 @@ const pyrightRunner: RunnerDefinition = {
 			return {
 				status: hasErrors ? "failed" : "succeeded",
 				diagnostics,
-				semantic: hasErrors ? "blocking" : "warning",
+				semantic: hasErrors
+					? "blocking"
+					: diagnostics.length > 0
+						? "warning"
+						: "none",
 			};
 		} catch {
 			// JSON parse error
@@ -72,10 +109,7 @@ const pyrightRunner: RunnerDefinition = {
 	},
 };
 
-function parsePyrightOutput(
-	data: any,
-	_filePath: string,
-): Diagnostic[] {
+function parsePyrightOutput(data: any, _filePath: string): Diagnostic[] {
 	const diagnostics: Diagnostic[] = [];
 
 	// Pyright JSON output has generalDiagnostics array

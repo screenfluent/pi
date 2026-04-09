@@ -1,6 +1,6 @@
 id: getter-return
 message: Enforce `return` statements in getters
-severity: warning
+severity: error
 language: TypeScript
 rule:
   any:

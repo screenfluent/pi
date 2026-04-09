@@ -11,7 +11,7 @@
 import * as fs from "node:fs";
 import * as path from "node:path";
 import { isFileKind } from "./file-kinds.ts";
-import { safeSpawn } from "./safe-spawn.ts";
+import { safeSpawn, safeSpawnAsync } from "./safe-spawn.ts";
 
 // --- Types ---
 
@@ -42,6 +42,7 @@ interface BiomeJsonDiagnostic {
 
 export class BiomeClient {
 	private biomeAvailable: boolean | null = null;
+	private localBinaryPath: string | null = null;
 	private log: (msg: string) => void;
 
 	constructor(verbose = false) {
@@ -51,15 +52,55 @@ export class BiomeClient {
 	}
 
 	/**
+	 * Resolve the fastest available biome binary.
+	 * Prefers local node_modules/.bin/biome (skip npx overhead ~1s).
+	 * Falls back to global biome, then npx.
+	 */
+	private getBiomeBinary(): { cmd: string; args: string[] } {
+		if (this.localBinaryPath) return { cmd: this.localBinaryPath, args: [] };
+
+		// Walk up from cwd looking for node_modules/.bin/biome.
+		// On Windows prefer .cmd (native batch) over the sh wrapper — 2x faster.
+		const isWin = process.platform === "win32";
+		const candidates = isWin
+			? [
+					path.join(process.cwd(), "node_modules", ".bin", "biome.cmd"),
+					path.join(process.cwd(), "node_modules", ".bin", "biome"),
+				]
+			: [
+					path.join(process.cwd(), "node_modules", ".bin", "biome"),
+					path.join(process.cwd(), "node_modules", ".bin", "biome.cmd"),
+				];
+		for (const p of candidates) {
+			if (fs.existsSync(p)) {
+				this.localBinaryPath = p;
+				return { cmd: p, args: [] };
+			}
+		}
+		// Fallback: npx (slower but works anywhere)
+		return { cmd: "npx", args: ["@biomejs/biome"] };
+	}
+
+	/**
+	 * Spawn biome with the fastest available binary.
+	 */
+	private spawnBiome(args: string[], timeout = 15000) {
+		const { cmd, args: prefix } = this.getBiomeBinary();
+		return safeSpawn(cmd, [...prefix, ...args], { timeout });
+	}
+
+	private async spawnBiomeAsync(args: string[], timeout = 15000) {
+		const { cmd, args: prefix } = this.getBiomeBinary();
+		return safeSpawnAsync(cmd, [...prefix, ...args], { timeout });
+	}
+
+	/**
 	 * Check if biome CLI is available
 	 */
 	isAvailable(): boolean {
 		if (this.biomeAvailable !== null) return this.biomeAvailable;
 
-		// Try npx biome first (works without global install)
-		const result = safeSpawn("npx", ["@biomejs/biome", "--version"], {
-			timeout: 10000,
-		});
+		const result = this.spawnBiome(["--version"], 10000);
 
 		this.biomeAvailable = !result.error && result.status === 0;
 		if (this.biomeAvailable) {
@@ -72,6 +113,38 @@ export class BiomeClient {
 		}
 
 		return this.biomeAvailable;
+	}
+
+	/**
+	 * Ensure Biome is available, auto-installing if necessary.
+	 * Prefer this over isAvailable() for auto-install behavior.
+	 */
+	async ensureAvailable(): Promise<boolean> {
+		if (this.biomeAvailable !== null) return this.biomeAvailable;
+
+		// Check if already available
+		const result = this.spawnBiome(["--version"], 10000);
+		if (!result.error && result.status === 0) {
+			this.biomeAvailable = true;
+			return true;
+		}
+
+		// Auto-install via pi-lens installer
+		this.log("Biome not found, attempting auto-install...");
+		const { ensureTool } = await import("./installer/index.ts");
+		const installedPath = await ensureTool("biome");
+
+		if (installedPath) {
+			this.log(`Biome auto-installed: ${installedPath}`);
+			// Set the installed path as local binary to avoid npx overhead
+			this.localBinaryPath = installedPath;
+			this.biomeAvailable = true;
+			return true;
+		}
+
+		this.log("Biome auto-install failed");
+		this.biomeAvailable = false;
+		return false;
 	}
 
 	/**
@@ -103,19 +176,12 @@ export class BiomeClient {
 		if (!absolutePath) return [];
 
 		try {
-			const result = safeSpawn(
-				"npx",
-				[
-					"@biomejs/biome",
-					"check",
-					"--reporter=json",
-					"--max-diagnostics=50",
-					absolutePath,
-				],
-				{
-					timeout: 15000,
-				},
-			);
+			const result = this.spawnBiome([
+				"check",
+				"--reporter=json",
+				"--max-diagnostics=50",
+				absolutePath,
+			]);
 
 			// Biome exits 0 on success, 1 on issues found
 			const output = result.stdout || "";
@@ -149,13 +215,7 @@ export class BiomeClient {
 		const content = fs.readFileSync(absolutePath, "utf-8");
 
 		try {
-			const result = safeSpawn(
-				"npx",
-				["@biomejs/biome", "format", "--write", absolutePath],
-				{
-					timeout: 15000,
-				},
-			);
+			const result = this.spawnBiome(["format", "--write", absolutePath]);
 
 			if (result.error) {
 				return { success: false, changed: false, error: result.error.message };
@@ -200,24 +260,9 @@ export class BiomeClient {
 		const content = fs.readFileSync(absolutePath, "utf-8");
 
 		try {
-			// First, count issues before fixing
-			const beforeDiags = this.checkFile(filePath);
-			const fixableCount = beforeDiags.filter((d) => d.fixable).length;
-
-			// Apply fixes
-			const result = safeSpawn(
-				"npx",
-				[
-					"@biomejs/biome",
-					"check",
-					"--write",
-					"--unsafe", // Apply unsafe fixes too
-					absolutePath,
-				],
-				{
-					timeout: 15000,
-				},
-			);
+			// Single invocation: check --write applies safe formatting + lint fixes.
+			// No pre-flight checkFile() needed — content diff tells us if anything changed.
+			const result = this.spawnBiome(["check", "--write", absolutePath]);
 
 			if (result.error) {
 				return {
@@ -232,12 +277,73 @@ export class BiomeClient {
 			const changed = content !== fixed;
 
 			if (changed) {
-				this.log(
-					`Fixed ${fixableCount} issue(s) in ${path.basename(filePath)}`,
-				);
+				this.log(`Fixed issue(s) in ${path.basename(filePath)}`);
 			}
 
-			return { success: true, changed, fixed: fixableCount };
+			return { success: true, changed, fixed: changed ? 1 : 0 };
+		} catch (err) {
+			return {
+				success: false,
+				changed: false,
+				fixed: 0,
+				error: err instanceof Error ? err.message : String(err),
+			};
+		}
+	}
+
+	/**
+	 * Async auto-fix variant for pipeline use (non-blocking spawn).
+	 */
+	async fixFileAsync(filePath: string): Promise<{
+		success: boolean;
+		changed: boolean;
+		fixed: number;
+		error?: string;
+	}> {
+		if (!(await this.ensureAvailable())) {
+			return {
+				success: false,
+				changed: false,
+				fixed: 0,
+				error: "Biome not available",
+			};
+		}
+
+		const absolutePath = path.resolve(filePath);
+		if (!fs.existsSync(absolutePath)) {
+			return {
+				success: false,
+				changed: false,
+				fixed: 0,
+				error: "File not found",
+			};
+		}
+
+		try {
+			const before = await fs.promises.readFile(absolutePath, "utf-8");
+			const result = await this.spawnBiomeAsync([
+				"check",
+				"--write",
+				absolutePath,
+			]);
+
+			if (result.error) {
+				return {
+					success: false,
+					changed: false,
+					fixed: 0,
+					error: result.error.message,
+				};
+			}
+
+			const after = await fs.promises.readFile(absolutePath, "utf-8");
+			const changed = before !== after;
+
+			if (changed) {
+				this.log(`Fixed issue(s) in ${path.basename(filePath)}`);
+			}
+
+			return { success: true, changed, fixed: changed ? 1 : 0 };
 		} catch (err) {
 			return {
 				success: false,
@@ -268,8 +374,8 @@ export class BiomeClient {
 
 		// Filter to existing files
 		const validFiles = filePaths
-			.map(f => path.resolve(f))
-			.filter(f => fs.existsSync(f));
+			.map((f) => path.resolve(f))
+			.filter((f) => fs.existsSync(f));
 
 		if (validFiles.length === 0) {
 			return { success: true, fixed: 0, changed: 0 };
@@ -280,19 +386,13 @@ export class BiomeClient {
 			let totalFixable = 0;
 			for (const file of validFiles) {
 				const diags = this.checkFile(file);
-				totalFixable += diags.filter(d => d.fixable).length;
+				totalFixable += diags.filter((d) => d.fixable).length;
 			}
 
 			// Run biome once on all files - much faster than npx per file
 			const result = safeSpawn(
 				"npx",
-				[
-					"@biomejs/biome",
-					"check",
-					"--write",
-					"--unsafe",
-					...validFiles,
-				],
+				["@biomejs/biome", "check", "--write", "--unsafe", ...validFiles],
 				{
 					timeout: 60000, // Longer timeout for batch
 				},
@@ -309,13 +409,15 @@ export class BiomeClient {
 
 			// Count how many files actually changed
 			let changedCount = 0;
-			for (const file of validFiles) {
+			for (const _file of validFiles) {
 				// We don't know exactly which files changed without re-reading,
 				// so we report total files processed
 				changedCount++;
 			}
 
-			this.log(`Fixed ${totalFixable} issue(s) in ${validFiles.length} file(s)`);
+			this.log(
+				`Fixed ${totalFixable} issue(s) in ${validFiles.length} file(s)`,
+			);
 
 			return { success: true, fixed: totalFixable, changed: changedCount };
 		} catch (err) {

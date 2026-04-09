@@ -1,4 +1,0 @@
-# TypeScript/JavaScript slop detection configuration
-# Detects verbose patterns, defensive over-checking, and ceremony
-ruleDirs:
-  - ./rules

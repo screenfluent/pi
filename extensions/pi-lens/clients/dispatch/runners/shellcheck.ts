@@ -20,11 +20,10 @@
  * Config: .shellcheckrc (optional, zero-config works)
  */
 
+import * as fs from "node:fs";
+import * as path from "node:path";
 import { safeSpawn } from "../../safe-spawn.ts";
-import {
-	createAvailabilityChecker,
-	createConfigFinder,
-} from "./utils/runner-helpers.ts";
+import { createAvailabilityChecker } from "./utils/runner-helpers.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
@@ -33,7 +32,22 @@ import type {
 } from "../types.ts";
 
 const shellcheck = createAvailabilityChecker("shellcheck", ".exe");
-const findShellcheckConfig = createConfigFinder(".shellcheckrc");
+
+function findShellcheckConfig(cwd: string): string | undefined {
+	const local = path.join(cwd, ".shellcheckrc");
+	if (fs.existsSync(local)) return local;
+
+	let current = path.resolve(cwd);
+	while (true) {
+		const candidate = path.join(current, ".shellcheckrc");
+		if (fs.existsSync(candidate)) return candidate;
+		const parent = path.dirname(current);
+		if (parent === current) break;
+		current = parent;
+	}
+
+	return undefined;
+}
 
 /**
  * Parse shellcheck JSON output
@@ -160,7 +174,7 @@ const shellcheckRunner: RunnerDefinition = {
 
 		args.push(ctx.filePath);
 
-		const result = safeSpawn(shellcheck.getCommand()!, args, {
+		const result = safeSpawn(shellcheck.getCommand(ctx.cwd || process.cwd())!, args, {
 			timeout: 15000,
 		});
 
@@ -177,10 +191,12 @@ const shellcheckRunner: RunnerDefinition = {
 			return { status: "succeeded", diagnostics: [], semantic: "none" };
 		}
 
+		const hasBlocking = diagnostics.some((d) => d.semantic === "blocking");
+
 		return {
-			status: "failed",
+			status: hasBlocking ? "failed" : "succeeded",
 			diagnostics,
-			semantic: "warning",
+			semantic: hasBlocking ? "blocking" : "warning",
 		};
 	},
 };

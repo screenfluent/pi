@@ -2,8 +2,10 @@
 # Detects debugger statements left in code
 id: debugger-statement
 name: Debugger Statement
-severity: warning
+severity: error
 category: debugging
+defect_class: safety
+inline_tier: blocking
 language: typescript
 
 message: "Debugger statement — remove before committing"

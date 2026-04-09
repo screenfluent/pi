@@ -4,6 +4,8 @@ id: console-statement
 name: Console Statement
 severity: warning
 category: debugging
+defect_class: safety
+inline_tier: warning
 language: typescript
 
 message: "{{METHOD}} — remove debug statements before committing"
@@ -17,8 +19,11 @@ query: |
   (call_expression
     function: (member_expression
       object: (identifier) @OBJ (#eq? @OBJ "console")
-      property: (property_identifier) @METHOD)
+      property: (property_identifier) @METHOD (#not-eq? @METHOD "dbg"))
     arguments: (arguments) @ARGS)
+
+# Skip matches inside test blocks — no-console-in-tests handles that case
+post_filter: not_in_test_block
 
 metavars:
   - OBJ

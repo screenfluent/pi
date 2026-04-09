@@ -12,16 +12,17 @@
 
 import { spawnSync } from "node:child_process";
 import { safeSpawn } from "../../safe-spawn.ts";
-import {
-	createConfigFinder,
-	isSgAvailable,
-} from "./utils/runner-helpers.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
 } from "../types.ts";
+import {
+	createConfigFinder,
+	getSgCommand,
+	isSgAvailable,
+} from "./utils/runner-helpers.ts";
 
 const findSlopConfig = createConfigFinder("python-slop-rules");
 
@@ -45,9 +46,18 @@ const pythonSlopRunner: RunnerDefinition = {
 		}
 
 		// Run ast-grep scan
-		const args = ["sg", "scan", "--config", configPath, "--json", ctx.filePath];
+		const { cmd: sgCmd, args: sgPre } = getSgCommand();
+		const args = [
+			...sgPre,
+			"sg",
+			"scan",
+			"--config",
+			configPath,
+			"--json",
+			ctx.filePath,
+		];
 
-		const result = safeSpawn("npx", args, {
+		const result = safeSpawn(sgCmd, args, {
 			timeout: 30000,
 		});
 

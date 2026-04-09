@@ -4,6 +4,8 @@ id: long-parameter-list
 name: Long Parameter List
 severity: warning
 category: complexity
+defect_class: safety
+inline_tier: review
 language: typescript
 
 message: "Function has {{PARAM_COUNT}} parameters — use object pattern"

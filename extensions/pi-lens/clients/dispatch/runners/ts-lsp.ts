@@ -7,8 +7,9 @@
  * @deprecated The built-in TypeScriptClient is deprecated. Use --lens-lsp for full LSP support.
  */
 
-import { TypeScriptClient } from "../../typescript-client.ts";
 import { getLSPService } from "../../lsp/index.ts";
+import { TypeScriptClient } from "../../typescript-client.ts";
+import { resolveRunnerPath } from "../runner-context.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
@@ -29,9 +30,14 @@ const tsLspRunner: RunnerDefinition = {
 			return { status: "skipped", diagnostics: [], semantic: "none" };
 		}
 
-		// Phase 3: Use LSP client if --lens-lsp flag is enabled
-		if (ctx.pi.getFlag("lens-lsp")) {
-			return runWithLSPClient(ctx);
+		// When --lens-lsp is active, prefer the unified lsp runner.
+		// But if LSP service isn't actually available for this file, keep ts fallback.
+		if (ctx.pi.getFlag("lens-lsp") && !ctx.pi.getFlag("no-lsp")) {
+			const lspService = getLSPService();
+			const spawned = await lspService.getClientForFile(ctx.filePath);
+			if (spawned) {
+				return { status: "skipped", diagnostics: [], semantic: "none" };
+			}
 		}
 
 		// DEPRECATED: Fall back to built-in TypeScriptClient
@@ -44,6 +50,7 @@ const tsLspRunner: RunnerDefinition = {
  * Run with new LSP client (Phase 3)
  */
 async function runWithLSPClient(ctx: DispatchContext): Promise<RunnerResult> {
+	const diagnosticPath = resolveRunnerPath(ctx.cwd, ctx.filePath);
 	const lspService = getLSPService();
 
 	// Check if we have LSP available for this file
@@ -60,11 +67,9 @@ async function runWithLSPClient(ctx: DispatchContext): Promise<RunnerResult> {
 
 	// Open file in LSP and get diagnostics
 	await lspService.openFile(ctx.filePath, content);
+	// getDiagnostics() internally calls waitForDiagnostics() with bus
+	// subscription + 150ms debounce + 3s timeout
 	const lspDiags = await lspService.getDiagnostics(ctx.filePath);
-
-	if (lspDiags.length === 0) {
-		return { status: "succeeded", diagnostics: [], semantic: "none" };
-	}
 
 	// Convert LSP diagnostics to our format
 	// Defensive: filter out malformed diagnostics that may lack range
@@ -73,10 +78,11 @@ async function runWithLSPClient(ctx: DispatchContext): Promise<RunnerResult> {
 		.map((d) => ({
 			id: `ts-lsp:${d.code ?? "unknown"}:${d.range.start.line}`,
 			message: d.message,
-			filePath: ctx.filePath,
+			filePath: diagnosticPath,
 			line: d.range.start.line + 1,
 			column: d.range.start.character + 1,
-			severity: d.severity === 1 ? "error" : d.severity === 2 ? "warning" : "info",
+			severity:
+				d.severity === 1 ? "error" : d.severity === 2 ? "warning" : "info",
 			semantic: d.severity === 1 ? "blocking" : "warning",
 			tool: "ts-lsp",
 			code: String(d.code ?? ""),
@@ -93,7 +99,10 @@ async function runWithLSPClient(ctx: DispatchContext): Promise<RunnerResult> {
  * Run with deprecated built-in TypeScriptClient
  * @deprecated Use runWithLSPClient instead
  */
-async function runWithBuiltinClient(ctx: DispatchContext): Promise<RunnerResult> {
+async function runWithBuiltinClient(
+	ctx: DispatchContext,
+): Promise<RunnerResult> {
+	const diagnosticPath = resolveRunnerPath(ctx.cwd, ctx.filePath);
 	const tsClient = new TypeScriptClient();
 
 	const content = readFileContent(ctx.filePath);
@@ -134,7 +143,7 @@ async function runWithBuiltinClient(ctx: DispatchContext): Promise<RunnerResult>
 			message: fixDescription
 				? `${d.message} [💡 ${fixDescription}]`
 				: d.message,
-			filePath: ctx.filePath,
+			filePath: diagnosticPath,
 			line: line + 1,
 			column: character + 1,
 			severity,

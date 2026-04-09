@@ -6,7 +6,7 @@ note: |
   Single-character variable names reduce readability.
   Exception: loop counters (i, j, k, n) and underscore (_) are acceptable.
 rule:
-  pattern: const $VAR = $VALUE
-constraints:
-  VAR:
+  kind: variable_declarator
+  has:
+    kind: identifier
     regex: "^[a-df-hm-z]$"  # Excludes i, j, k, n

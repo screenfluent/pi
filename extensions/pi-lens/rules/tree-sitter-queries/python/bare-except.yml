@@ -4,6 +4,8 @@ id: bare-except
 name: Bare Except Clause
 severity: error
 category: reliability
+defect_class: silent-error
+inline_tier: blocking
 language: python
 
 message: "Bare 'except:' clause — catches SystemExit, KeyboardInterrupt"

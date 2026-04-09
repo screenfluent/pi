@@ -1,7 +1,5 @@
-import * as childProcess from "node:child_process";
 import * as nodeFs from "node:fs";
 import * as path from "node:path";
-import { safeSpawn } from "../clients/safe-spawn.ts";
 import type {
 	ExtensionAPI,
 	ExtensionContext,
@@ -10,21 +8,34 @@ import type { ArchitectClient } from "../clients/architect-client.ts";
 import type { AstGrepClient } from "../clients/ast-grep-client.ts";
 import type { ComplexityClient } from "../clients/complexity-client.ts";
 import type { DependencyChecker } from "../clients/dependency-checker.ts";
+import {
+	EXCLUDED_DIRS,
+	getKnipIgnorePatterns,
+	isTestFile,
+} from "../clients/file-utils.ts";
 import type { JscpdClient } from "../clients/jscpd-client.ts";
 import type { KnipClient } from "../clients/knip-client.ts";
-import { EXCLUDED_DIRS, isTestFile } from "../clients/file-utils.ts";
+import { validateProductionReadiness } from "../clients/production-readiness.ts";
 import {
 	buildProjectIndex,
 	type ProjectIndex,
 } from "../clients/project-index.ts";
+import {
+	detectProjectMetadata,
+	formatProjectMetadata,
+	getAvailableCommands,
+} from "../clients/project-metadata.ts";
 import { RunnerTracker } from "../clients/runner-tracker.ts";
+import { safeSpawn } from "../clients/safe-spawn.ts";
 import { getSourceFiles } from "../clients/scan-utils.ts";
+import {
+	collectSourceFiles,
+	getFilterStats,
+} from "../clients/source-filter.ts";
 import { calculateSimilarity } from "../clients/state-matrix.ts";
 import type { TodoScanner } from "../clients/todo-scanner.ts";
-import type { TypeCoverageClient } from "../clients/type-coverage-client.ts";
-import { detectProjectMetadata, formatProjectMetadata, getAvailableCommands } from "../clients/project-metadata.ts";
-import { validateProductionReadiness, formatReadinessResult } from "../clients/production-readiness.ts";
 import { TreeSitterClient } from "../clients/tree-sitter-client.ts";
+import type { TypeCoverageClient } from "../clients/type-coverage-client.ts";
 
 const getExtensionDir = () => {
 	if (typeof __dirname !== "undefined") {
@@ -42,7 +53,7 @@ function shouldIncludeFile(filePath: string): boolean {
 }
 
 /** Standard test file glob exclusions for CLI tools */
-const TEST_FILE_EXCLUDES = [
+const _TEST_FILE_EXCLUDES = [
 	"!**/*.test.ts",
 	"!**/*.test.tsx",
 	"!**/*.test.ts",
@@ -75,24 +86,56 @@ export async function handleBooboo(
 	},
 	pi: ExtensionAPI,
 ) {
-	const targetPath = args.trim() || ctx.cwd || process.cwd();
-	
+	const requestedPath = args.trim() || ctx.cwd || process.cwd();
+	const targetPath = path.resolve(requestedPath);
+	const reviewRoot = targetPath;
+
+	const categoryKey = (name: string) =>
+		name.toLowerCase().replace(/\s+/g, "-");
+
 	// Detect project metadata for richer reporting
 	const projectMeta = detectProjectMetadata(targetPath);
-	const metaDisplay = formatProjectMetadata(projectMeta);
-	
-	ctx.ui.notify(`🔍 Running full codebase review...\n${metaDisplay}`, "info");
+	const _metaDisplay = formatProjectMetadata(projectMeta);
+
+	// No noisy notification at start - just run the review silently
 
 	// Detect project type once for all runners
-	const isTsProject = nodeFs.existsSync(
-		path.join(targetPath, "tsconfig.json"),
-	);
-	
+	const isTsProject = nodeFs.existsSync(path.join(targetPath, "tsconfig.json"));
+
+	// Collect source files once with unified artifact filtering
+	// This ensures all scanners work on the same deduplicated file set
+	const sourceFiles = collectSourceFiles(targetPath);
+	const allFiles = collectSourceFiles(targetPath, {
+		extensions: [
+			".ts",
+			".tsx",
+			".ts",
+			".jsx",
+			".mjs",
+			".cjs",
+			".py",
+			".go",
+			".rs",
+			".rb",
+		],
+	});
+	const filterStats = getFilterStats(allFiles, sourceFiles);
+
+	if (filterStats.skipped > 0) {
+		const byTypeStr = Object.entries(filterStats.byType)
+			.map(([ext, count]) => `${count} ${ext}`)
+			.join(", ");
+		// biome-ignore lint/suspicious/noConsole: CLI output
+		console.log(
+			`[lens-booboo] Filtered ${filterStats.skipped} build artifacts (${byTypeStr}), scanning ${filterStats.kept} source files`,
+		);
+	}
+
 	// Get available commands for the project
 	const availableCommands = getAvailableCommands(projectMeta);
 
 	// Load false positives from fix session to filter them out
-	const sessionFile = path.join(process.cwd(), ".pi-lens", "fix-session.json");
+	const sessionFile = path.join(reviewRoot, ".pi-lens", "fix-session.json");
 	let falsePositives: string[] = [];
 	try {
 		const sessionData = JSON.parse(
@@ -127,7 +170,7 @@ export async function handleBooboo(
 	}[] = [];
 	const fullReport: string[] = [];
 	const timestamp = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-	const reviewDir = path.join(process.cwd(), ".pi-lens", "reviews");
+	const reviewDir = path.join(reviewRoot, ".pi-lens", "reviews");
 
 	// Initialize runner tracker (no per-runner progress to avoid UI overwriting)
 	const tracker = new RunnerTracker();
@@ -138,7 +181,7 @@ export async function handleBooboo(
 
 	// Runner 1: Design smells via ast-grep
 	await tracker.run("ast-grep (design smells)", async () => {
-		if (!clients.astGrep.isAvailable()) {
+		if (!(await clients.astGrep.ensureAvailable())) {
 			return { findings: 0, status: "skipped" };
 		}
 
@@ -237,7 +280,7 @@ export async function handleBooboo(
 				}
 
 				const filteredIssues = issues.filter(
-					(issue) => !isFalsePositive("ast_issues", issue.file, issue.line),
+					(issue) => !isFalsePositive(categoryKey("ast-grep"), issue.file, issue.line),
 				);
 
 				if (filteredIssues.length > 0) {
@@ -260,8 +303,7 @@ export async function handleBooboo(
 					for (const issue of filteredIssues.slice(0, 5)) {
 						if (seenRules.has(issue.rule)) continue;
 						seenRules.add(issue.rule);
-						const ruleDesc =
-							clients.astGrep.getRuleDescription?.(issue.rule);
+						const ruleDesc = clients.astGrep.getRuleDescription?.(issue.rule);
 						if (ruleDesc?.note || ruleDesc?.fix) {
 							fullSection += `**${issue.rule}:**\n`;
 							if (ruleDesc.note) fullSection += `${ruleDesc.note}\n\n`;
@@ -283,7 +325,7 @@ export async function handleBooboo(
 
 	// Runner 2: Similar functions
 	await tracker.run("ast-grep (similar functions)", async () => {
-		if (!clients.astGrep.isAvailable()) {
+		if (!(await clients.astGrep.ensureAvailable())) {
 			return { findings: 0, status: "skipped" };
 		}
 
@@ -366,7 +408,7 @@ export async function handleBooboo(
 				});
 
 				let fullSection = `## Semantic Duplicates (Amain Algorithm)\n\n`;
-				fullSection += `**${topPairs.length} pair(s) with >75% semantic similarity**\n\n`;
+				fullSection += `**${topPairs.length} pair(s) with >=${(SEMANTIC_SIMILARITY_THRESHOLD * 100).toFixed(0)}% semantic similarity**\n\n`;
 				fullSection +=
 					"Functions with different names/variables but similar logic structures.\n\n";
 
@@ -390,7 +432,8 @@ export async function handleBooboo(
 		const results: import("../clients/complexity-client.ts").FileComplexity[] =
 			[];
 		const aiSlopIssues: string[] = [];
-		const files = getSourceFiles(targetPath, isTsProject).filter(shouldIncludeFile);
+		// Use pre-collected sourceFiles (already filtered for artifacts)
+		const files = sourceFiles.filter(shouldIncludeFile);
 
 		for (const fullPath of files) {
 			if (clients.complexity.isSupportedFile(fullPath)) {
@@ -414,13 +457,14 @@ export async function handleBooboo(
 				results.reduce((a, b) => a + b.maintainabilityIndex, 0) /
 				results.length;
 			const avgCognitive =
-				results.reduce((a, b) => a + b.cognitiveComplexity, 0) /
-				results.length;
+				results.reduce((a, b) => a + b.cognitiveComplexity, 0) / results.length;
 			const avgCyclomatic =
 				results.reduce((a, b) => a + b.cyclomaticComplexity, 0) /
 				results.length;
 			const maxNesting = Math.max(...results.map((r) => r.maxNestingDepth));
-			const maxCognitive = Math.max(...results.map((r) => r.cognitiveComplexity));
+			const maxCognitive = Math.max(
+				...results.map((r) => r.cognitiveComplexity),
+			);
 			const minMI = Math.min(...results.map((r) => r.maintainabilityIndex));
 
 			// Only flag files with EXTREME issues (tuned to reduce false positives)
@@ -549,32 +593,67 @@ export async function handleBooboo(
 
 		const languageId = isTsProject ? "typescript" : "javascript";
 		let findings = 0;
-		const structuralIssues: Array<{file: string; line: number; pattern: string; severity: string; fixable: boolean; note?: string}> = [];
+		const structuralIssues: Array<{
+			file: string;
+			line: number;
+			pattern: string;
+			severity: string;
+			fixable: boolean;
+			note?: string;
+		}> = [];
+		const seenStructuralIssueKeys = new Set<string>();
+
+		const normalizeMatchedText = (text: string): string =>
+			text.replace(/\s+/g, " ").replace(/["'`][^"'`]{0,80}["'`]/g, "STR").trim();
+
+		const pushStructuralIssue = (
+			match: { file: string; line: number; matchedText: string },
+			issue: {
+				pattern: string;
+				severity: string;
+				fixable: boolean;
+				note?: string;
+			},
+		) => {
+			const scopeKey = normalizeMatchedText(match.matchedText || "").slice(0, 260);
+			const key = `${match.file}:${issue.pattern}:${scopeKey}`;
+			if (seenStructuralIssueKeys.has(key)) return;
+			seenStructuralIssueKeys.add(key);
+
+			structuralIssues.push({
+				file: match.file,
+				line: match.line,
+				pattern: issue.pattern,
+				severity: issue.severity,
+				fixable: issue.fixable,
+				note: issue.note,
+			});
+			findings++;
+		};
 
 		// Only run basic patterns if ast-grep is NOT available (avoid duplication)
-		const astGrepAvailable = clients.astGrep.isAvailable();
-		
+		const astGrepAvailable = await clients.astGrep.ensureAvailable();
+
 		if (!astGrepAvailable) {
 			// Fallback: console.log detection (ast-grep normally handles this)
 			const consoleLogs = await client.structuralSearch(
 				"console.$METHOD($MSG)",
 				languageId,
 				targetPath,
-				{ maxResults: 30, fileFilter: shouldIncludeFile }
+				{ maxResults: 30, fileFilter: shouldIncludeFile },
 			);
 
 			for (const match of consoleLogs) {
 				const method = match.captures.METHOD || "log";
 				if (["log", "debug", "info", "warn"].includes(method)) {
-					structuralIssues.push({
-						file: match.file,
-						line: match.line,
+					pushStructuralIssue(match, {
 						pattern: `console.${method}()`,
 						severity: "🟡",
 						fixable: true,
-						note: astGrepAvailable ? undefined : "(fallback - ast-grep not available)"
+						note: astGrepAvailable
+							? undefined
+							: "(fallback - ast-grep not available)",
 					});
-					findings++;
 				}
 			}
 		}
@@ -585,19 +664,16 @@ export async function handleBooboo(
 			"$PROMISE.then($$$HANDLER1).catch($$$HANDLER2).then($$$HANDLER3)",
 			languageId,
 			targetPath,
-			{ maxResults: 20, fileFilter: shouldIncludeFile }
+			{ maxResults: 20, fileFilter: shouldIncludeFile },
 		);
 
 		for (const match of promiseChains) {
-			structuralIssues.push({
-				file: match.file,
-				line: match.line,
+			pushStructuralIssue(match, {
 				pattern: "deep promise chain (3+ levels)",
 				severity: "🟡",
 				fixable: true,
-				note: "Consider converting to async/await for readability"
+				note: "Consider converting to async/await for readability",
 			});
-			findings++;
 		}
 
 		// Pattern 2: Callback pyramids (error-first callbacks nested 3+ levels)
@@ -605,26 +681,23 @@ export async function handleBooboo(
 			"$FUNC($$$ARGS, ($ERR, $$$PARAMS) => { $$$BODY })",
 			languageId,
 			targetPath,
-			{ maxResults: 20, fileFilter: shouldIncludeFile }
+			{ maxResults: 20, fileFilter: shouldIncludeFile },
 		);
 
 		// Filter for actual callback nesting (error parameter pattern)
-		const nestedCallbacks = callbackPyramids.filter(m => {
+		const nestedCallbacks = callbackPyramids.filter((m) => {
 			const body = m.captures.BODY || "";
 			// Check if body contains another callback
 			return body.includes("(") && body.includes("=>");
 		});
 
 		for (const match of nestedCallbacks.slice(0, 10)) {
-			structuralIssues.push({
-				file: match.file,
-				line: match.line,
+			pushStructuralIssue(match, {
 				pattern: "callback pyramid (error-first pattern)",
 				severity: "🟡",
 				fixable: true,
-				note: "Consider promisify + async/await"
+				note: "Consider promisify + async/await",
 			});
-			findings++;
 		}
 
 		// Pattern 3: Mixed async patterns (async function + .then() + callback)
@@ -633,7 +706,7 @@ export async function handleBooboo(
 			"async function $NAME($$$PARAMS) { $BODY }",
 			languageId,
 			targetPath,
-			{ maxResults: 50, fileFilter: shouldIncludeFile }
+			{ maxResults: 50, fileFilter: shouldIncludeFile },
 		);
 
 		for (const match of asyncFunctions) {
@@ -641,17 +714,14 @@ export async function handleBooboo(
 			// Check if async function uses both await and .then()
 			const hasAwait = body.includes("await");
 			const hasThen = body.match(/\.\s*then\s*\(/);
-			
+
 			if (hasAwait && hasThen) {
-				structuralIssues.push({
-					file: match.file,
-					line: match.line,
+				pushStructuralIssue(match, {
 					pattern: "mixed async/await + promise chains",
 					severity: "🟡",
 					fixable: true,
-					note: "Use consistent async style (prefer await)"
+					note: "Use consistent async style (prefer await)",
 				});
-				findings++;
 			}
 		}
 
@@ -660,25 +730,24 @@ export async function handleBooboo(
 			"if ($COND1) { if ($COND2) { if ($COND3) { $$$BODY } } }",
 			languageId,
 			targetPath,
-			{ maxResults: 15, fileFilter: shouldIncludeFile }
+			{ maxResults: 15, fileFilter: shouldIncludeFile },
 		);
 
 		for (const match of deepIfs) {
-			structuralIssues.push({
-				file: match.file,
-				line: match.line,
+			pushStructuralIssue(match, {
 				pattern: "deeply nested conditionals (3+ levels)",
 				severity: "🟡",
 				fixable: true,
-				note: "Consider early returns or guard clauses"
+				note: "Consider early returns or guard clauses",
 			});
-			findings++;
 		}
 
 		// Add to summary if issues found
 		if (findings > 0) {
 			summaryItems.push({
-				category: astGrepAvailable ? "Advanced Structural" : "Structural Patterns (fallback)",
+				category: astGrepAvailable
+					? "Advanced Structural"
+					: "Structural Patterns (fallback)",
 				count: findings,
 				severity: "🟡",
 				fixable: true,
@@ -691,7 +760,7 @@ export async function handleBooboo(
 				fullSection += ` *(ast-grep not available - showing basic + advanced patterns)*`;
 			}
 			fullSection += `\n\n`;
-			
+
 			// Group by pattern type
 			const byPattern: Record<string, typeof structuralIssues> = {};
 			for (const issue of structuralIssues) {
@@ -717,7 +786,7 @@ export async function handleBooboo(
 		return { findings, status: "done" };
 	});
 
-	// Runner 5: TODOs
+	// Runner 5: TODOs (cache test edit)
 	await tracker.run("TODO scanner", async () => {
 		const todoResult = clients.todo.scanDirectory(targetPath);
 
@@ -745,23 +814,11 @@ export async function handleBooboo(
 
 	// Runner 6: Dead code
 	await tracker.run("dead code (Knip)", async () => {
-		if (!clients.knip.isAvailable()) {
+		if (!(await clients.knip.ensureAvailable())) {
 			return { findings: 0, status: "skipped" };
 		}
 
-		// Exclude test files from Knip analysis
-		const knipResult = clients.knip.analyze(targetPath, [
-			"**/*.test.ts",
-			"**/*.test.tsx",
-			"**/*.test.ts",
-			"**/*.spec.ts",
-			"**/*.spec.tsx",
-			"**/*.spec.ts",
-			"**/*.poc.test.ts",
-			"**/*.poc.test.tsx",
-			"**/__tests__/**",
-			"**/tests/**",
-		]);
+		const knipResult = clients.knip.analyze(targetPath, getKnipIgnorePatterns());
 
 		// Filter out test file issues as additional safeguard
 		const filteredIssues = knipResult.issues.filter(
@@ -778,8 +835,7 @@ export async function handleBooboo(
 
 			let fullSection = `## Dead Code (Knip)\n\n`;
 			fullSection += `**${filteredIssues.length} issue(s) found**\n\n`;
-			fullSection +=
-				"| Type | Name | File |\n|------|------|------|\n";
+			fullSection += "| Type | Name | File |\n|------|------|------|\n";
 			for (const issue of filteredIssues) {
 				fullSection += `| ${issue.type} | ${issue.name} | ${issue.file ?? ""} |\n`;
 			}
@@ -792,7 +848,7 @@ export async function handleBooboo(
 
 	// Runner 7: Duplicate code
 	await tracker.run("duplicate code (jscpd)", async () => {
-		if (!clients.jscpd.isAvailable()) {
+		if (!(await clients.jscpd.ensureAvailable())) {
 			return { findings: 0, status: "skipped" };
 		}
 
@@ -836,8 +892,8 @@ export async function handleBooboo(
 
 		if (tcResult.percentage < 100) {
 			// Filter out test file locations using centralized exclusion
-			const filteredLocations = tcResult.untypedLocations.filter(
-				(u) => shouldIncludeFile(u.file),
+			const filteredLocations = tcResult.untypedLocations.filter((u) =>
+				shouldIncludeFile(u.file),
 			);
 
 			const filesWithLowCoverage = new Set(
@@ -854,6 +910,8 @@ export async function handleBooboo(
 			});
 
 			let fullSection = `## Type Coverage\n\n**${tcResult.percentage.toFixed(1)}% typed** (${tcResult.typed}/${tcResult.total} identifiers)\n\n`;
+			fullSection +=
+				"Type coverage highlights identifiers that resolve to `any` (implicit or explicit). Inferred non-`any` types are treated as typed.\n\n";
 			const byFile: Record<string, number> = {};
 			for (const u of filteredLocations) {
 				byFile[u.file] = (byFile[u.file] || 0) + 1;
@@ -864,7 +922,7 @@ export async function handleBooboo(
 				.slice(0, 10);
 
 			if (sortedFiles.length > 0) {
-				fullSection += `### Top Files by Untyped Count\n\n| File | Untyped Count |\n|------|---------------|\n`;
+				fullSection += `### Top Files by Any-Typed Identifier Count\n\n| File | Any-Typed Count |\n|------|-----------------|\n`;
 				for (const [file, count] of sortedFiles) {
 					fullSection += `| ${file} | ${count} |\n`;
 				}
@@ -883,7 +941,7 @@ export async function handleBooboo(
 
 	// Runner 9: Circular deps
 	await tracker.run("circular deps (Madge)", async () => {
-		if (pi.getFlag("no-madge") || !clients.depChecker.isAvailable()) {
+		if (pi.getFlag("no-madge") || !(await clients.depChecker.ensureAvailable())) {
 			return { findings: 0, status: "skipped" };
 		}
 
@@ -916,48 +974,27 @@ export async function handleBooboo(
 
 	// Runner 10: Arch rules
 	await tracker.run("architectural rules", async () => {
-		if (!clients.architect.hasConfig()) {
-			clients.architect.loadConfig(process.cwd());
-		}
+		// Always refresh config for the requested target path.
+		clients.architect.loadConfig(targetPath);
 
 		if (!clients.architect.hasConfig()) {
 			return { findings: 0, status: "skipped" };
 		}
 
-		// Detect TypeScript project - skip .js files in TS projects (compiled artifacts)
-		const isTsProject = nodeFs.existsSync(
-			path.join(targetPath, "tsconfig.json"),
-		);
-
 		const archViolations: Array<{ file: string; message: string }> = [];
-		const archScanDir = (dir: string) => {
-			for (const entry of nodeFs.readdirSync(dir, { withFileTypes: true })) {
-				const full = path.join(dir, entry.name);
-				if (entry.isDirectory()) {
-					if (EXCLUDED_DIRS.includes(entry.name)) continue;
-					archScanDir(full);
-				} else if (/\.(ts|tsx|js|jsx|py|go|rs)$/.test(entry.name)) {
-					if (isTestFile(full)) continue;
-					// In TS projects, skip .js files (they're compiled artifacts)
-					if (
-						isTsProject &&
-						/\.(js|jsx)$/.test(entry.name) &&
-						nodeFs.existsSync(full.replace(/\.(js|jsx)$/, ".ts"))
-					)
-						continue;
-					const relPath = path.relative(targetPath, full).replace(/\\/g, "/");
-					const content = nodeFs.readFileSync(full, "utf-8");
-					const lineCount = content.split("\n").length;
-					for (const v of clients.architect.checkFile(relPath, content)) {
-						archViolations.push({ file: relPath, message: v.message });
-					}
-					const sizeV = clients.architect.checkFileSize(relPath, lineCount);
-					if (sizeV)
-						archViolations.push({ file: relPath, message: sizeV.message });
-				}
+
+		// Use pre-collected sourceFiles (already filtered for artifacts and exclusions)
+		for (const fullPath of sourceFiles) {
+			if (isTestFile(fullPath)) continue;
+			const relPath = path.relative(targetPath, fullPath).replace(/\\/g, "/");
+			const content = nodeFs.readFileSync(fullPath, "utf-8");
+			const lineCount = content.split("\n").length;
+			for (const v of clients.architect.checkFile(relPath, content)) {
+				archViolations.push({ file: relPath, message: v.message });
 			}
-		};
-		archScanDir(targetPath);
+			const sizeV = clients.architect.checkFileSize(relPath, lineCount);
+			if (sizeV) archViolations.push({ file: relPath, message: sizeV.message });
+		}
 
 		if (archViolations.length > 0) {
 			summaryItems.push({
@@ -981,17 +1018,24 @@ export async function handleBooboo(
 	// Runner 11: Production Readiness (inspired by pi-validate)
 	await tracker.run("production readiness", async () => {
 		const readiness = validateProductionReadiness(targetPath);
-		
+
 		// Add to summary if not perfect
 		if (readiness.overallScore < 100) {
-			const severity = readiness.grade === "A" ? "🟢" :
-			                 readiness.grade === "B" ? "🟢" :
-			                 readiness.grade === "C" ? "🟡" : "🟠";
-			
+			const severity =
+				readiness.grade === "A"
+					? "🟢"
+					: readiness.grade === "B"
+						? "🟢"
+						: readiness.grade === "C"
+							? "🟡"
+							: "🟠";
+
 			// Count issues across all categories
-			const totalIssues_ = Object.values(readiness.categories)
-				.reduce((sum, cat) => sum + cat.issues.length, 0);
-			
+			const totalIssues_ = Object.values(readiness.categories).reduce(
+				(sum, cat) => sum + cat.issues.length,
+				0,
+			);
+
 			if (totalIssues_ > 0) {
 				summaryItems.push({
 					category: "Production Readiness",
@@ -1005,7 +1049,7 @@ export async function handleBooboo(
 		// Add to full report
 		let section = `## Production Readiness\n\n`;
 		section += `**Score:** ${readiness.overallScore}/100 **Grade:** ${readiness.grade}\n\n`;
-		
+
 		for (const [key, cat] of Object.entries(readiness.categories)) {
 			section += `### ${key.charAt(0).toUpperCase() + key.slice(1)} (${cat.score}/100)\n\n`;
 			if (cat.details.length > 0) {
@@ -1023,7 +1067,7 @@ export async function handleBooboo(
 			}
 			section += "\n";
 		}
-		
+
 		fullReport.push(section);
 
 		// Add metadata to report
@@ -1038,17 +1082,19 @@ export async function handleBooboo(
 				}
 			}
 		}
-		
-		return { 
-			findings: Object.values(readiness.categories)
-				.reduce((sum, cat) => sum + cat.issues.length, 0), 
-			status: "done" 
+
+		return {
+			findings: Object.values(readiness.categories).reduce(
+				(sum, cat) => sum + cat.issues.length,
+				0,
+			),
+			status: "done",
 		};
 	});
 
 	// --- Create structured JSON report ---
 	nodeFs.mkdirSync(reviewDir, { recursive: true });
-	const projectName = path.basename(process.cwd());
+	const projectName = path.basename(reviewRoot);
 
 	const totalIssues = summaryItems.reduce((sum, s) => sum + s.count, 0);
 	const fixableCount = summaryItems
@@ -1078,11 +1124,10 @@ export async function handleBooboo(
 			runners: runnerSummary,
 			totalTime: formatElapsed(
 				runnerSummary.reduce((sum, r) => {
-					const ms =
-						r.time.endsWith("ms")
-							? parseInt(r.time)
-							: parseFloat(r.time) * 1000;
-					return sum + (isNaN(ms) ? 0 : ms);
+					const ms = r.time.endsWith("ms")
+						? parseInt(r.time, 10)
+						: parseFloat(r.time) * 1000;
+					return sum + (Number.isNaN(ms) ? 0 : ms);
 				}, 0),
 			),
 		},
@@ -1111,7 +1156,7 @@ export async function handleBooboo(
 					count: item.count,
 					severity: item.severity,
 					fixable: item.fixable,
-					falsePositivePrefix: `${item.category.toLowerCase().replace(/\s+/g, "-")}:`,
+					falsePositivePrefix: `${categoryKey(item.category)}:`,
 				};
 				return acc;
 			},
@@ -1126,15 +1171,14 @@ export async function handleBooboo(
 			>,
 		),
 		howToMarkFalsePositive: {
-			command: "/lens-booboo-fix --false-positive",
-			format: "<category>:<file>[:<line>]",
+			command: "Ignore via AGENTS.md rules or suppress comments",
+			format: "Add to .claude/rules or use biome/oxlint ignore comments",
 			examples: [
-				"similarity:clients/runners/utils.ts:49",
-				"dead-code:clients/subprocess-client.ts",
-				"unused:architect-client.ts:ArchitectRule",
+				"// biome-ignore lint/suspicious/noConsole: intentional debug",
+				"// oxlint-disable-next-line no-console",
 			],
 		},
-		sessionFile: path.join(process.cwd(), ".pi-lens", "fix-session.json"),
+		sessionFile: path.join(reviewRoot, ".pi-lens", "fix-session.json"),
 		details: fullReport.join("\n"),
 	};
 
@@ -1142,14 +1186,17 @@ export async function handleBooboo(
 	nodeFs.writeFileSync(jsonPath, JSON.stringify(jsonReport, null, 2), "utf-8");
 
 	// --- Create markdown report ---
-	
+
 	// Build project info section
 	let projectSection = `## Project Info\n\n**Type:** ${projectMeta.type}`;
 	if (projectMeta.name) projectSection += ` | **Name:** ${projectMeta.name}`;
-	if (projectMeta.version) projectSection += ` | **Version:** ${projectMeta.version}`;
-	if (projectMeta.packageManager) projectSection += `\n**Package Manager:** ${projectMeta.packageManager}`;
-	if (projectMeta.languages.length > 0) projectSection += `\n**Languages:** ${projectMeta.languages.join(", ")}`;
-	
+	if (projectMeta.version)
+		projectSection += ` | **Version:** ${projectMeta.version}`;
+	if (projectMeta.packageManager)
+		projectSection += `\n**Package Manager:** ${projectMeta.packageManager}`;
+	if (projectMeta.languages.length > 0)
+		projectSection += `\n**Languages:** ${projectMeta.languages.join(", ")}`;
+
 	// Tools
 	const tools: string[] = [];
 	if (projectMeta.testFramework) tools.push(`🧪 ${projectMeta.testFramework}`);
@@ -1157,7 +1204,7 @@ export async function handleBooboo(
 	if (projectMeta.linter) tools.push(`🔍 ${projectMeta.linter}`);
 	if (projectMeta.formatter) tools.push(`✨ ${projectMeta.formatter}`);
 	if (tools.length > 0) projectSection += `\n**Tools:** ${tools.join(" | ")}`;
-	
+
 	// Available commands
 	if (availableCommands.length > 0) {
 		projectSection += `\n\n### Available Commands\n\n| Action | Command |\n|--------|---------|`;
@@ -1165,7 +1212,7 @@ export async function handleBooboo(
 			projectSection += `\n| ${cmd.action} | \`${cmd.command}\` |`;
 		}
 	}
-	
+
 	const mdReport = `# Code Review: ${projectName}
 
 **Scanned:** ${jsonReport.meta.timestamp}
@@ -1206,11 +1253,8 @@ ${fullReport.join("\n")}`;
 		const summaryLines = [
 			`📊 Code Review: ${totalIssues} issues`,
 			...runnerLines,
-			`  🔧 ${fixableCount} fixable | 🏗️ ${refactorNeeded} refactor`,
 			`  ⏱️  Total: ${jsonReport.meta.totalTime}`,
-			`📄 JSON: ${jsonPath}`,
 			`📄 MD: ${mdPath}`,
-			`🚀 Run \`/lens-booboo-fix\` to auto-fix`,
 		];
 
 		ctx.ui.notify(summaryLines.join("\n"), "info");
@@ -1226,6 +1270,10 @@ interface SimilarPair {
 	func2: string;
 	similarity: number;
 }
+
+const SEMANTIC_SIMILARITY_THRESHOLD = 0.96;
+const MIN_SIMILARITY_TRANSITIONS = 40;
+const MAX_TRANSITION_RATIO = 1.8;
 
 /**
  * Find top N most similar function pairs in the project index
@@ -1247,9 +1295,24 @@ function findTopSimilarPairs(
 			// Skip if same file (we want cross-file duplicates)
 			if (entry1.filePath === entry2.filePath) continue;
 
+			// Skip low-signal functions where matrix noise dominates.
+			if (
+				entry1.transitionCount < MIN_SIMILARITY_TRANSITIONS ||
+				entry2.transitionCount < MIN_SIMILARITY_TRANSITIONS
+			) {
+				continue;
+			}
+
+			// Skip pairs with very different complexity/size; these are often
+			// boilerplate-wrapper false positives (shared try/catch/logging shell).
+			const maxTransitions = Math.max(entry1.transitionCount, entry2.transitionCount);
+			const minTransitions = Math.min(entry1.transitionCount, entry2.transitionCount);
+			if (minTransitions <= 0) continue;
+			if (maxTransitions / minTransitions > MAX_TRANSITION_RATIO) continue;
+
 			const similarity = calculateSimilarity(entry1.matrix, entry2.matrix);
 
-			if (similarity >= 0.75) {
+			if (similarity >= SEMANTIC_SIMILARITY_THRESHOLD) {
 				// Canonical pair key (sorted to avoid duplicates)
 				const pairKey = [entry1.id, entry2.id].sort().join("::");
 				if (seenPairs.has(pairKey)) continue;

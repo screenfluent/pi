@@ -9,7 +9,7 @@
  * Docs: https://knip.dev/
  */
 
-import { spawnSync } from "node:child_process";
+import * as fs from "node:fs";
 import * as path from "node:path";
 import { safeSpawn } from "./safe-spawn.ts";
 
@@ -45,8 +45,60 @@ export class KnipClient {
 			: () => {};
 	}
 
+	private resolveProjectRoot(startDir: string): string {
+		let current = path.resolve(startDir);
+		while (true) {
+			const markers = [
+				"package.json",
+				"knip.json",
+				"knip.ts",
+				"knip.config.ts",
+				"knip.config.ts",
+			];
+			if (markers.some((m) => fs.existsSync(path.join(current, m)))) {
+				return current;
+			}
+			const parent = path.dirname(current);
+			if (parent === current) return path.resolve(startDir);
+			current = parent;
+		}
+	}
+
 	/**
-	 * Check if knip CLI is available
+	 * Check if knip CLI is available, auto-install if not
+	 */
+	async ensureAvailable(): Promise<boolean> {
+		// Fast path: already checked
+		if (this.knipAvailable !== null) return this.knipAvailable;
+
+		// Check if available in PATH (fast)
+		const pathResult = safeSpawn("knip", ["--version"], {
+			timeout: 5000,
+		});
+		if (!pathResult.error && pathResult.status === 0) {
+			this.knipAvailable = true;
+			this.log("Knip found in PATH");
+			return true;
+		}
+
+		// Auto-install via pi-lens installer
+		this.log("Knip not found, attempting auto-install...");
+		const { ensureTool } = await import("./installer/index.ts");
+		const installedPath = await ensureTool("knip");
+
+		if (installedPath) {
+			this.knipAvailable = true;
+			this.log(`Knip auto-installed: ${installedPath}`);
+			return true;
+		}
+
+		this.knipAvailable = false;
+		return false;
+	}
+
+	/**
+	 * Check if knip CLI is available (legacy sync method)
+	 * Prefer ensureAvailable() for auto-install behavior
 	 */
 	isAvailable(): boolean {
 		if (this.knipAvailable !== null) return this.knipAvailable;
@@ -79,7 +131,7 @@ export class KnipClient {
 			};
 		}
 
-		const targetDir = cwd || process.cwd();
+		const targetDir = this.resolveProjectRoot(cwd || process.cwd());
 
 		try {
 			const args = [
@@ -134,7 +186,7 @@ export class KnipClient {
 	 * Find unused exports in a specific file
 	 */
 	findUnusedExports(filePath: string): string[] {
-		const result = this.analyze(path.dirname(filePath));
+		const result = this.analyze(this.resolveProjectRoot(path.dirname(filePath)));
 		const basename = path.basename(filePath);
 
 		return result.unusedExports
@@ -202,8 +254,20 @@ export class KnipClient {
 			const unusedDeps: KnipIssue[] = [];
 			const unlistedDeps: KnipIssue[] = [];
 
-			// Knip JSON format: { issues: [ { file, exports:[], files:[], dependencies:[], ... } ] }
-			const fileEntries: any[] = data.issues ?? [];
+			const addIssue = (issue: KnipIssue) => {
+				issues.push(issue);
+				if (issue.type === "export") unusedExports.push(issue);
+				if (issue.type === "file") unusedFiles.push(issue);
+				if (issue.type === "dependency" || issue.type === "devDependency") {
+					unusedDeps.push(issue);
+				}
+				if (issue.type === "unlisted" || issue.type === "bin") {
+					unlistedDeps.push(issue);
+				}
+			};
+
+			// Knip JSON format (grouped): { issues: [ { file, exports:[], files:[], dependencies:[], ... } ] }
+			const fileEntries: any[] = Array.isArray(data?.issues) ? data.issues : [];
 
 			for (const entry of fileEntries) {
 				const file: string = entry.file ?? "";
@@ -211,18 +275,16 @@ export class KnipClient {
 				const push = (
 					arr: any[],
 					type: KnipIssue["type"],
-					target: KnipIssue[],
+					_target: KnipIssue[],
 				) => {
 					for (const item of arr) {
-						const issue: KnipIssue = {
+						addIssue({
 							type,
 							name: item.name ?? item.symbol ?? String(item),
 							file,
 							line: item.line,
 							package: item.package,
-						};
-						issues.push(issue);
-						target.push(issue);
+						});
 					}
 				};
 
@@ -232,6 +294,39 @@ export class KnipClient {
 				push(entry.dependencies ?? [], "dependency", unusedDeps);
 				push(entry.devDependencies ?? [], "devDependency", unusedDeps);
 				push(entry.unlisted ?? [], "unlisted", unlistedDeps);
+				push(entry.binaries ?? [], "bin", unlistedDeps);
+			}
+
+			// Fallback format: flat list of issue objects
+			if (issues.length === 0 && Array.isArray(data)) {
+				for (const item of data) {
+					if (!item || typeof item !== "object") continue;
+					const rawType = String(
+						item.type ?? item.issueType ?? item.kind ?? "file",
+					).toLowerCase();
+					const type: KnipIssue["type"] =
+						rawType === "export" || rawType === "exports"
+							? "export"
+							: rawType === "dependency"
+								? "dependency"
+								: rawType === "devdependency"
+									? "devDependency"
+									: rawType === "unlisted"
+										? "unlisted"
+										: rawType === "bin" || rawType === "binaries"
+											? "bin"
+											: rawType === "file"
+												? "file"
+												: "file";
+					addIssue({
+						type,
+						name:
+							String(item.name ?? item.symbol ?? item.package ?? item.message ?? "unknown"),
+						file: item.file ?? item.path ?? item.location?.file,
+						line: item.line ?? item.location?.line,
+						package: item.package,
+					});
+				}
 			}
 
 			return {

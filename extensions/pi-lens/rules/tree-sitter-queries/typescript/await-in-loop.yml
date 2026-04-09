@@ -4,6 +4,8 @@ id: await-in-loop
 name: Await in Loop
 severity: warning
 category: performance
+defect_class: injection
+inline_tier: blocking
 language: typescript
 
 message: "Await in loop — sequential execution is slow, use Promise.all()"

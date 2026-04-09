@@ -56,7 +56,41 @@ export class DependencyChecker {
 	}
 
 	/**
-	 * Check if madge is available
+	 * Check if madge is available, auto-install if not
+	 */
+	async ensureAvailable(): Promise<boolean> {
+		// Fast path: already checked
+		if (this.available !== null) return this.available;
+
+		// Check if available in PATH
+		const result = safeSpawn("madge", ["--version"], {
+			timeout: 5000,
+		});
+		this.available = !result.error && result.status === 0;
+
+		if (this.available) {
+			this.log(`Madge found: ${result.stdout?.trim()}`);
+			return true;
+		}
+
+		// Auto-install via pi-lens installer
+		this.log("Madge not found, attempting auto-install...");
+		const { ensureTool } = await import("./installer/index.ts");
+		const installedPath = await ensureTool("madge");
+
+		if (installedPath) {
+			this.log(`Madge auto-installed: ${installedPath}`);
+			this.available = true;
+			return true;
+		}
+
+		this.log("Madge auto-install failed");
+		return false;
+	}
+
+	/**
+	 * Check if madge is available (legacy sync method)
+	 * Prefer ensureAvailable() for auto-install behavior
 	 */
 	isAvailable(): boolean {
 		if (this.available !== null) return this.available;

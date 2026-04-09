@@ -1,164 +1,57 @@
 /**
  * Oxlint runner for dispatch system
  *
- * Fast Rust-based JavaScript/TypeScript linter from the Oxc project.
- * Zero-config by default, compatible with ESLint rules.
+ * Fast JavaScript/TypeScript linter written in Rust.
+ * Drop-in replacement for ESLint with better performance.
  *
- * Why oxlint?
- * - ~100x faster than ESLint (Rust-based)
- * - Zero-config (works out of the box)
- * - Growing rule set (eslint, typescript, react, unicorn, etc.)
- * - JSON output for programmatic use
- *
- * Comparison:
- * - vs Biome: Similar performance, different rule philosophy
- * - vs ESLint: Much faster, fewer rules but catching up
- *
- * Install: npm install -D oxlint
- * Or: cargo install oxlint
- *
- * Config: .oxlintrc.json (optional, zero-config works)
+ * Requires: oxlint (npm install -g oxlint)
  */
 
-import { safeSpawn } from "../../safe-spawn.ts";
-import { createAvailabilityChecker, createConfigFinder } from "./utils/runner-helpers.ts";
+import { safeSpawnAsync } from "../../safe-spawn.ts";
 import type {
 	Diagnostic,
 	DispatchContext,
 	RunnerDefinition,
 	RunnerResult,
 } from "../types.ts";
+import { createAvailabilityChecker } from "./utils/runner-helpers.ts";
 
 const oxlint = createAvailabilityChecker("oxlint", ".exe");
-const findOxlintConfig = createConfigFinder(".oxlintrc.json");
-
-/**
- * Parse oxlint JSON output
- *
- * Format: Array of diagnostic objects
- * [{
- *   "ruleId": "no-unused-vars",
- *   "severity": 2,
- *   "message": "'foo' is assigned a value but never used.",
- *   "line": 10,
- *   "column": 7,
- *   "nodeType": "Identifier",
- *   "messageId": "unusedVar",
- *   "endLine": 10,
- *   "endColumn": 10,
- *   "fix": { "range": [95, 108], "text": "" }
- * }]
- */
-function parseOxlintOutput(raw: string, filePath: string): Diagnostic[] {
-	const diagnostics: Diagnostic[] = [];
-
-	if (!raw.trim()) {
-		return diagnostics;
-	}
-
-	try {
-		const parsed = JSON.parse(raw) as Array<{
-			ruleId?: string;
-			severity?: number; // 1 = warning, 2 = error
-			message?: string;
-			line?: number;
-			column?: number;
-			messageId?: string;
-			fix?: { range: number[]; text: string };
-		}>;
-
-		if (!Array.isArray(parsed)) {
-			return diagnostics;
-		}
-
-		for (const item of parsed) {
-			if (!item.message || !item.line) continue;
-
-			const severity = item.severity === 2 ? "error" : "warning";
-
-			diagnostics.push({
-				id: `oxlint-${item.line}-${item.ruleId || "unknown"}`,
-				message: item.message,
-				filePath,
-				line: item.line,
-				column: item.column || 1,
-				severity,
-				semantic: severity === "error" ? "blocking" : "warning",
-				tool: "oxlint",
-				rule: item.ruleId,
-				fixable: !!item.fix,
-				fixSuggestion: item.fix?.text,
-			});
-		}
-	} catch {
-		// If JSON parsing fails, try line-based parsing for CLI output
-		const lines = raw.split("\n").filter((l) => l.trim());
-		for (const line of lines) {
-			// Try to match: file.ts:10:7: Error message [ruleId]
-			const match = line.match(/^(\d+):(\d+)\s+(.+?)\s*\[(\w+)\]$/);
-			if (match) {
-				diagnostics.push({
-					id: `oxlint-${match[1]}-${match[4]}`,
-					message: `${match[4]}: ${match[3]}`,
-					filePath,
-					line: parseInt(match[1], 10),
-					column: parseInt(match[2], 10),
-					severity: "warning",
-					semantic: "warning",
-					tool: "oxlint",
-					rule: match[4],
-				});
-			}
-		}
-	}
-
-	return diagnostics;
-}
 
 const oxlintRunner: RunnerDefinition = {
 	id: "oxlint",
 	appliesTo: ["jsts"],
-	priority: 12, // Between biome (10) and slop (25)
-	enabledByDefault: false, // Opt-in initially - let users choose between biome/oxlint
-	skipTestFiles: true, // Test files often use patterns that trigger false positives
+	priority: 12,
+	enabledByDefault: false, // Opt-in: may conflict with ESLint in existing projects
+	skipTestFiles: true,
 
 	async run(ctx: DispatchContext): Promise<RunnerResult> {
-		// Skip if oxlint is not installed
-		if (!oxlint.isAvailable(ctx.cwd || process.cwd())) {
+		const cwd = ctx.cwd || process.cwd();
+
+		// Check if oxlint is available
+		if (!oxlint.isAvailable(cwd)) {
 			return { status: "skipped", diagnostics: [], semantic: "none" };
 		}
 
-		// Check if user explicitly disabled oxlint (keep biome as primary)
-		if (ctx.pi.getFlag("no-oxlint")) {
-			return { status: "skipped", diagnostics: [], semantic: "none" };
-		}
+		// Run oxlint on the file
+		const result = await safeSpawnAsync(
+			oxlint.getCommand(cwd)!,
+			["--format", "unix", ctx.filePath],
+			{
+				timeout: 30000,
+			},
+		);
 
-		// Build args
-		// --format json: JSON output
-		// --config: Only if config file exists (zero-config otherwise)
-		const args: string[] = ["--format", "json"];
-
-		// Check for config file
-		const configPath = findOxlintConfig(ctx.cwd);
-		if (configPath) {
-			args.push("--config", configPath);
-		}
-
-		// Add file path
-		args.push(ctx.filePath);
-
-		const result = safeSpawn(oxlint.getCommand()!, args, {
-			timeout: 10000, // Fast - should complete quickly
-		});
-
-		// oxlint exits with code 1 if issues found, 0 if clean
-		if (result.status === 0 && !result.stdout?.trim()) {
+		// Oxlint returns non-zero when issues found
+		if (result.status === 0) {
 			return { status: "succeeded", diagnostics: [], semantic: "none" };
 		}
 
-		// Parse diagnostics
-		const raw = result.stdout + result.stderr;
-		const diagnostics = parseOxlintOutput(raw, ctx.filePath);
+		// Parse Unix format output: file:line:column: message (rule)
+		const diagnostics = parseOxlintOutput(
+			result.stdout + result.stderr,
+			ctx.filePath,
+		);
 
 		if (diagnostics.length === 0) {
 			return { status: "succeeded", diagnostics: [], semantic: "none" };
@@ -171,5 +64,31 @@ const oxlintRunner: RunnerDefinition = {
 		};
 	},
 };
+
+function parseOxlintOutput(raw: string, filePath: string): Diagnostic[] {
+	const diagnostics: Diagnostic[] = [];
+	const lines = raw.split("\n");
+
+	for (const line of lines) {
+		// Parse: file:line:column: message (rule)
+		// Example: src/main.ts:10:5: Unexpected console statement (no-console)
+		const match = line.match(/^(.+):(\d+):(\d+):\s*(.+?)\s*\(([^)]+)\)$/);
+		if (match) {
+			const [, _file, lineStr, _col, message, rule] = match;
+			diagnostics.push({
+				id: `oxlint-${rule}-${lineStr}`,
+				message: `${message} (${rule})`,
+				filePath,
+				line: parseInt(lineStr, 10),
+				severity: "warning",
+				semantic: "warning",
+				tool: "oxlint",
+				rule,
+			});
+		}
+	}
+
+	return diagnostics;
+}
 
 export default oxlintRunner;

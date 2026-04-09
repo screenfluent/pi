@@ -105,7 +105,7 @@ export class TypeCoverageClient {
 		if (result.percentage >= 95) icon = "✓";
 		else if (result.percentage >= 80) icon = "⚠";
 
-		let output = `[type-coverage] ${icon} ${pct}% typed (${result.typed}/${result.total} identifiers)`;
+		let output = `[type-coverage] ${icon} ${pct}% typed (${result.typed}/${result.total} identifiers; any-typed flagged)`;
 
 		if (result.untypedLocations.length === 0) {
 			output += " — fully typed\n";

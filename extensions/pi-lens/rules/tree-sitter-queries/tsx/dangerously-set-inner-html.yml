@@ -4,6 +4,8 @@ id: dangerously-set-inner-html
 name: Dangerously Set Inner HTML
 severity: error
 category: security
+defect_class: injection
+inline_tier: blocking
 language: tsx
 
 message: "dangerouslySetInnerHTML — XSS risk, sanitize user input"

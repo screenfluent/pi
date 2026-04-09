@@ -1,9 +1,8 @@
 /**
- * Shared architectural debt scanning — used by booboo-fix and booboo-refactor.
+ * Shared architectural debt scanning.
  * Scans ast-grep skip rules + complexity metrics + architect.yaml rules.
  */
 
-import { spawnSync } from "node:child_process";
 import * as fs from "node:fs";
 import * as path from "node:path";
 import type { ArchitectClient } from "./architect-client.ts";
