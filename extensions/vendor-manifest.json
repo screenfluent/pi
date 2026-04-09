@@ -54,6 +54,10 @@
       "strategy": "local",
       "notes": "Standalone local extension. No upstream."
     },
+    "pi-go.ts": {
+      "strategy": "local",
+      "notes": "Local OpenCode Go API key rotator. No upstream."
+    },
     "pi-tracker": {
       "strategy": "local",
       "notes": "Our own extension. No upstream."
@@ -293,5 +297,11 @@
         "Import extensions: .js \u2192 .ts (Pi loads TS directly)"
       ]
     }
+  },
+  "pi-go.ts": {
+    "strategy": "local",
+    "description": "OpenCode Go API key rotation \u2014 /go 1|2|3|next",
+    "added": "2026-04-09",
+    "lastSynced": null
   }
 }
