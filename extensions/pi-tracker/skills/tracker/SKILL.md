@@ -1,49 +1,103 @@
 ---
 name: tracker
-description: Analyze changes in tracked Pi extension repositories. Run daily via pi-cron to detect relevant updates.
+description: Analyze changes in tracked Pi extension repositories. Run daily via pi-cron to detect relevant updates. Uses vendor-manifest.json to classify extensions and assess impact.
 ---
 
 # Extension Tracker
 
-Analyze changes in tracked external repositories and generate a report.
+Analyze changes in tracked external repositories and assess impact on local extensions.
 
-## Steps
+## Step 0: Read vendor manifest
 
-1. Run the fetch script to get changes:
+Read `~/.pi/agent/extensions/vendor-manifest.json` to understand the strategy for each extension:
+
+| Strategy | Meaning |
+|---|---|
+| **mirror** | Clean copy. Sync by replacing from upstream. Any local diff = drift to fix. |
+| **patch-stack** | Small local mods on top of upstream. Sync = copy upstream + reapply patches. |
+| **fork** | Heavily modified. Upstream is informational only. Manual cherry-pick. |
+| **local** | No upstream. Not affected by any repo changes. Skip entirely. |
+
+Map tracker repos to manifest extensions via `upstream.localClonePath` matching tracker repo name.
+
+## Step 1: Fetch changes
+
 ```bash
 ~/90-99.system/91.pi-home/extensions/pi-tracker/scripts/fetch-changes.sh ~/90-99.system/92.tracked-repos/tracker.json
 ```
 
-2. Parse the JSON output. For each repo with `hasChanges: true`:
-   - Read the commit log and changed files
-   - Compare against the repo's `interests` field
-   - Assess relevance: HIGH (directly affects extensions I use), MEDIUM (interesting patterns/approaches), LOW (unrelated)
+## Step 2: Parse and classify
 
-3. Generate a report in this format:
-```
+For each repo with `hasChanges: true`:
+
+1. Read the commit log and changed files from the JSON output
+2. Cross-reference with `vendor-manifest.json` — which of our extensions come from this repo? Match by `upstream.localClonePath` == repo name
+3. For each affected extension, filter upstream changed files to those under the extension's `sourcePath`
+4. For **patch-stack** extensions: flag files listed in `diffFiles` as "likely patch conflicts". Other files in sourcePath are still relevant (they may need to be copied over).
+5. For **fork** extensions: diffFiles are informational only. ALL upstream changes under sourcePath should be reported for potential cherry-picking, not just diffFiles.
+6. For **mirror** extensions: all files under sourcePath matter equally.
+
+## Step 3: Assess impact per extension
+
+For each affected extension, determine impact:
+
+- **mirror**: Any upstream change in sourcePath = HIGH. Diff our local copy against upstream to check for drift (we should be identical).
+- **patch-stack**: Upstream changes touching diffFiles = HIGH (patch conflicts likely). Other sourcePath changes = MEDIUM (need copy + reapply).
+- **fork**: All upstream changes in sourcePath = MEDIUM (informational, manual cherry-pick decision).
+- **local**: Skip. Not affected.
+
+## Step 4: Generate report
+
+```markdown
 # Extension Tracker Report — YYYY-MM-DD
 
 ## [repo-name] — [HIGH/MEDIUM/LOW]
-**Commits:** N new commits
-**Summary:** One paragraph of what changed and why it matters to me.
-**Action:** Update recommended / Worth reviewing / No action needed
+
+**Commit range:** lastCheckedCommit..currentCommit (N new commits)
+
+### Impact on [ext-name] (strategy)
+
+- **lastSyncedCommit:** abc1234
+- **Source path:** extensions/pi-workon/
+- **Upstream files changed in sourcePath:** file1.ts, file2.ts
+- **diffFiles touched by upstream:** (list any intersection of upstream changed files and our diffFiles)
+- **Local diff status:** CLEAN / PATCHED / DRIFTED
+- **Key upstream changes:** One-line summaries of relevant commits
+- **Recommended action:** sync / re-sync + reapply patches / cherry-pick specific commits / none
 
 ---
-(repeat for each repo with changes)
 ```
 
-4. Save the report:
+If no upstream changes affect any of our extensions, write: "No relevant changes affecting our extensions."
+
+## Step 5: Save report and update baseline
+
+Save the report to `~/90-99.system/92.tracked-repos/reports/YYYY-MM-DD.md`
+
+Then update the review baseline:
 ```bash
 ~/90-99.system/91.pi-home/extensions/pi-tracker/scripts/update-commits.sh ~/90-99.system/92.tracked-repos/tracker.json
 ```
 
-5. Write to global memory:
-   - If any HIGH relevance: write daily entry with repo name + one-line summary
-   - If all LOW: write daily entry "Tracker: no relevant changes"
+This advances `tracker.json` `lastCheckedCommit` to the current remote HEAD — the point we've reviewed up to.
+
+## Step 6: Update vendor manifest (only after actual sync)
+
+**Only if you actually synced, copied, or patched an extension** in this session: update the `lastSyncedCommit` field in `~/.pi/agent/extensions/vendor-manifest.json` to the upstream commit you synced to.
+
+If no sync happened, **do not update lastSyncedCommit**. It tracks the actual upstream code reflected in our local copy, not the review baseline.
+
+## Step 7: Memory
+
+Write to **both** memory systems:
+- `memory_write` (global daily log)
+- `honcho_remember`
+
+For HIGH impact: extension name + one-line summary of what changed and recommended action.
+For no relevant changes: "Tracker: no relevant changes"
 
 ## Relevance criteria
 
-- HIGH: Changes to extensions I have installed (pi-workon, pi-memory, pi-cron, pi-channels, pi-webserver, pi-focus). Bug fixes, new features, breaking changes.
-- HIGH: New extension that solves a problem I have.
-- MEDIUM: Interesting patterns, architecture decisions, or approaches I could adopt.
-- LOW: Changes to extensions I don't use. Documentation-only changes. Version bumps.
+- **HIGH**: Changes affecting our installed extensions (check diffFiles intersection). Bug fixes, new features, breaking API changes, security fixes.
+- **MEDIUM**: Changes outside diffFiles but in our sourcePath. New extensions worth adopting. Architecture patterns.
+- **LOW**: Changes to extensions we don't use. Documentation-only changes. Version bumps.

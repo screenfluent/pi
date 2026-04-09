@@ -19,9 +19,19 @@ const reposDir = '$REPOS_DIR';
 for (const repo of cfg.repos) {
     const repoDir = path.join(reposDir, repo.name);
     try {
-        const commit = execSync('git rev-parse HEAD', { cwd: repoDir, encoding: 'utf-8' }).trim();
-        repo.lastCheckedCommit = commit;
-        repo.lastCheckedAt = new Date().toISOString();
+        // Resolve remote HEAD (origin/HEAD or origin/main), not local HEAD
+        let commit = '';
+        try {
+            const ref = execSync('git symbolic-ref refs/remotes/origin/HEAD', { cwd: repoDir, encoding: 'utf-8' }).trim();
+            const branch = ref.replace('refs/remotes/origin/', '');
+            commit = execSync('git rev-parse origin/' + branch, { cwd: repoDir, encoding: 'utf-8' }).trim();
+        } catch {
+            try { commit = execSync('git rev-parse origin/main', { cwd: repoDir, encoding: 'utf-8' }).trim(); } catch {}
+        }
+        if (commit) {
+            repo.lastCheckedCommit = commit;
+            repo.lastCheckedAt = new Date().toISOString();
+        }
     } catch {}
 }
 

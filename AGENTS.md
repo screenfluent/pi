@@ -74,6 +74,10 @@ Each subagent runs as an isolated pi subprocess with its own context window.
   tools: read, grep, find, ls, bash
 **worker** (user) — General-purpose subagent with full capabilities, isolated context
   model: openai-codex/gpt-5.4
+**executor** (user) — Mechanical task executor. English-only, no pleasantries, output-only.
+  model: openai-codex/gpt-5.4
+**oracle** (user) — Knowledge verification for AI-to-AI cross-checking. Machine-readable output, no pleasantries.
+  model: openai-codex/gpt-5.4
 
 ### Usage Patterns
 
@@ -123,6 +127,7 @@ Sub-agents also get these tools and can spawn their own children (max depth: 4).
 - Orchestrator is ideal when the task benefits from autonomous delegation and coordination
 - Pool is ideal when you want to manually manage long-lived agents with persistent context
 - Extensions: subagents run with -ne (no extensions). Whitelist only what's needed.
+- **Background by default:** Always spawn pool agents with `background: true` so the user conversation is never blocked. Use `poll` to check progress, `wait` to collect results when needed. Only skip background mode if the user explicitly asks to wait for the result inline.
 
 ## VPS Structure (Johnny Decimal)
 

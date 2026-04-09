@@ -1,0 +1,277 @@
+{
+  "version": 1,
+  "description": "Vendor tracking manifest for Pi extensions. Strategies: mirror (clean copy, sync from upstream), patch-stack (small local mods on top of upstream), fork (heavily modified, upstream informational only), local (our own, no upstream).",
+  "extensions": {
+    "pi-channels": {
+      "strategy": "mirror",
+      "upstream": {
+        "repo": "https://github.com/espennilsen/pi.git",
+        "localClonePath": "espennilsen-pi",
+        "branch": "main",
+        "sourcePath": "extensions/pi-channels",
+        "lastSyncedCommit": "b4441bd"
+      },
+      "diffFiles": [],
+      "notes": "Byte-for-byte match with upstream. Sync by replacing."
+    },
+    "pi-cron": {
+      "strategy": "mirror",
+      "upstream": {
+        "repo": "https://github.com/espennilsen/pi.git",
+        "localClonePath": "espennilsen-pi",
+        "branch": "main",
+        "sourcePath": "extensions/pi-cron",
+        "lastSyncedCommit": "b4441bd"
+      },
+      "diffFiles": [],
+      "notes": "Byte-for-byte match with upstream. Sync by replacing."
+    },
+    "pi-webserver": {
+      "strategy": "mirror",
+      "upstream": {
+        "repo": "https://github.com/espennilsen/pi.git",
+        "localClonePath": "espennilsen-pi",
+        "branch": "main",
+        "sourcePath": "extensions/pi-webserver",
+        "lastSyncedCommit": "b4441bd"
+      },
+      "diffFiles": [],
+      "notes": "Byte-for-byte match with upstream. Sync by replacing."
+    },
+    "pi-telemetry": {
+      "strategy": "mirror",
+      "upstream": {
+        "repo": "https://github.com/espennilsen/pi.git",
+        "localClonePath": "espennilsen-pi",
+        "branch": "main",
+        "sourcePath": "extensions/pi-telemetry",
+        "lastSyncedCommit": "b4441bd"
+      },
+      "diffFiles": [],
+      "notes": "Byte-for-byte match with upstream. Sync by replacing."
+    },
+    "pi-focus": {
+      "strategy": "local",
+      "notes": "Standalone local extension. No upstream."
+    },
+    "pi-tracker": {
+      "strategy": "local",
+      "notes": "Our own extension. No upstream."
+    },
+    "pi-honcho-memory": {
+      "strategy": "patch-stack",
+      "upstream": {
+        "repo": "https://github.com/agneym/pi-honcho-memory.git",
+        "localClonePath": "pi-honcho-memory",
+        "branch": "main",
+        "sourcePath": "extensions",
+        "lastSyncedCommit": "11f18ed"
+      },
+      "patches": [
+        "Import extensions: .js → .ts (Pi loads TS directly)",
+        "session_switch/session_fork → session_start with event.reason branching",
+        "workon:switch event handler for re-bootstrap on project switch",
+        "lastCtx tracking for UI context in workon:switch"
+      ],
+      "diffFiles": [
+        {
+          "path": "client.ts",
+          "note": ".js→.ts imports rewrites for Pi TS loading."
+        },
+        {
+          "path": "commands.ts",
+          "note": ".js→.ts imports rewrites for local module imports."
+        },
+        {
+          "path": "index.ts",
+          "note": ".js→.ts imports rewrites plus session_start reason handling, lastCtx tracking, and workon:switch re-bootstrap."
+        },
+        {
+          "path": "memory.ts",
+          "note": ".js→.ts type import rewrite."
+        },
+        {
+          "path": "session-key.ts",
+          "note": ".js→.ts imports rewrites for config/git helpers."
+        },
+        {
+          "path": "tools.ts",
+          "note": ".js→.ts imports rewrites for client handles."
+        }
+      ],
+      "notes": "Upstream is npm package @agney/pi-honcho-memory. We vendor the extensions/ dir directly."
+    },
+    "pi-jobs": {
+      "strategy": "patch-stack",
+      "upstream": {
+        "repo": "https://github.com/espennilsen/pi.git",
+        "localClonePath": "espennilsen-pi",
+        "branch": "main",
+        "sourcePath": "extensions/pi-jobs",
+        "lastSyncedCommit": "b4441bd"
+      },
+      "patches": [
+        "src/tracker.ts: captures prompt via before_agent_start, falls back to ctx.model",
+        "src/tracker.ts: extends subagent completion handling",
+        "src/web.ts: clamps limit/days query params"
+      ],
+      "diffFiles": [
+        {
+          "path": "src/tracker.ts",
+          "note": "Captures prompts via before_agent_start, falls back to ctx.model, broadens completion handling, and reads response/usage from newer event shapes."
+        },
+        {
+          "path": "src/ui/jobs.js",
+          "note": "Escapes status values before rendering the jobs table HTML."
+        },
+        {
+          "path": "src/web.ts",
+          "note": "Clamps limit/days query params to bounded ranges before querying stats."
+        }
+      ],
+      "notes": "Small functional additions on top of upstream."
+    },
+    "pi-vault": {
+      "strategy": "patch-stack",
+      "upstream": {
+        "repo": "https://github.com/espennilsen/pi.git",
+        "localClonePath": "espennilsen-pi",
+        "branch": "main",
+        "sourcePath": "extensions/pi-vault",
+        "lastSyncedCommit": "b4441bd"
+      },
+      "patches": [
+        "Filesystem-only mode (no Obsidian REST API dependency)",
+        "vaultPath symlink escape hardening",
+        "Config docs and parameter adjustments"
+      ],
+      "diffFiles": [
+        {
+          "path": "src/api-client.ts",
+          "note": "Config example docs were rewritten for generic vaultPath/vaultName and no apiKey."
+        },
+        {
+          "path": "src/index.ts",
+          "note": "Config example docs were rewritten for generic vaultPath/vaultName and no apiKey."
+        },
+        {
+          "path": "src/tool.ts",
+          "note": "Adds filesystem-only config/docs, symlink escape hardening, multiline frontmatter replacement, and a custom daily note template."
+        }
+      ],
+      "notes": "Core vault tool from upstream, adapted for filesystem-only operation."
+    },
+    "pi-workon": {
+      "strategy": "patch-stack",
+      "upstream": {
+        "repo": "https://github.com/espennilsen/pi.git",
+        "localClonePath": "espennilsen-pi",
+        "branch": "main",
+        "sourcePath": "extensions/pi-workon",
+        "lastSyncedCommit": "b4441bd"
+      },
+      "patches": [
+        "Exports buildProjectContext for use by other extensions",
+        "Caches ctx for cross-extension access",
+        "Status bar update on workon:switch"
+      ],
+      "diffFiles": [
+        {
+          "path": "src/index.ts",
+          "note": "Exports buildProjectContext to the slash command path, caches ctx, and updates the status bar on startup/workon:switch."
+        },
+        {
+          "path": "src/tool.ts",
+          "note": "Exports buildProjectContext for reuse outside the tool module."
+        }
+      ],
+      "notes": "Small functional extensions on top of upstream."
+    },
+    "pi-memory": {
+      "strategy": "fork",
+      "upstream": {
+        "repo": "https://github.com/espennilsen/pi.git",
+        "localClonePath": "espennilsen-pi",
+        "branch": "main",
+        "sourcePath": "extensions/pi-memory",
+        "lastSyncedCommit": "90e702f"
+      },
+      "diffFiles": [
+        {
+          "path": "src/context.ts",
+          "note": "Replaces single-layer memory injection with separate global/project memory blocks and instructions."
+        },
+        {
+          "path": "src/files.ts",
+          "note": "Splits storage into global and project base paths and includes both scopes in memory file discovery."
+        },
+        {
+          "path": "src/index.ts",
+          "note": "Initializes separate global/project memory roots and updates project scope on workon:switch."
+        },
+        {
+          "path": "src/tools.ts",
+          "note": "Adds explicit global/project scope selection and defaults writes to project scope when active."
+        }
+      ],
+      "notes": "Major rewrite to two-layer memory (global + project scope). Different data model, write semantics, path layout, and workon:switch integration. Upstream useful for ideas only; manual semantic merging required."
+    },
+    "pi-subagent": {
+      "strategy": "patch-stack",
+      "upstream": {
+        "repo": "https://github.com/espennilsen/pi.git",
+        "localClonePath": "espennilsen-pi",
+        "branch": "main",
+        "sourcePath": "extensions/pi-subagent",
+        "lastSyncedCommit": "b4441bd"
+      },
+      "patches": [
+        "thinking support from agent frontmatter/call-site override",
+        "Default timeout increased to 30m",
+        "Pool usage accumulation from dead agents",
+        "Richer subagent:complete payload",
+        "Hardened blocked extensions list"
+      ],
+      "diffFiles": [
+        {
+          "path": "src/agents.ts",
+          "note": "Reads a thinking field from agent frontmatter and passes it through discovery."
+        },
+        {
+          "path": "src/pool.ts",
+          "note": "Accumulates usage from killed agents so pool totals include dead-agent work."
+        },
+        {
+          "path": "src/settings.ts",
+          "note": "Raises the default isolated-agent timeout from 10 minutes to 30 minutes."
+        },
+        {
+          "path": "src/tool.ts",
+          "note": "Uses agent-level thinking defaults, enriches subagent:complete payloads, extends project-agent confirmation, and returns full parallel outputs."
+        },
+        {
+          "path": "src/types.ts",
+          "note": "Adds an optional thinking field to agent configs."
+        }
+      ],
+      "notes": "Architecture same as upstream. Additive patches, not a rewrite."
+    },
+    "btw.ts": {
+      "strategy": "fork",
+      "upstream": {
+        "repo": "https://github.com/mitsuhiko/agent-stuff.git",
+        "localClonePath": "agent-stuff",
+        "branch": "main",
+        "sourcePath": "pi-extensions/btw.ts",
+        "lastSyncedCommit": "80e1e96"
+      },
+      "diffFiles": [
+        {
+          "path": "btw.ts",
+          "note": "Complete rewrite from single-thread state to slot-based persisted side sessions with archive, legacy migration, and inject/summarize flow."
+        }
+      ],
+      "notes": "Complete rewrite from single-thread model to slot-based persisted state with archive, legacy migration, disposeGeneration, and inject/summarize flow. Upstream useful for API migration patterns only."
+    }
+  }
+}

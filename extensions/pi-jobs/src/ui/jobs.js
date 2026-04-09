@@ -113,7 +113,7 @@ async function loadCostChart() {
 		const barsHtml = entries.map(([date, d]) => {
 			const pct = Math.max((d.cost / maxCost) * 100, 2);
 			const label = date.slice(5); // MM-DD
-			return '<div class="chart-bar" style="height:' + pct + '%;max-width:60px">' +
+			return '<div class="chart-bar" style="height:' + pct + '%">' +
 				'<div class="tip">' + date + ": " + cost(d.cost) + " \u00b7 " + d.jobs + " runs</div></div>";
 		}).join("");
 

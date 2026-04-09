@@ -76,11 +76,27 @@ export default function (pi: ExtensionAPI) {
 				return;
 			}
 			const config = JSON.parse(fs.readFileSync(paths.configPath, "utf-8"));
+			const manifestPath = path.join(path.dirname(paths.extensionDir), "vendor-manifest.json");
+			const manifest = fs.existsSync(manifestPath) ? JSON.parse(fs.readFileSync(manifestPath, "utf-8")) : null;
+
 			const lines = [`Tracking ${config.repos.length} repos:`];
 			for (const repo of config.repos) {
 				const checked = repo.lastCheckedCommit ? repo.lastCheckedCommit.slice(0, 7) : "never";
 				lines.push(`  📦 ${repo.name} (last: ${checked})`);
 			}
+
+			if (manifest) {
+				lines.push("");
+				lines.push("Extensions:");
+				for (const [name, ext] of Object.entries(manifest.extensions)) {
+				const e = ext as any;
+				const strategy = e.strategy;
+				const syncedTo = e.upstream?.lastSyncedCommit ? e.upstream.lastSyncedCommit.slice(0, 7) : "local";
+				const source = e.upstream ? e.upstream.localClonePath : "—";
+				lines.push(`  🔧 ${name} [${strategy}] ← ${source} (${syncedTo})`);
+			}
+			}
+
 			ctx.ui.notify(lines.join("\n"), "info");
 		},
 	});
@@ -107,6 +123,17 @@ export default function (pi: ExtensionAPI) {
 			prefix: "/tracker",
 			handler: (req: any, res: any) => {
 				res.writeHead(200, { "Content-Type": "application/json" });
+
+				// Serve vendor manifest
+				if (req.url?.includes("/manifest")) {
+					const manifestPath = path.join(path.dirname(paths.extensionDir), "vendor-manifest.json");
+					if (fs.existsSync(manifestPath)) {
+						res.end(fs.readFileSync(manifestPath, "utf-8"));
+					} else {
+						res.end(JSON.stringify({ error: "No vendor-manifest.json found" }));
+					}
+					return;
+				}
 
 				// Serve reports list and content
 				if (req.url?.includes("/reports")) {

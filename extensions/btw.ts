@@ -134,7 +134,6 @@ function createBtwResourceLoader(ctx: ExtensionContext, append: string[] = [BTW_
 		getAgentsFiles: () => ({ agentsFiles: [] }),
 		getSystemPrompt: () => sp,
 		getAppendSystemPrompt: () => append,
-		getPathMetadata: () => new Map(),
 		extendResources: () => {},
 		reload: async () => {},
 	};
@@ -1345,19 +1344,11 @@ export default function (pi: ExtensionAPI) {
 
 	// ── Session lifecycle: after handlers (restore from branch) ──────
 
-	pi.on("session_start", async (_event, ctx) => {
-		lastCtx = ctx;
-		restoreFromBranch(ctx);
-	});
-	pi.on("session_switch", async (_event, ctx) => {
+	pi.on("session_start", async (event, ctx) => {
 		lastCtx = ctx;
 		restoreFromBranch(ctx);
 	});
 	pi.on("session_tree", async (_event, ctx) => {
-		lastCtx = ctx;
-		restoreFromBranch(ctx);
-	});
-	pi.on("session_fork", async (_event, ctx) => {
 		lastCtx = ctx;
 		restoreFromBranch(ctx);
 	});
