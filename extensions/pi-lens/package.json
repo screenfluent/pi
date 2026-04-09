@@ -1,8 +1,8 @@
 {
 	"name": "pi-lens",
-	"version": "2.2.10",
+	"version": "3.8.22",
 	"type": "module",
-	"description": "Real-time code feedback for pi — LSP, linters, formatters, type-checking, structural analysis (ast-grep), TODO scanner, dead code detection, duplicate detection, type coverage, complexity metrics, and AI slop detection",
+	"description": "Real-time code feedback for pi — LSP, linters, formatters, type-checking, structural analysis & booboo",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/apmantza/pi-lens.git"
@@ -12,7 +12,19 @@
 		"build": "tsc",
 		"watch": "tsc --watch",
 		"test": "vitest run",
-		"test:watch": "vitest"
+		"test:watch": "vitest",
+		"rust:fmt": "cargo fmt --manifest-path rust/Cargo.toml --all --check",
+		"rust:fmt:write": "cargo fmt --manifest-path rust/Cargo.toml --all",
+		"rust:check": "cargo check --manifest-path rust/Cargo.toml --all-targets --all-features",
+		"rust:lint": "cargo clippy --manifest-path rust/Cargo.toml --all-targets --all-features -- -D warnings",
+		"rust:test": "cargo test --manifest-path rust/Cargo.toml --all-targets --all-features",
+		"rust:build": "cargo build --manifest-path rust/Cargo.toml --release",
+		"rust:build:debug": "cargo build --manifest-path rust/Cargo.toml",
+		"check": "node scripts/check-extensions.mjs",
+		"audit:tree-sitter": "node scripts/audit-tree-sitter-rules.mjs",
+		"audit:rule-catalog": "node scripts/validate-rule-catalog.mjs",
+		"download-grammars": "node scripts/download-grammars.js",
+		"postinstall": "node scripts/download-grammars.js"
 	},
 	"keywords": [
 		"pi",
@@ -29,24 +41,41 @@
 		"jscpd",
 		"knip"
 	],
-	"author": "R3LiC",
+	"author": "Apostolos Mantzaris",
 	"license": "MIT",
 	"files": [
 		"index.ts",
-		"clients/",
-		"commands/",
+		"config/",
+		"tools/",
+		"clients/**/*.ts",
+		"commands/**/*.ts",
 		"rules/",
+		"skills/",
+		"scripts/download-grammars.js",
+		"scripts/check-extensions.mjs",
+		"scripts/audit-tree-sitter-rules.mjs",
+		"scripts/validate-rule-catalog.mjs",
+		"rust/src/",
+		"rust/Cargo.toml",
 		"default-architect.yaml",
 		"tsconfig.json",
 		"README.md",
-		"CHANGELOG.md"
+		"CHANGELOG.md",
+		"docs/LSP_CONFIG.md",
+		"docs/COMPLEXITY_METRICS.md",
+		"docs/ARCHITECTURE.md",
+		"docs/EXCLUSIONS.md",
+		"docs/AST_GREP_RULES.md",
+		"docs/TREE_SITTER_RULES.md",
+		"docs/WRITING_NEW_AST_GREP_RULES.md"
 	],
 	"peerDependencies": {
 		"@mariozechner/pi-coding-agent": "*"
 	},
 	"dependencies": {
 		"@sinclair/typebox": "^0.34.0",
-		"effect": "^3.21.0",
+		"cross-spawn": "^7.0.6",
+		"typescript": "^5.0.0",
 		"vscode-jsonrpc": "^8.2.1"
 	},
 	"optionalDependencies": {
@@ -55,6 +84,9 @@
 	},
 	"devDependencies": {
 		"@ast-grep/napi": "^0.42.0",
+		"@biomejs/biome": "^2.4.10",
+		"@types/cross-spawn": "^6.0.6",
+		"@types/js-yaml": "^4.0.9",
 		"@types/node": "^22.10.5",
 		"js-yaml": "^4.1.1",
 		"typescript": "^5.0.0",
@@ -64,6 +96,9 @@
 	"pi": {
 		"extensions": [
 			"./index.ts"
+		],
+		"skills": [
+			"./skills"
 		]
 	},
 	"knip": {

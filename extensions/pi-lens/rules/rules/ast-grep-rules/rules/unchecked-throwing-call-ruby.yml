@@ -1,0 +1,47 @@
+id: unchecked-throwing-call-ruby
+language: Ruby
+severity: error
+message: "Call without begin/rescue — raises on missing file or invalid input"
+note: |
+  These Ruby calls raise exceptions that must be handled.
+
+  File.read():   raises Errno::ENOENT, Errno::EACCES
+  JSON.parse():  raises JSON::ParserError on malformed JSON
+  File.stat():   raises Errno::ENOENT
+  Integer()/Float(): raises ArgumentError on invalid strings
+
+  ✅ WRAP IN BEGIN/RESCUE:
+    begin
+      data = JSON.parse(raw)
+    rescue JSON::ParserError => e
+      logger.error("Invalid JSON: #{e}")
+      nil
+    end
+
+  ✅ OR USE SAFE ALTERNATIVES:
+    JSON.parse(raw) rescue nil   # returns nil on error (only for simple cases)
+
+rule:
+  any:
+    - pattern: File.read($$$)
+    - pattern: File.readlines($$$)
+    - pattern: File.open($$$)
+    - pattern: File.stat($$$)
+    - pattern: File.delete($$$)
+    - pattern: File.rename($$$)
+    - pattern: Dir.mkdir($$$)
+    - pattern: FileUtils.cp($$$)
+    - pattern: FileUtils.mv($$$)
+    - pattern: FileUtils.rm($$$)
+    - pattern: FileUtils.rm_rf($$$)
+    - pattern: JSON.parse($$$)
+    - pattern: Integer($EXPR)
+    - pattern: Float($EXPR)
+    - pattern: URI.parse($$$)
+  not:
+    inside:
+      stopBy: end
+      any:
+        - kind: begin
+        - kind: rescue
+        - kind: ensure

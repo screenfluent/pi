@@ -1,0 +1,59 @@
+id: getter-return
+message: Enforce `return` statements in getters
+severity: error
+language: TypeScript
+rule:
+  any:
+    - kind: method_definition
+      regex: ^get\s
+      not:
+        has:
+          pattern: return $_
+          stopBy:
+            any:
+              - kind: if_statement
+              - kind: function_expression
+    - any:
+        - kind: pair
+          has:
+            all:
+              - any:
+                  - kind: function_expression
+                  - kind: arrow_function
+              - not:
+                  has:
+                    pattern: return $_
+                    stopBy:
+                      any:
+                        - kind: if_statement
+                        - kind: function_expression
+        - kind: method_definition
+          not:
+            has:
+              pattern: return $_
+              stopBy:
+                any:
+                  - kind: if_statement
+                  - kind: function_expression
+      has:
+        kind: property_identifier
+        regex: ^get$
+      inside:
+        kind: object
+        pattern: $OBJECT
+        inside:
+          stopBy: end
+          any:
+            - pattern: Object.defineProperty($_, $_, $OBJECT)
+            - pattern: Reflect.defineProperty($_, $_, $OBJECT)
+            - pattern: Object?.defineProperty($_, $_, $OBJECT)
+            - pattern: Reflect?.defineProperty($_, $_, $OBJECT)
+            - pattern: Object.create($$$)
+            - kind: object
+              pattern: $CONTAINER
+              inside:
+                  stopBy: end
+                  pattern: Object.defineProperties($_, $CONTAINER)
+
+note: |
+  The get syntax binds an object property to a function that will be called when that property is looked up. Every getter is expected to return a value.

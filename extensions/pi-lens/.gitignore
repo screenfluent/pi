@@ -1,5 +1,6 @@
 # Dependencies
 node_modules/
+features.md
 
 # pi-lens internal
 .pi-lens/
@@ -17,48 +18,68 @@ out/
 *.js
 *.js.map
 *.d.ts
-
-# Rust
-src/main.rs
+!scripts/download-grammars.js
 
 # Internal planning docs
 featureideas.md
 SCA.md
 review.md
 
-# Scratch test files (moved to tests/)
-tests/
+# Test directories and files
+test-files/
+test-lsp-files/
+test-filetime/
+test-projects/
+# scripts/ intentionally tracked
+test-*.ts
+test-*.js
+test-*.py
+test-*.md
+test-*.sh
+test-*.mjs
 
-# OS files
-.DS_Store
-Thumbs.db
+# Debug/dev scripts
+debug-*.js
+check-*.js
+quick-test.js
+trigger-check.js
+migrate-*.js
 
-# IDE files
-.vscode/
-.idea/
-
-# Debug logs
-*.log
-
-# Temp scan outputs
-booboo_*.json
-jscpd-report.json
-
-# Linter caches
-.ruff_cache/
-
-# Documentation files - only keep AGENTS.md, README.md, CHANGELOG.md in public repo
+# Documentation files - only keep specific docs in public repo
 *.md
 !AGENTS.md
 !README.md
 !CHANGELOG.md
+!docs/LSP_CONFIG.md
+!docs/COMPLEXITY_METRICS.md
+!docs/ARCHITECTURE.md
+!docs/EXCLUSIONS.md
+!docs/AST_GREP_RULES.md
+!docs/TREE_SITTER_RULES.md
+!docs/WRITING_NEW_AST_GREP_RULES.md
+!skills/**/*.md
 
-# docs folder entirely
-docs/
-# Test artifacts
-test-*.ts
-test-*.js
-test-*.md
-test-*.sh
-test-filetime/
+# Local-only docs (not in git or npm)
+docs/features.md
+docs/plans/
+internal_docs/
 
+# Auto-generated reports (CAPS)
+ANALYSIS_*.md
+ASSESSMENT_*.md
+BASELINE_*.md
+BUG_*.md
+*_REPORT.md
+*_ANALYSIS.md
+*_STATUS.md
+*_GUIDE.md
+*_COMPLETE.md
+*_RESULTS.md
+*_SUMMARY.md
+*_NOTES.md
+*_GAPS.md
+
+# Dev log
+clients/dispatch/debug.log
+AGENTS.md
+.npmignore

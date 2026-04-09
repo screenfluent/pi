@@ -1,141 +1,130 @@
 # .pi-lens/architect.yaml
-# Architectural rules for your project
-# Copy to your project root as .pi-lens/architect.yaml and customize.
+# Architectural rules for your project.
+# Copy to your project root as .pi-lens/architect.yaml and customise.
 #
-# Structure is language-agnostic — regex patterns in must_not are language-specific.
+# Patterns use JavaScript regex syntax (multiline mode enabled).
 #
-# IMPORTANT: Patterns are JavaScript regex syntax. Use single quotes for patterns
-# containing double quotes, and escape backslashes appropriately.
+# NOTE: Rules here are intentionally non-overlapping with pi-lens built-in runners:
+#   - Empty catch blocks  -> tree-sitter + ast-grep handle these
+#   - Hardcoded secrets   -> secrets scanner handles these
+#   - as any / :any       -> ast-grep no-any-type/no-as-any handle these
 
 version: "1.2"
 
-# =============================================================================
-# FILE SIZE LIMITS (per file type)
-# =============================================================================
+rules:
+
+  # ===========================================================================
+  # FILE SIZE LIMITS
+  # ===========================================================================
 
   # Services: focused, single-purpose modules
   - pattern: "**/services/**/*.ts"
     max_lines: 500
     must_not:
-      # TUNED: Was (8+ spaces, 5 lines), now (12+ spaces, 10 lines)
       - pattern: '(?:\s{12,}.*\n){10,}'
-        message: "Extreme nesting detected (6+ levels). Refactor into smaller functions."
+        message: "Extreme nesting (6+ levels) — refactor into smaller functions."
 
-  # Clients: can be larger but still bounded
+  # Clients/commands: can be larger but still bounded
   - pattern: "**/clients/**/*.ts|**/commands/**/*.ts"
     max_lines: 1000
     must_not:
-      # TUNED: Was (8+ spaces, 5 lines), now (12+ spaces, 10 lines)
       - pattern: '(?:\s{12,}.*\n){10,}'
-        message: "Extreme nesting detected (6+ levels). Refactor into smaller functions."
+        message: "Extreme nesting (6+ levels) — refactor into smaller functions."
 
-  # General limit for other files (higher than before)
+  # General source files
   - pattern: "**/*.{ts,tsx,js,jsx,py,go,rs}"
     max_lines: 3000
     must_not:
-      # TUNED: Was (8+ spaces, 5 lines), now (12+ spaces, 10 lines) for extreme nesting only
       - pattern: '(?:\s{12,}.*\n){10,}'
-        message: "Extreme nesting detected (6+ levels). Refactor into smaller functions."
+        message: "Extreme nesting (6+ levels) — refactor into smaller functions."
 
-  # Test files: more relaxed (structure is different)
+  # Test files: more relaxed
   - pattern: "**/*.test.ts|**/*.test.js|**/*.spec.ts|**/*.spec.js"
     max_lines: 5000
 
-# =============================================================================
-# LANGUAGE-AGNOSTIC RULES (The "Universal Truths")
-# =============================================================================
+  # ===========================================================================
+  # UNIVERSAL RULES
+  # ===========================================================================
 
-rules:
-  # --- CI & Environment Safety ---
+  # CI & cross-platform safety
   - pattern: "**/*.{ts,tsx,js,jsx,py,go,rs,java,cpp}"
     must_not:
       - pattern: '[a-zA-Z]:\\(?:Users|Program Files|Windows|Temp)\\[^\\]*'
         message: "No absolute Windows paths — breaks CI and cross-platform builds."
         fix: "Use path.join(__dirname, 'relative/path') or process.cwd()"
       - pattern: '/(?:home|Users|usr|etc|var)/[a-zA-Z0-9_-]+/'
-        message: "Potential absolute Unix path detected — use relative paths or path.join()."
+        message: "Absolute Unix path — use relative paths or path.join()."
         fix: "Use path.join(process.cwd(), 'relative/path') or path.resolve()"
       - pattern: 'https?://localhost:[0-9]+'
-        message: "No hardcoded localhost URLs — use environment variables or a config service."
+        message: "No hardcoded localhost URLs — use an environment variable."
         fix: "Use process.env.API_URL || 'http://localhost:3000'"
 
-  # --- Complexity & Technical Debt ---
+  # Technical debt
   - pattern: "**/*.{ts,tsx,js,jsx,py,go,rs}"
     must_not:
       - pattern: '(?:(?://|#).*\n){10,}'
-        message: "Large block of commented-out code detected. This is dead code — delete it and rely on Git history."
-        fix: "Delete the commented code. Git history preserves it if needed later."
+        message: "Large commented-out code block — delete it and rely on Git history."
+        fix: "Delete the commented code. Git preserves it if needed."
 
-  # --- Reliability & Fragility ---
-  - pattern: "**/*.{ts,tsx,js,jsx,py,go,rs}"
-    must_not:
-      - pattern: '(?:catch|except)\s*\(?.*?\)?\s*\{\s*\}'
-        message: "No empty catch/except blocks. Swallowing errors makes debugging impossible — at least log the error."
-        fix: |
-          console.error(`[context] Operation failed:`, err);
-          // or: throw err;
-          // or: return null;
-      - pattern: '\b(?:password|secret|api_?key|token|private_?key)\b\s*[:=]\s*(?:"|'')[^''"]{8,}(?:"|'')'
-        message: "No hardcoded secrets — use environment variables or a secrets manager."
-        fix: "Use process.env.SECRET_NAME and add to .env.example (not .env!)"
+  # ===========================================================================
+  # JS/TS-SPECIFIC RULES
+  # ===========================================================================
 
-# =============================================================================
-# JS/TS-SPECIFIC RULES (Node.js & Frontend)
-# =============================================================================
-
-  # --- Type Safety ---
+  # Deep relative imports hurt readability and agent code search
   - pattern: "**/*.{ts,tsx}"
     must_not:
-      - pattern: ':\s*any\b|as\s+any\b'
-        message: "No 'any' types — use 'unknown' or define a proper interface to maintain type safety."
-        fix: |
-          // Instead of: x as any
-          x as unknown as SpecificType
-          // Or define proper interface and use it
-    must:
-      - "Use strict TypeScript mode"
+      - pattern: "from\\s+['\"](\\.\\./){3,}"
+        message: "Deep relative import (3+ levels) — use path aliases instead."
+        fix: "Configure tsconfig paths: { '@app/*': ['src/*'] }"
 
-  # --- Configuration & IO ---
-  # REMOVED: no process.env rule - extensions and CLI tools need env access
-  # If you want this rule for your project, add it to your .pi-lens/architect.yaml:
-  # - pattern: "**/services/**/*.ts|**/domain/**/*.ts"
-  #   must_not:
-  #     - pattern: 'process\.env'
-  #       message: "Domain/Service logic must not read env vars directly — inject config."
+  # ===========================================================================
+  # PYTHON-SPECIFIC RULES
+  # ===========================================================================
 
-  # --- Async Patterns ---
-  # DISABLED: .then() rule was too aggressive - flagged all promise usage
-  # Only flag in specific contexts (3+ level chains) via tree-sitter instead
-  # - pattern: "**/*.{ts,tsx,js,jsx}"
-  #   must_not:
-  #     - pattern: '\.then\('
-  #       message: "Prefer async/await over .then() chains for better readability."
-
-  # --- Grep-ability & Agent Search ---
-  # Note: 'export default' is acceptable for entry points (index.ts)
-  - pattern: "**/*.{ts,tsx}"
-    must_not:
-      - pattern: "from\\s+['\"]\.\./\.\./\.\./"
-        message: "Avoid deep relative imports (3+ levels) — use absolute imports (@app/...) for agent reasoning."
-
-# =============================================================================
-# PYTHON-SPECIFIC RULES
-# =============================================================================
-
-  # --- Clean Python ---
   - pattern: "**/*.py"
     must_not:
       - pattern: 'print\('
-        message: "No print() statements in production code — use the 'logging' module."
+        message: "No print() in production code — use the 'logging' module."
       - pattern: 'global\s+[a-zA-Z_]'
-        message: "No 'global' keyword — global state makes code untestable and unpredictable."
+        message: "No 'global' keyword — global state makes code untestable."
       - pattern: 'def\s+[a-zA-Z0-9_]+\([^)]*=\s*\[\]'
-        message: "No mutable default arguments (e.g., x=[]). Use 'x=None' and initialize inside the function."
+        message: "Mutable default argument (x=[]) — use x=None and initialise inside."
+      - pattern: 'eval\(|exec\('
+        message: "No eval()/exec() — security risk and architectural anti-pattern."
 
-  # --- Python Reliability ---
+  # ===========================================================================
+  # AGENT-SPECIFIC ANTI-PATTERNS
+  # Catches common failure modes where agents scaffold but forget to implement.
+  # Test files are excluded by the architect runner (skipTestFiles: true).
+  # ===========================================================================
+
+  - pattern: "**/*.{ts,tsx,js,jsx}"
+    must_not:
+      - pattern: 'throw new Error\((?:"(?:not implemented|TODO|todo|Not implemented)"|''(?:not implemented|TODO|todo|Not implemented)'')\)'
+        message: "Stub not implemented — function body was scaffolded but never completed."
+        fix: "Implement the function body or remove the stub."
+
   - pattern: "**/*.py"
     must_not:
-      - pattern: 'except:\s*pass|except\s+Exception:\s*pass'
-        message: "Do not use bare 'except: pass'. Explicitly catch specific exceptions and log them."
-      - pattern: 'eval\(|exec\('
-        message: "No eval() or exec() — these are security risks and architectural anti-patterns."
+      - pattern: 'raise NotImplementedError'
+        message: "NotImplementedError stub — function was scaffolded but never completed."
+        fix: "Implement the function body."
+      - pattern: '^\s*\.\.\.\s*$'
+        message: "Bare ellipsis body — function was scaffolded but never completed."
+        fix: "Implement the function body."
+
+  # ===========================================================================
+  # PROJECT-SPECIFIC TEMPLATES (uncomment and customise)
+  # ===========================================================================
+
+  # Layer boundary enforcement — adjust paths to match your project:
+  # - pattern: "**/domain/**/*.ts|**/services/**/*.ts"
+  #   must_not:
+  #     - pattern: "from\\s+['\"].*/(controllers|routes|api)/"
+  #       message: "Domain/service layer must not import from API layer."
+  #
+  # No direct env access in domain layer:
+  # - pattern: "**/domain/**/*.ts"
+  #   must_not:
+  #     - pattern: 'process\.env'
+  #       message: "Domain logic must not read env vars — inject config via constructor."

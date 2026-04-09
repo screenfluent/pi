@@ -68,35 +68,35 @@
         "lastSyncedCommit": "11f18ed"
       },
       "patches": [
-        "Import extensions: .js → .ts (Pi loads TS directly)",
-        "session_switch/session_fork → session_start with event.reason branching",
+        "Import extensions: .js \u2192 .ts (Pi loads TS directly)",
+        "session_switch/session_fork \u2192 session_start with event.reason branching",
         "workon:switch event handler for re-bootstrap on project switch",
         "lastCtx tracking for UI context in workon:switch"
       ],
       "diffFiles": [
         {
           "path": "client.ts",
-          "note": ".js→.ts imports rewrites for Pi TS loading."
+          "note": ".js\u2192.ts imports rewrites for Pi TS loading."
         },
         {
           "path": "commands.ts",
-          "note": ".js→.ts imports rewrites for local module imports."
+          "note": ".js\u2192.ts imports rewrites for local module imports."
         },
         {
           "path": "index.ts",
-          "note": ".js→.ts imports rewrites plus session_start reason handling, lastCtx tracking, and workon:switch re-bootstrap."
+          "note": ".js\u2192.ts imports rewrites plus session_start reason handling, lastCtx tracking, and workon:switch re-bootstrap."
         },
         {
           "path": "memory.ts",
-          "note": ".js→.ts type import rewrite."
+          "note": ".js\u2192.ts type import rewrite."
         },
         {
           "path": "session-key.ts",
-          "note": ".js→.ts imports rewrites for config/git helpers."
+          "note": ".js\u2192.ts imports rewrites for config/git helpers."
         },
         {
           "path": "tools.ts",
-          "note": ".js→.ts imports rewrites for client handles."
+          "note": ".js\u2192.ts imports rewrites for client handles."
         }
       ],
       "notes": "Upstream is npm package @agney/pi-honcho-memory. We vendor the extensions/ dir directly."
@@ -272,6 +272,18 @@
         }
       ],
       "notes": "Complete rewrite from single-thread model to slot-based persisted state with archive, legacy migration, disposeGeneration, and inject/summarize flow. Upstream useful for API migration patterns only."
+    },
+    "pi-lens": {
+      "strategy": "mirror",
+      "upstream": {
+        "repo": "https://github.com/apmantza/pi-lens.git",
+        "localClonePath": "pi-lens",
+        "branch": "main",
+        "sourcePath": ".",
+        "lastSyncedCommit": "507a31589be2406e29eb7cd8f186b2374ade2fd2"
+      },
+      "diffFiles": [],
+      "notes": "Critical extension for inline code diagnostics. Updated from v2.2.10 to v3.8.22."
     }
   }
 }

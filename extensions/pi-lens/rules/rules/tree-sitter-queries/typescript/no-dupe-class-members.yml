@@ -1,0 +1,49 @@
+# Duplicate Class Members Detection
+# Detects duplicate method/property definitions in classes
+id: no-dupe-class-members
+name: Duplicate class member
+severity: error
+category: correctness
+defect_class: correctness
+inline_tier: blocking
+language: typescript
+
+message: "Duplicate class member '$NAME' - previous declaration will be overwritten"
+
+description: |
+  Duplicate class member declarations silently overwrite each other.
+  The last declaration wins, which can cause unexpected behavior.
+
+query: |
+  (class_body
+    (method_definition
+      name: (property_identifier) @NAME1
+      (#match? @NAME1 "^[^#]"))
+    (method_definition
+      name: (property_identifier) @NAME2
+      (#eq? @NAME1 @NAME2)))
+
+metavars:
+  - NAME1
+  - NAME2
+
+tags:
+  - correctness
+  - javascript
+  - typescript
+  - class
+
+examples:
+  bad: |
+    class MyClass {
+      foo() { return 1; }
+      foo() { return 2; } // Overwrites first foo()
+    }
+
+  good: |
+    class MyClass {
+      foo() { return 1; }
+      bar() { return 2; }
+    }
+
+has_fix: false

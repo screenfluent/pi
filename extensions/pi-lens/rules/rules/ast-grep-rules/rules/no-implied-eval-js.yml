@@ -1,0 +1,15 @@
+id: no-implied-eval-js
+language: JavaScript
+message: "Avoid implied eval via setTimeout/setInterval with string arguments"
+severity: error
+note: |
+  Passing strings to setTimeout() or setInterval() is equivalent to eval()
+  and can execute arbitrary code. Pass a function reference instead.
+rule:
+  any:
+    - pattern: setTimeout($$$ARGS)
+    - pattern: setInterval($$$ARGS)
+  has:
+    kind: arguments
+    has:
+      kind: string
